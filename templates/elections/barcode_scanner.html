@@ -1,0 +1,164 @@
+﻿{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/barcode_scanner.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="barcode-scanner-container">
+    
+    <!-- Scanner Header -->
+    <div class="scanner-header text-center animate-fadeInDown">
+        <h1><i class="fas fa-qrcode ms-2"></i> {{ page_title }}</h1>
+        <p>نظام قراءة الباركود لجرد الأصوات - محاكاة تطبيق المفوضية (IHEC)</p>
+    </div>
+
+    <!-- Active Session Info (Hidden, used by JS) -->
+    {% if active_session %}
+    <div id="active-session-data" 
+         data-session-id="{{ active_session.id }}" 
+         data-session-code="{{ active_session.session_code }}"
+         style="display:none;"></div>
+    {% endif %}
+
+    <!-- Session Controls -->
+    <div class="session-controls animate-fadeInUp">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="session-status">
+                <h2 class="mb-0"><i class="fas fa-cogs ms-2"></i> التحكم بالجلسة</h2>
+                <div id="session-info-display" class="mt-2"></div>
+            </div>
+            
+            <div class="action-buttons d-flex gap-2 align-items-center">
+                <select id="vote-type-select" class="vote-type-select me-2" {% if active_session %}disabled{% endif %}>
+                    <option value="general" {% if active_session and active_session.vote_type == 'general' %}selected{% endif %}>تصويت عام</option>
+                    <option value="special" {% if active_session and active_session.vote_type == 'special' %}selected{% endif %}>تصويت خاص</option>
+                </select>
+                
+                <button id="start-session-btn" class="btn btn-primary" {% if active_session %}style="display:none;"{% endif %}>
+                    <i class="fas fa-play"></i> بدء جلسة جديدة
+                </button>
+                
+                <button id="end-session-btn" class="btn btn-danger" {% if not active_session %}style="display:none;"{% endif %}>
+                    <i class="fas fa-stop"></i> إنهاء الجلسة
+                </button>
+                
+                <a href="{% url 'scan_sessions_list' %}" class="btn btn-secondary ms-2">
+                    <i class="fas fa-list"></i> سجل الجلسات
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Interface (Only visible when session is active) -->
+    <div id="scan-controls" class="animate-fadeInUp" {% if not active_session %}style="display:none;"{% endif %}>
+        <div class="scanner-layout">
+            <!-- Camera / Input Panel -->
+            <div class="scanner-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2><i class="fas fa-camera ms-2"></i> الكاميرا</h2>
+                    <div>
+                        <button id="start-scan-btn" class="btn btn-success">
+                            <i class="fas fa-camera"></i> تشغيل الكاميرا
+                        </button>
+                        <button id="stop-scan-btn" class="btn btn-danger" style="display:none;">
+                            <i class="fas fa-camera-slash"></i> إيقاف
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QR Reader Container -->
+                <div id="qr-reader-container">
+                    <div id="qr-reader"></div>
+                    <div id="scanning-flash"></div>
+                </div>
+
+                <!-- Manual Input -->
+                <div class="manual-input-section">
+                    <label class="form-label fw-bold">إدخال يدوي (للباركود التالف):</label>
+                    <div class="manual-input-group">
+                        <input type="text" id="manual-barcode-input" placeholder="أدخل رقم الباركود هنا..." class="form-control">
+                        <button id="manual-submit-btn" class="btn btn-primary">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results & Stats Panel -->
+            <div>
+                <!-- Statistics -->
+                <div class="stats-grid mb-4">
+                    <div class="stat-card">
+                        <h3>الكل</h3>
+                        <div id="stat-total-scans" class="stat-value">{{ total_scans|default:"0" }}</div>
+                    </div>
+                    <div class="stat-card success">
+                        <h3>ناجح</h3>
+                        <div id="stat-successful-scans" class="stat-value">{{ successful_scans|default:"0" }}</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>فاشل</h3>
+                        <div id="stat-failed-scans" class="stat-value">0</div>
+                    </div>
+                </div>
+
+                <!-- Latest Result Display -->
+                <div id="scan-result-display">
+                    <div class="empty-state">
+                        <i class="fas fa-barcode empty-state-icon"></i>
+                        <p>قم بمسح باركود شريط النتائج لعرض التفاصيل هنا</p>
+                    </div>
+                </div>
+
+                <!-- Recent Scans List -->
+                <div class="scanner-panel mt-4">
+                    <h2><i class="fas fa-history ms-2"></i> آخر المسحات</h2>
+                    <div id="recent-scans-list" class="recent-scans-list">
+                        {% for scan in recent_scans %}
+                        <div class="recent-scan-item {% if scan.status == 'validated' or scan.status == 'processed' %}success{% else %}pending{% endif %}">
+                            <div class="scan-time">{{ scan.scanned_at|date:"H:i" }}</div>
+                            <div class="scan-info">
+                                <strong>{{ scan.get_full_station_code }}</strong>
+                                <span class="scan-status">
+                                    {% if scan.status == 'validated' %}تم التحقق{% endif %}
+                                    {% if scan.status == 'processed' %}تمت المعالجة{% endif %}
+                                    {% if scan.status == 'pending' %}قيد المعالجة{% endif %}
+                                    {% if scan.status == 'rejected' %}مرفوض{% endif %}
+                                    {% if scan.status == 'duplicate' %}مكرر{% endif %}
+                                    {% if scan.status == 'error' %}خطأ{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center py-3">لا توجد مسحات حديثة</p>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'barcode_vote_count_report' %}" class="btn btn-sm btn-outline-primary">عرض التقرير الكامل</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Indicator -->
+<div id="processing-indicator">
+    <div class="spinner"></div>
+    <h3>جاري المعالجة...</h3>
+</div>
+
+<!-- Notification Container will be created by JS -->
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- HTML5-QRCode Library -->
+<script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<!-- Barcode Scanner Logic -->
+<script src="{% static 'js/barcode_scanner.js' %}"></script>
+{% endblock %}

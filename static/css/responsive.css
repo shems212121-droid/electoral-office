@@ -1,0 +1,714 @@
+/* ========================================
+   Responsive Design - Electoral Office
+   Enhanced Mobile-First Approach 2024
+   ======================================== */
+
+/* ==================== Base Responsive Utilities ==================== */
+@media (max-width: 1200px) {
+    .container-fluid {
+        padding: 0 20px;
+    }
+}
+
+/* ==================== Tablet and Below (< 992px) ==================== */
+@media (max-width: 991px) {
+    
+    /* Transform sidebar to bottom navigation bar */
+    .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        min-height: auto;
+        height: 75px;
+        z-index: 1050;
+        border-top: 4px solid var(--sadiqoon-gold);
+        border-left: none;
+        background: linear-gradient(180deg, var(--sadiqoon-green-dark) 0%, var(--sadiqoon-green) 100%);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .sidebar-header {
+        display: none !important;
+    }
+
+    /* Bottom navigation layout */
+    .sidebar .nav {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        height: 100%;
+        padding: 0 8px;
+        gap: 4px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar .nav-link {
+        flex-direction: column;
+        flex-shrink: 0;
+        padding: 8px 12px;
+        margin: 0;
+        font-size: 0.7rem;
+        text-align: center;
+        min-width: 70px;
+        border-radius: 12px;
+        gap: 4px;
+    }
+
+    .sidebar .nav-link i {
+        margin: 0;
+        font-size: 20px;
+        width: auto;
+    }
+
+    .sidebar hr,
+    .sidebar .section-divider {
+        display: none;
+    }
+
+    /* Main content with space for bottom nav */
+    .main-content {
+        padding: 15px;
+        padding-bottom: 95px !important;
+    }
+
+    /* Adjust grid layout for tablet */
+    .col-md-2 {
+        display: none;
+    }
+    
+    .col-md-10 {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    /* Top navbar responsive */
+    .top-navbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 15px;
+    }
+
+    .top-navbar > div {
+        flex: 1 1 auto;
+    }
+
+    .developer-logo {
+        order: 0;
+        margin: 0;
+    }
+}
+
+/* ==================== Mobile (< 768px) ==================== */
+@media (max-width: 767px) {
+
+    /* Typography optimization */
+    body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        margin-bottom: 16px;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+    }
+
+    h5 {
+        font-size: 1rem;
+    }
+
+    /* Cards optimization */
+    .card,
+    .modern-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+    }
+
+    .card-header,
+    .modern-card-header {
+        padding: 14px 16px;
+        font-size: 1rem;
+    }
+
+    .card-body,
+    .modern-card-body {
+        padding: 16px;
+    }
+
+    /* Chart containers */
+    .chart-container {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+    }
+
+    /* Buttons - Enhanced touch targets */
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+        min-height: 44px;
+        border-radius: 12px;
+    }
+
+    .btn-modern {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn-group .btn {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+
+    /* Quick actions - Responsive grid */
+    .quick-action {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 140px;
+        padding: 14px 20px;
+        font-size: 0.9rem;
+        margin: 4px;
+        justify-content: center;
+    }
+
+    .quick-actions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* Stats Cards - Mobile optimized */
+    .stat-card-modern {
+        padding: 20px;
+        margin-bottom: 14px;
+        border-radius: 18px;
+    }
+
+    .stat-value-modern {
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+    }
+
+    .stat-label-modern {
+        font-size: 0.95rem;
+    }
+
+    .stat-sublabel-modern {
+        font-size: 0.85rem;
+    }
+
+    .stat-icon-modern {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    /* Tables - Mobile card layout */
+    .table-responsive {
+        border: none;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-modern {
+        min-width: 600px;
+    }
+
+    /* Forms - Touch friendly */
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Prevents iOS zoom */
+        padding: 12px 16px;
+        border-radius: 12px;
+        min-height: 48px;
+    }
+
+    .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .form-control-modern {
+        padding: 14px 18px;
+        font-size: 16px;
+    }
+
+    /* Navigation - Bottom bar */
+    .sidebar {
+        height: 70px;
+    }
+
+    .sidebar .nav-link {
+        font-size: 0.65rem;
+        padding: 6px 10px;
+        min-width: 65px;
+    }
+
+    .sidebar .nav-link i {
+        font-size: 20px;
+    }
+
+    /* Top navbar compact */
+    .top-navbar {
+        padding: 12px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+    }
+
+    .top-navbar h5 {
+        font-size: 1.1rem;
+    }
+
+    .developer-logo {
+        padding: 6px 14px;
+        font-size: 0.85rem;
+    }
+
+    /* Modals */
+    .modal-dialog {
+        margin: 12px;
+    }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    /* Progress bars */
+    .progress-modern {
+        height: 28px;
+    }
+
+    /* Badges */
+    .badge-modern {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    /* Search and filters */
+    .search-container {
+        max-width: 100%;
+    }
+
+    .search-input {
+        padding: 14px 50px 14px 18px;
+    }
+
+    .search-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-filters .form-control,
+    .search-filters .btn {
+        width: 100%;
+    }
+}
+
+/* ==================== Small Mobile (< 576px) ==================== */
+@media (max-width: 575px) {
+
+    /* Ultra compact layout */
+    .main-content {
+        padding: 8px;
+        padding-bottom: 85px !important;
+    }
+
+    /* Top navbar minimal */
+    .top-navbar {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .top-navbar h5 {
+        font-size: 0.95rem;
+    }
+
+    /* Hide developer name, keep icon only */
+    .developer-logo span {
+        display: none;
+    }
+
+    .developer-logo {
+        padding: 8px;
+        min-width: auto;
+    }
+
+    .developer-logo i {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    /* Single column layout */
+    .row .col-md-3,
+    .row .col-md-4,
+    .row .col-md-6 {
+        margin-bottom: 12px;
+    }
+
+    /* Compact stat cards */
+    .stat-card-modern {
+        padding: 16px;
+    }
+
+    .stat-value-modern {
+        font-size: 1.8rem;
+    }
+
+    .stat-icon-modern {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+
+    /* Bottom nav - Icons only */
+    .sidebar {
+        height: 65px;
+    }
+
+    .sidebar .nav {
+        padding: 0 4px;
+        gap: 2px;
+    }
+
+    .sidebar .nav-link {
+        font-size: 0;
+        padding: 8px 6px;
+        min-width: 50px;
+    }
+
+    .sidebar .nav-link i {
+        margin: 0;
+        font-size: 22px;
+    }
+
+    /* Compact buttons */
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .btn-sm {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    /* Quick actions full width on very small screens */
+    .quick-action {
+        flex: 1 1 100%;
+        min-width: auto;
+    }
+
+    /* Charts */
+    .chart-container {
+        padding: 12px;
+    }
+
+    /* Compact tables */
+    .table-modern thead th {
+        padding: 12px 10px;
+        font-size: 0.75rem;
+    }
+
+    .table-modern tbody td {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* ==================== Landscape Mobile ==================== */
+@media (max-width: 767px) and (orientation: landscape) {
+    .sidebar {
+        height: 60px;
+    }
+
+    .sidebar .nav-link {
+        padding: 4px 8px;
+    }
+
+    .main-content {
+        padding-bottom: 75px !important;
+    }
+
+    /* Optimize stat cards for landscape */
+    .stat-value-modern {
+        font-size: 1.6rem;
+    }
+
+    .stat-icon-modern {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* ==================== Touch Device Optimizations ==================== */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Enhanced touch targets - minimum 44x44px */
+    .btn,
+    .nav-link,
+    a.quick-action,
+    .form-control,
+    .form-select {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Remove hover transformations on touch */
+    .nav-link:hover,
+    .btn:hover,
+    .card:hover,
+    .stat-card-modern:hover,
+    .quick-action:hover {
+        transform: none !important;
+    }
+
+    /* Add tactile feedback with active states */
+    .nav-link:active {
+        transform: scale(0.95);
+        background: rgba(255, 215, 0, 0.3);
+    }
+
+    .btn:active,
+    .quick-action:active {
+        transform: translateY(2px);
+        opacity: 0.9;
+    }
+
+    .card:active,
+    .stat-card-modern:active {
+        transform: scale(0.98);
+    }
+
+    /* Increase tap area for small elements */
+    .table-actions .btn {
+        padding: 10px 14px;
+        margin: 2px;
+    }
+}
+
+/* ==================== High Resolution Displays ==================== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Sharper borders and shadows on retina displays */
+    .card,
+    .btn,
+    .form-control {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ==================== Print Styles ==================== */
+@media print {
+    .sidebar,
+    .top-navbar,
+    .dark-mode-toggle,
+    .btn,
+    .pwa-install-banner,
+    .quick-actions-grid {
+        display: none !important;
+    }
+
+    .main-content {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+
+    .stat-card-modern {
+        background: white !important;
+        color: black !important;
+        border: 2px solid #ddd;
+    }
+}
+
+/* ==================== Accessibility Enhancements ==================== */
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .card,
+    .btn,
+    .form-control,
+    .nav-link {
+        border: 2px solid currentColor !important;
+    }
+
+    .stat-card-modern {
+        border: 3px solid var(--sadiqoon-gold) !important;
+    }
+}
+
+/* Dark theme preference */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-primary: #0F172A;
+        --bg-secondary: #1E293B;
+        --text-primary: #F8FAFC;
+    }
+}
+
+/* ==================== Utility Classes ==================== */
+
+/* Display utilities */
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: block !important;
+}
+
+@media (max-width: 767px) {
+    .mobile-only {
+        display: block !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-center {
+        text-align: center !important;
+    }
+
+    .mobile-full-width {
+        width: 100% !important;
+    }
+
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+
+    .mobile-hide {
+        display: none !important;
+    }
+
+    .mobile-text-sm {
+        font-size: 0.875rem !important;
+    }
+}
+
+/* ==================== Loading States ==================== */
+.loading-skeleton {
+    background: linear-gradient(90deg, 
+        rgba(240, 240, 240, 1) 0%, 
+        rgba(224, 224, 224, 1) 50%, 
+        rgba(240, 240, 240, 1) 100%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+    border-radius: 12px;
+    height: 20px;
+    margin: 10px 0;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ==================== Smooth Scrolling ==================== */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* ==================== Safe Area for Notched Devices ==================== */
+@supports (padding: max(0px)) {
+    body {
+        padding-top: max(0px, env(safe-area-inset-top));
+    }
+
+    .main-content {
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+    }
+
+    .sidebar {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+
+    @media (max-width: 991px) {
+        .sidebar {
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* ==================== iOS Specific Fixes ==================== */
+@supports (-webkit-touch-callout: none) {
+    /* Fix for iOS Safari bottom bar */
+    .sidebar {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Prevent bounce scroll */
+    body {
+        overscroll-behavior-y: none;
+    }
+
+    /* Better tap highlight */
+    * {
+        -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
+    }
+}

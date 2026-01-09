@@ -1,0 +1,38 @@
+# تسجيل CenterDirector في admin.py
+# أضف هذا الكود في نهاية ملف elections/admin.py
+
+from django.contrib import admin
+from .models import CenterDirector
+
+@admin.register(CenterDirector)
+class CenterDirectorAdmin(admin.ModelAdmin):
+    """إدارة مدراء المراكز الانتخابية"""
+    list_display = ['full_name', 'voting_type', 'assigned_center_number', 'assigned_center_name', 
+                   'phone', 'status', 'get_agents_count', 'created_at']
+    list_filter = ['voting_type', 'status', 'governorate']
+    search_fields = ['full_name', 'phone', 'assigned_center_number', 'assigned_center_name', 
+                    'voter_number', 'national_id']
+    readonly_fields = ['created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    list_per_page = 50
+    
+    fieldsets = (
+        ('معلومات المدير', {
+            'fields': ('full_name', 'phone', 'email', 'voter_number', 'national_id')
+        }),
+        ('معلومات المركز', {
+            'fields': ('voting_type', 'assigned_center_number', 'assigned_center_name', 'governorate')
+        }),
+        ('الحالة', {
+            'fields': ('status', 'start_date', 'notes')
+        }),
+        ('معلومات النظام', {
+            'fields': ('added_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_agents_count(self, obj):
+        """عرض عدد الوكلاء"""
+        return obj.get_agents_count()
+    get_agents_count.short_description = 'عدد الوكلاء'

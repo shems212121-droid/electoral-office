@@ -1,0 +1,85 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}إدخال نتيجة جديدة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit"></i> إدخال نتيجة تصويت
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label>اختر المحطة *</label>
+                        {{ form.station }}
+                        <small class="form-text text-muted">ابحث برقم المركز أو اسم المركز</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>اختر المرشح *</label>
+                        {{ form.candidate }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>نوع التصويت *</label>
+                                {{ form.vote_type }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>عدد الأصوات *</label>
+                                {{ form.vote_count }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ملاحظات (اختياري)</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <hr>
+
+                    <button type="submit" class="btn btn-success btn-lg btn-block">
+                        <i class="fas fa-save"></i> حفظ النتيجة
+                    </button>
+
+                    <a href="{% url 'data_entry_results_dashboard' %}" class="btn btn-secondary btn-block mt-3">
+                        <i class="fas fa-arrow-left"></i> العودة للوحة التحكم
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Initialize Select2 for better searching
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'اختر من القائمة...',
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

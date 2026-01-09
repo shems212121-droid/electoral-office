@@ -1,0 +1,156 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}بحث عن ناخب - المكتب الانتخابي{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 50px auto;
+    }
+
+    .result-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-top: 30px;
+        border-right: 5px solid #667eea;
+    }
+
+    .search-input {
+        font-size: 24px;
+        padding: 15px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="search-card">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-search"></i> بحث سريع عن ناخب
+        </h2>
+
+        <div class="mb-4">
+            <input type="text" id="voterNumber" class="form-control search-input" placeholder="أدخل رقم الناخب"
+                autofocus>
+        </div>
+
+        <button onclick="searchVoter()" class="btn btn-primary btn-lg w-100">
+            <i class="fas fa-search"></i> بحث
+        </button>
+
+        <div id="result" class="mt-4"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function searchVoter() {
+        const voterNumber = document.getElementById('voterNumber').value.trim();
+
+        if (!voterNumber) {
+            alert('الرجاء إدخال رقم الناخب');
+            return;
+        }
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-3x"></i></div>';
+
+        fetch(`/api/voter-lookup/?voter_number=${voterNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> ${data.error}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-card">
+                            <h4 class="mb-4"><i class="fas fa-user-check"></i> تم العثور على الناخب</h4>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <strong>الاسم الكامل:</strong><br>
+                                    <span class="fs-5">${data.full_name}</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>تاريخ الميلاد:</strong><br>
+                                    ${data.date_of_birth || '-'}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <strong>اسم الأم:</strong><br>
+                                    ${data.mother_name || '-'}
+                                </div>
+                                <div class="col-6">
+                                    <strong>رقم العائلة:</strong><br>
+                                    ${data.family_number || '-'}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <strong>المحافظة:</strong><br>
+                                    ${data.governorate}
+                                </div>
+                                <div class="col-6">
+                                    <strong>رقم المحطة:</strong><br>
+                                    ${data.station_number || '-'}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>مركز الاقتراع:</strong><br>
+                                ${data.voting_center_name} (رقم: ${data.voting_center_number})
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>مركز التسجيل:</strong><br>
+                                ${data.registration_center_name || '-'}
+                                ${data.registration_center_number ? `(رقم: ${data.registration_center_number})` : ''}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>الهاتف:</strong><br>
+                                    ${data.phone || '-'}
+                                </div>
+                                <div class="col-6">
+                                    <strong>الحالة:</strong><br>
+                                    ${data.status || '-'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> حدث خطأ أثناء البحث
+                    </div>
+                `;
+                console.error('Error:', error);
+            });
+    }
+
+    // البحث عند الضغط على Enter
+    document.getElementById('voterNumber').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            searchVoter();
+        }
+    });
+</script>
+{% endblock %}

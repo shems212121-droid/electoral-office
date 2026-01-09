@@ -1,0 +1,410 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}لوحة المجموع الإجمالي{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .totals-dashboard {
+        padding: 2rem 0;
+    }
+
+    .header-section {
+        text-align: center;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .header-section h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 0.5rem;
+    }
+
+    .update-time {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .stat-label {
+        font-size: 1.2rem;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .results-section {
+        background: white;
+        border-radius: 2rem;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 0.5rem;
+    }
+
+    .results-table {
+        width: 100%;
+    }
+
+    .results-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .results-table td {
+        padding: 1.2rem;
+        font-size: 1.1rem;
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .results-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .party-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        color: white;
+        font-weight: 700;
+        min-width: 60px;
+    }
+
+    .vote-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #28a745;
+        font-family: 'Courier New', monospace;
+    }
+
+    .auto-refresh-indicator {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem 1.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+    }
+
+    .refresh-pulse {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: #28a745;
+        border-radius: 50%;
+        margin-left: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+    }
+
+    .candidate-rank {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 50%;
+        font-weight: 800;
+        font-size: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+        .header-section h1 {
+            font-size: 2rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+        }
+
+        .results-table {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="totals-dashboard">
+    <div class="container-fluid">
+        <div class="header-section">
+            <h1><i class="fas fa-chart-bar"></i> لوحة المجموع الإجمالي للأصوات</h1>
+            <div class="update-time">
+                <i class="fas fa-clock"></i> آخر تحديث: <span id="lastUpdate">{{ last_updated|date:"Y-m-d H:i:s"
+                    }}</span>
+            </div>
+        </div>
+
+        <!-- Auto-refresh indicator -->
+        <div class="auto-refresh-indicator">
+            <i class="fas fa-sync-alt"></i> تحديث تلقائي
+            <span class="refresh-pulse"></span>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🗳️</div>
+                <div class="stat-value" id="totalAll">{{ total_all|default:0 }}</div>
+                <div class="stat-label">إجمالي الأصوات</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalGeneral">{{ total_general|default:0 }}</div>
+                <div class="stat-label">الاقتراع العام</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🎖️</div>
+                <div class="stat-value" id="totalSpecial">{{ total_special|default:0 }}</div>
+                <div class="stat-label">الاقتراع الخاص</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value" id="totalEntries">{{ general_count|add:special_count|default:0 }}</div>
+                <div class="stat-label">عدد السجلات</div>
+            </div>
+        </div>
+
+        <!-- Top Candidates -->
+        <div class="results-section">
+            <h2 class="section-header"><i class="fas fa-trophy"></i> المرشحون (مرتب حسب الأصوات)</h2>
+            <div class="table-responsive">
+                <table class="results-table" id="candidatesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">الترتيب</th>
+                            <th>المرشح</th>
+                            <th>الحزب</th>
+                            <th>اقتراع عام</th>
+                            <th>اقتراع خاص</th>
+                            <th style="width: 150px;">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidate_totals %}
+                        <tr>
+                            <td><span class="candidate-rank">{{ forloop.counter }}</span></td>
+                            <td><strong>{{ candidate.full_name }}</strong></td>
+                            <td>
+                                <span class="party-badge" style="background-color: {{ candidate.party.color }}">
+                                    {{ candidate.party.serial_number }}-{{ candidate.serial_number }}
+                                </span>
+                                <br><small>{{ candidate.party.name }}</small>
+                            </td>
+                            <td>{{ candidate.general_votes|default:0 }}</td>
+                            <td>{{ candidate.special_votes|default:0 }}</td>
+                            <td><span class="vote-number">{{ candidate.total_votes|default:0 }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="padding: 3rem; text-align: center; color: #6c757d;">
+                                <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                                لا توجد أصوات مسجلة بعد
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Parties Summary -->
+        <div class="results-section">
+            <h2 class="section-header"><i class="fas fa-flag"></i> الأحزاب السياسية</h2>
+            <div class="table-responsive">
+                <table class="results-table" id="partiesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">الرقم</th>
+                            <th>اسم الحزب</th>
+                            <th>اقتراع عام</th>
+                            <th>اقتراع خاص</th>
+                            <th style="width: 150px;">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for party in party_totals %}
+                        <tr>
+                            <td>
+                                <span class="party-badge" style="background-color: {{ party.color }}">
+                                    {{ party.serial_number }}
+                                </span>
+                            </td>
+                            <td><strong>{{ party.name }}</strong></td>
+                            <td>{{ party.general_votes|default:0 }}</td>
+                            <td>{{ party.special_votes|default:0 }}</td>
+                            <td><span class="vote-number">{{ party.total_votes|default:0 }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="padding: 3rem; text-align: center; color: #6c757d;">
+                                <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                                لا توجد أصوات مسجلة بعد
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-refresh every 10 seconds
+    function updateVoteTotals() {
+        fetch('/api/vote-totals/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update statistics
+                    document.getElementById('totalAll').textContent = data.totals.all.toLocaleString();
+                    document.getElementById('totalGeneral').textContent = data.totals.general.toLocaleString();
+                    document.getElementById('totalSpecial').textContent = data.totals.special.toLocaleString();
+                    document.getElementById('totalEntries').textContent = (data.totals.general_count + data.totals.special_count).toLocaleString();
+                    document.getElementById('lastUpdate').textContent = data.last_updated;
+
+                    // Update candidates table
+                    updateCandidatesTable(data.candidate_totals);
+
+                    // Update parties table
+                    updatePartiesTable(data.party_totals);
+                }
+            })
+            .catch(error => console.error('Error updating totals:', error));
+    }
+
+    function updateCandidatesTable(candidates) {
+        const tbody = document.querySelector('#candidatesTable tbody');
+        if (candidates.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="padding: 3rem; text-align: center; color: #6c757d;">
+                    <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                    لا توجد أصوات مسجلة بعد
+                </td>
+            </tr>
+        `;
+            return;
+        }
+
+        tbody.innerHTML = candidates.map((candidate, index) => `
+        <tr>
+            <td><span class="candidate-rank">${index + 1}</span></td>
+            <td><strong>${candidate.full_name}</strong></td>
+            <td>
+                <span class="party-badge" style="background-color: ${candidate.party__color}">
+                    ${candidate.party__serial_number}-${candidate.serial_number}
+                </span>
+                <br><small>${candidate.party__name}</small>
+            </td>
+            <td>${(candidate.general_votes || 0).toLocaleString()}</td>
+            <td>${(candidate.special_votes || 0).toLocaleString()}</td>
+            <td><span class="vote-number">${(candidate.total_votes || 0).toLocaleString()}</span></td>
+        </tr>
+    `).join('');
+    }
+
+    function updatePartiesTable(parties) {
+        const tbody = document.querySelector('#partiesTable tbody');
+        if (parties.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="padding: 3rem; text-align: center; color: #6c757d;">
+                    <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                    لا توجد أصوات مسجلة بعد
+                </td>
+            </tr>
+        `;
+            return;
+        }
+
+        tbody.innerHTML = parties.map(party => `
+        <tr>
+            <td>
+                <span class="party-badge" style="background-color: ${party.color}">
+                    ${party.serial_number}
+                </span>
+            </td>
+            <td><strong>${party.name}</strong></td>
+            <td>${(party.general_votes || 0).toLocaleString()}</td>
+            <td>${(party.special_votes || 0).toLocaleString()}</td>
+            <td><span class="vote-number">${(party.total_votes || 0).toLocaleString()}</span></td>
+        </tr>
+    `).join('');
+    }
+
+    // Update every 10 seconds
+    setInterval(updateVoteTotals, 10000);
+
+    // Initial update after 2 seconds
+    setTimeout(updateVoteTotals, 2000);
+</script>
+{% endblock %}

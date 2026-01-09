@@ -1,0 +1,121 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ anchor.full_name }} - تفاصيل المرتكز{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-anchor"></i> {{ anchor.full_name }}</h1>
+        <div>
+            <a href="{% url 'anchor_edit' anchor.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'anchor_delete' anchor.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> حذف
+            </a>
+            <a href="{% url 'anchor_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4><i class="fas fa-info-circle"></i> المعلومات الأساسية</h4>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>الكود:</strong> {{ anchor.anchor_code }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>المرشح:</strong>
+                            <a href="{% url 'candidate_detail' anchor.candidate.pk %}">{{ anchor.candidate.full_name
+                                }}</a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>رقم الهاتف:</strong> {{ anchor.phone }}
+                        </div>
+                        {% if anchor.email %}
+                        <div class="col-md-6 mb-3">
+                            <strong>البريد الإلكتروني:</strong> {{ anchor.email }}
+                        </div>
+                        {% endif %}
+                        <div class="col-md-12 mb-3">
+                            <strong>العنوان:</strong> {{ anchor.address|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- المعرّفين -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5><i class="fas fa-id-card"></i> المعرّفين ({{ introducers_count }})</h5>
+                    <a href="{% url 'introducer_create' %}?anchor={{ anchor.pk }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> إضافة معرّف
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if introducers %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الكود</th>
+                                    <th>الهاتف</th>
+                                    <th>الناخبين</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for introducer in introducers %}
+                                <tr>
+                                    <td>{{ introducer.full_name }}</td>
+                                    <td>{{ introducer.introducer_code }}</td>
+                                    <td>{{ introducer.phone }}</td>
+                                    <td><span class="badge bg-success">{{ introducer.get_voters_count }}</span></td>
+                                    <td>
+                                        <a href="{% url 'introducer_detail' introducer.pk %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            عرض
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-muted py-3">لا يوجد معرّفين</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>الإحصائيات</h5>
+                    <hr>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-id-card"></i> المعرّفين</span>
+                            <h3>{{ introducers_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-users"></i> الناخبين</span>
+                            <h3>{{ voters_count|intcomma }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

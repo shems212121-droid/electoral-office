@@ -1,0 +1,107 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ info_form.full_name }} - تفاصيل الاستمارة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:candidate_info_list' %}">استمارات المرشحين</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ info_form.full_name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="fas fa-file-invoice me-2"></i>
+                تفاصيل استمارة المرشح: {{ info_form.full_name }}
+            </h4>
+            <a href="{% url 'archive:candidate_info_edit' info_form.pk %}" class="btn btn-warning btn-sm fw-bold">
+                <i class="fas fa-edit me-1"></i>تعديل
+            </a>
+        </div>
+        <div class="card-body">
+            <!-- 1. معلومات أساسية -->
+            <h5 class="text-success border-bottom pb-2 mb-3">1. المعلومات الأساسية</h5>
+            <div class="row mb-4">
+                <div class="col-md-3 mb-2"><strong>تسلسل القائمة:</strong> {{ info_form.ticket_order|default:"-" }}
+                </div>
+                <div class="col-md-3 mb-2"><strong>رقم الناخب:</strong> {{ info_form.voter_id }}</div>
+                <div class="col-md-6 mb-2"><strong>الاسم الكامل:</strong> {{ info_form.full_name }}</div>
+                <div class="col-md-4 mb-2"><strong>اسم الجد الرابع:</strong> {{ info_form.grandfather4_name }}</div>
+                <div class="col-md-4 mb-2"><strong>اللقب:</strong> {{ info_form.surname }}</div>
+                <div class="col-md-4 mb-2"><strong>الجنس:</strong> {{ info_form.get_gender_display }}</div>
+            </div>
+
+            <!-- 2. أم -->
+            <h5 class="text-success border-bottom pb-2 mb-3">2. معلومات الأم</h5>
+            <div class="row mb-4">
+                <div class="col-md-3 mb-2"><strong>اسم الأم:</strong> {{ info_form.mother_name }}</div>
+                <div class="col-md-3 mb-2"><strong>اسم أب الأم:</strong> {{ info_form.mother_father_name }}</div>
+                <div class="col-md-3 mb-2"><strong>اسم جد الأم:</strong> {{ info_form.mother_grandfather_name }}</div>
+                <div class="col-md-3 mb-2"><strong>لقب الأم:</strong> {{ info_form.mother_surname }}</div>
+            </div>
+
+            <!-- 3. التولد -->
+            <h5 class="text-success border-bottom pb-2 mb-3">3. التولد</h5>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-2"><strong>محل التولد:</strong> {{ info_form.birth_place }}</div>
+                <div class="col-md-6 mb-2"><strong>تاريخ التولد:</strong> {{ info_form.birth_date|date:"Y-m-d" }}</div>
+            </div>
+
+            <!-- 4. السكن -->
+            <h5 class="text-success border-bottom pb-2 mb-3">4. السكن</h5>
+            <div class="row mb-4">
+                <div class="col-md-4 mb-2"><strong>المحافظة:</strong> {{ info_form.governorate }}</div>
+                <div class="col-md-4 mb-2"><strong>القضاء:</strong> {{ info_form.qada }}</div>
+                <div class="col-md-4 mb-2"><strong>الناحية:</strong> {{ info_form.nahia }}</div>
+                <div class="col-md-4 mb-2"><strong>المحلة:</strong> {{ info_form.mahalla }}</div>
+                <div class="col-md-4 mb-2"><strong>الزقاق:</strong> {{ info_form.zukak }}</div>
+                <div class="col-md-4 mb-2"><strong>الدار:</strong> {{ info_form.dar }}</div>
+            </div>
+
+            <!-- 5. الاتصال -->
+            <h5 class="text-success border-bottom pb-2 mb-3">5. الاتصال</h5>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-2"><strong>رقم الهاتف:</strong> {{ info_form.phone_number }}</div>
+                <div class="col-md-6 mb-2"><strong>البريد الإلكتروني:</strong> {{ info_form.email|default:"-" }}</div>
+            </div>
+
+            <!-- 6. التعليم -->
+            <h5 class="text-success border-bottom pb-2 mb-3">6. التحصيل الدراسي</h5>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-2"><strong>المستوى الدراسي:</strong> {{ info_form.education_level }}</div>
+                <div class="col-md-6 mb-2"><strong>جهة الإصدار:</strong> {{ info_form.cert_issuer }}</div>
+                <div class="col-md-6 mb-2"><strong>رقم الوثيقة:</strong> {{ info_form.cert_number }}</div>
+                <div class="col-md-6 mb-2"><strong>تاريخ الوثيقة:</strong> {{ info_form.cert_date|date:"Y-m-d" }}</div>
+            </div>
+
+            <!-- 7. أخرى -->
+            <h5 class="text-success border-bottom pb-2 mb-3">7. معلومات إضافية</h5>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-2"><strong>رقم البطاقة الموحدة:</strong> {{ info_form.national_id_number }}
+                </div>
+                <div class="col-md-6 mb-2"><strong>تاريخ إصدارها:</strong> {{ info_form.national_id_date|date:"Y-m-d" }}
+                </div>
+                <div class="col-12 mb-2"><strong>الاسم في ورقة الاقتراع:</strong> {{ info_form.ballot_name }}</div>
+            </div>
+        </div>
+        <div class="card-footer bg-white text-center">
+            <a href="{% url 'archive:candidate_info_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-2"></i>رجوع للقائمة
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-print me-2"></i>طباعة
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

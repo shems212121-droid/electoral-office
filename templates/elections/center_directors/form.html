@@ -1,0 +1,214 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>{{ page_title }}</h2>
+            <hr>
+        </div>
+    </div>
+
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user"></i> المعلومات الأساسية</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>البحث التلقائي:</strong> أدخل رقم الناخب وسيتم ملء جميع البيانات تلقائياً
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">رقم الناخب <span class="text-danger">*</span></label>
+                        {{ form.voter_number }}
+                        <div id="voterLookupSpinner" class="spinner-border spinner-border-sm text-primary mt-2"
+                            style="display: none;"></div>
+                        <div id="voterLookupError" class="text-danger mt-2" style="display: none;"></div>
+                        <div id="voterLookupSuccess" class="text-success mt-2" style="display: none;">
+                            <i class="fas fa-check-circle"></i> تم العثور على الناخب وملء البيانات
+                        </div>
+                        {% if form.voter_number.errors %}<div class="text-danger">{{ form.voter_number.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger">{{ form.phone.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}<div class="text-danger">{{ form.full_name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">رقم البطاقة الوطنية</label>
+                        {{ form.national_id }}
+                        {% if form.national_id.errors %}<div class="text-danger">{{ form.national_id.errors }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-building"></i> معلومات المركز الانتخابي</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">نوع الاقتراع <span class="text-danger">*</span></label>
+                        {{ form.voting_type }}
+                        {% if form.voting_type.errors %}<div class="text-danger">{{ form.voting_type.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">رقم المركز الانتخابي <span class="text-danger">*</span></label>
+                        {{ form.assigned_center_number }}
+                        {% if form.assigned_center_number.errors %}<div class="text-danger">{{
+                            form.assigned_center_number.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">اسم المركز الانتخابي <span class="text-danger">*</span></label>
+                        {{ form.assigned_center_name }}
+                        {% if form.assigned_center_name.errors %}<div class="text-danger">{{
+                            form.assigned_center_name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">المحافظة <span class="text-danger">*</span></label>
+                        {{ form.governorate }}
+                        {% if form.governorate.errors %}<div class="text-danger">{{ form.governorate.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">الحالة</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<div class="text-danger">{{ form.status.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">تاريخ بداية المهمة</label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}<div class="text-danger">{{ form.start_date.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}<div class="text-danger">{{ form.notes.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-5">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> حفظ
+            </button>
+            <a href="{% url 'center_director_list' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> إلغاء
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تفعيل التحقق من صحة النموذج
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+
+    // البحث التلقائي عن الناخب
+    document.addEventListener('DOMContentLoaded', function () {
+        const voterNumberInput = document.querySelector('input[name="voter_number"]');
+        const spinner = document.getElementById('voterLookupSpinner');
+        const errorDiv = document.getElementById('voterLookupError');
+        const successDiv = document.getElementById('voterLookupSuccess');
+
+        let lookupTimeout = null;
+
+        if (voterNumberInput) {
+            voterNumberInput.addEventListener('input', function () {
+                const voterNumber = this.value.trim();
+
+                if (lookupTimeout) {
+                    clearTimeout(lookupTimeout);
+                }
+
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                if (voterNumber.length < 3) {
+                    return;
+                }
+
+                spinner.style.display = 'inline-block';
+
+                lookupTimeout = setTimeout(() => {
+                    fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.error || 'خطأ في البحث');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            spinner.style.display = 'none';
+
+                            const fullNameInput = document.querySelector('input[name="full_name"]');
+                            const phoneInput = document.querySelector('input[name="phone"]');
+                            const nationalIdInput = document.querySelector('input[name="national_id"]');
+
+                            if (fullNameInput && data.full_name) fullNameInput.value = data.full_name;
+                            if (phoneInput && data.phone) phoneInput.value = data.phone;
+                            if (nationalIdInput && data.national_id) nationalIdInput.value = data.national_id;
+
+                            successDiv.style.display = 'block';
+                            setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+                        })
+                        .catch(error => {
+                            spinner.style.display = 'none';
+                            errorDiv.textContent = error.message;
+                            errorDiv.style.display = 'block';
+                        });
+                }, 500);
+            });
+        }
+    });
+</script>
+{% endblock %}

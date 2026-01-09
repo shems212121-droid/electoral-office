@@ -1,0 +1,91 @@
+:root {
+    /* =========================================
+       Base Palette - Light Mode (Daylight)
+       ========================================= */
+    --color-primary-base: #5D7BD5;
+    --color-secondary-base: #4ECDC4;
+    --color-accent-base: #FF6B6B;
+    --color-background: #F8F5F0;
+    --color-surface: #FFFFFF;
+    --color-text-main: #2C3E50;
+    --color-text-muted: #64748B;
+    --color-border: #E2E8F0;
+
+    /* Gradients: Primary (Indigo) */
+    --color-primary-100: #DEE4F7;
+    --color-primary-200: #BEC9EE;
+    --color-primary-300: #9EAEE5;
+    --color-primary-400: #7E94DD;
+    --color-primary-500: #5D7BD5; /* Base */
+    --color-primary-600: #4A63AC;
+    --color-primary-700: #384A82;
+    --color-primary-800: #253259;
+    --color-primary-900: #13192F;
+
+    /* Gradients: Secondary (Sea Green) */
+    --color-secondary-100: #DCF5F3;
+    --color-secondary-200: #B9EBE7;
+    --color-secondary-300: #96E1DB;
+    --color-secondary-400: #73D7CF;
+    --color-secondary-500: #4ECDC4; /* Base */
+    --color-secondary-600: #3EA49D;
+    --color-secondary-700: #2F7C76;
+    --color-secondary-800: #1F534F;
+    --color-secondary-900: #102A28;
+
+    /* Gradients: Accent (Coral Orange) */
+    --color-accent-100: #FFE1E1;
+    --color-accent-200: #FFC4C4;
+    --color-accent-300: #FFA6A6;
+    --color-accent-400: #FF8989;
+    --color-accent-500: #FF6B6B; /* Base */
+    --color-accent-600: #CC5656;
+    --color-accent-700: #994141;
+    --color-accent-800: #662B2B;
+    --color-accent-900: #331616;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-colored: 0 10px 25px -5px var(--color-primary-200);
+
+    /* Typography */
+    --font-heading: 'Cairo', sans-serif;
+    --font-body: 'Tajawal', sans-serif;
+}
+
+[data-theme="dark"] {
+    /* =========================================
+       Base Palette - Dark Mode (Quiet Night)
+       ========================================= */
+    --color-primary-base: #8A8EFF;
+    --color-secondary-base: #64DFDF;
+    --color-accent-base: #FF9E9E;
+    --color-background: #121826;
+    --color-surface: #1E293B;
+    --color-text-main: #E2E8F0;
+    --color-text-muted: #94A3B8;
+    --color-border: #334155;
+
+    /* Gradients: Primary (Lavender) */
+    --color-primary-100: #292A4C;
+    --color-primary-200: #414380;
+    --color-primary-300: #595CB3;
+    --color-primary-400: #7275E6;
+    --color-primary-500: #8A8EFF; /* Base */
+    --color-primary-600: #A1A5FF;
+    --color-primary-700: #BBBFFF;
+    --color-primary-800: #D4D6FF;
+    --color-primary-900: #EEF0FF;
+
+    /* Gradient inversions for dark mode usually need tweaking 
+       but we keep the logic that 500 is base. 
+       We might want text on top of these colors to be readable.
+    */
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-colored: 0 10px 25px -5px rgba(138, 142, 255, 0.2);
+}

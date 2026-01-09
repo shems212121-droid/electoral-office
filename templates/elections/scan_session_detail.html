@@ -1,0 +1,199 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-11">
+
+        <!-- Session Overview Card -->
+        <div class="card animate-fadeInUp mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-qrcode ms-2"></i> تفاصيل الجلسة: {{ session.session_code }}
+                </span>
+                <div>
+                    <span class="badge bg-{{ session.status|yesno:'success,secondary,danger' }} fs-6">
+                        {% if session.status == 'active' %}نشطة{% endif %}
+                        {% if session.status == 'completed' %}مكتملة{% endif %}
+                        {% if session.status == 'cancelled' %}ملغاة{% endif %}
+                    </span>
+                    <a href="{% url 'scan_sessions_list' %}" class="btn btn-sm btn-light text-primary ms-3">
+                        <i class="fas fa-arrow-right ms-1"></i> العودة للقائمة
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3 border-start">
+                        <h6 class="text-muted mb-3">المعلومات الأساسية</h6>
+                        <p class="mb-2"><strong>المستخدم:</strong> {{
+                            session.operator.get_full_name|default:session.operator.username }}</p>
+                        <p class="mb-2"><strong>نوع التصويت:</strong>
+                            {% if session.vote_type == 'general' %}عام{% else %}خاص{% endif %}
+                        </p>
+                        <p class="mb-2"><strong>تاريخ البدء:</strong> {{ session.started_at|date:"Y-m-d H:i" }}</p>
+                        {% if session.completed_at %}
+                        <p class="mb-0"><strong>تاريخ الانتهاء:</strong> {{ session.completed_at|date:"Y-m-d H:i" }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 border-start">
+                        <h6 class="text-muted mb-3">نتائج المسح</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>إجمالي المسحات:</span>
+                            <span class="fw-bold">{{ stats.total }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-success">ناجحة:</span>
+                            <span class="badge bg-success">{{ stats.successful_scans|default:session.successful_scans
+                                }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-0">
+                            <span class="text-danger">فاشلة:</span>
+                            <span class="badge bg-danger">{{ stats.failed_scans|default:session.failed_scans }}</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 border-start">
+                        <h6 class="text-muted mb-3">التفاصيل الفنية</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>تمت المعالجة:</span>
+                            <span class="badge bg-primary">{{ stats.processed }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>مكررة:</span>
+                            <span class="badge bg-warning text-dark">{{ stats.duplicates }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-0">
+                            <span>أخطاء / مرفوضة:</span>
+                            <span class="badge bg-secondary">{{ stats.errors }}</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 text-center d-flex flex-column justify-content-center">
+                        <h6 class="text-muted mb-2">نسبة النجاح</h6>
+                        <div class="position-relative d-inline-block mx-auto" style="width: 100px; height: 100px;">
+                            <div
+                                class="d-flex align-items-center justify-content-center h-100 border border-4 border-{{ session.get_success_rate|yesno:'success,warning,danger' }} rounded-circle bg-light">
+                                <span class="fs-3 fw-bold">{{ session.get_success_rate }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scans List -->
+        <h5 class="mb-3 text-primary border-bottom pb-2 d-inline-block">سجلات المسح</h5>
+
+        <div class="table-responsive bg-white rounded shadow-sm">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>وقت المسح</th>
+                        <th>رمز المحطة</th>
+                        <th>المركز</th>
+                        <th>المحطة</th>
+                        <th>المجموع</th>
+                        <th>صحيحة</th>
+                        <th>باطلة</th>
+                        <th>الحالة</th>
+                        <th>المعالجة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in scans %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td dir="ltr">{{ scan.scanned_at|date:"H:i:s" }}</td>
+                        <td class="fw-bold">{{ scan.get_full_station_code }}</td>
+                        <td>{{ scan.center_number }}</td>
+                        <td>{{ scan.station_number }}</td>
+                        <td>{{ scan.total_votes|default:"-" }}</td>
+                        <td class="text-success">{{ scan.valid_votes|default:"-" }}</td>
+                        <td class="text-danger">{{ scan.invalid_votes|default:"-" }}</td>
+                        <td>
+                            {% if scan.status == 'validated' %}
+                            <span class="badge bg-success">تم التحقق</span>
+                            {% elif scan.status == 'processed' %}
+                            <span class="badge bg-primary">تمت المعالجة</span>
+                            {% elif scan.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                            {% elif scan.status == 'rejected' %}
+                            <span class="badge bg-danger">مرفوض</span>
+                            {% elif scan.status == 'duplicate' %}
+                            <span class="badge bg-secondary">مكرر</span>
+                            {% else %}
+                            <span class="badge bg-dark">خطأ</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if scan.is_processed %}
+                            <i class="fas fa-check-circle text-primary" title="تمت إضافته للنتائج"></i>
+                            {% elif scan.status == 'validated' %}
+                            <button class="btn btn-sm btn-outline-primary process-scan-btn"
+                                data-scan-id="{{ scan.id }}">
+                                <i class="fas fa-upload"></i> معالجة
+                            </button>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">لا توجد سجلات مسح في هذه الجلسة</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Handle individual scan processing
+        $('.process-scan-btn').click(function () {
+            const btn = $(this);
+            const scanId = btn.data('scan-id');
+            const row = btn.closest('tr');
+
+            if (!confirm('هل تريد معالجة هذا السجل وتحديث نتائج الأصوات؟')) return;
+
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            $.ajax({
+                url: `/barcode/api/scan/${scanId}/approve/`,
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        row.find('.badge').removeClass('bg-success').addClass('bg-primary').text('تمت المعالجة');
+                        btn.parent().html('<i class="fas fa-check-circle text-primary" title="تمت إضافته للنتائج"></i>');
+
+                        // Show success message
+                        const alertDiv = $('<div>').addClass('alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 shadow')
+                            .css({ 'z-index': '9999', 'min-width': '300px' })
+                            .html(`<i class="fas fa-check me-2"></i> ${response.message}`);
+                        $('body').append(alertDiv);
+                        setTimeout(() => alertDiv.fadeOut(function () { $(this).remove(); }), 3000);
+                    } else {
+                        alert(response.error);
+                        btn.prop('disabled', false).html('<i class="fas fa-upload"></i> معالجة');
+                    }
+                },
+                error: function () {
+                    alert('حدث خطأ أثناء الاتصال بالخادم');
+                    btn.prop('disabled', false).html('<i class="fas fa-upload"></i> معالجة');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

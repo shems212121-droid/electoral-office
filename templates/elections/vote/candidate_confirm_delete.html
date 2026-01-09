@@ -1,0 +1,60 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}تأكيد حذف المرشح - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        تأكيد حذف المرشح
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تحذير:</strong> هذا الإجراء لا يمكن التراجع عنه!
+                    </div>
+
+                    <p class="lead">هل أنت متأكد من حذف المرشح التالي؟</p>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5>{{ candidate.full_name }}</h5>
+                            <p class="mb-0">
+                                <strong>الرقم:</strong>
+                                <span class="badge bg-info">{{ candidate.party.serial_number }}-{{
+                                    candidate.serial_number }}</span>
+                            </p>
+                            <p class="mb-0"><strong>الحزب/القائمة:</strong> {{ candidate.party.name }}</p>
+                            {% if candidate.voter_number %}
+                            <p class="mb-0"><strong>رقم الناخب:</strong> {{ candidate.voter_number }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>ملاحظة:</strong> سيتم حذف جميع البيانات المرتبطة بهذا المرشح بما في ذلك سجلات الأصوات.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف المرشح
+                            </button>
+                            <a href="{% url 'candidate_detail' candidate.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

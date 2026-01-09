@@ -1,0 +1,371 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غير متصل - المكتب الانتخابي</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/icon-192x192.png' %}">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --sadiqoon-green: #1B5E20;
+            --sadiqoon-green-dark: #0D3310;
+            --sadiqoon-gold: #FFD700;
+            --sadiqoon-gold-dark: #DAA520;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--sadiqoon-green) 0%, var(--sadiqoon-green-dark) 50%, #000 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
+            border: 4px solid var(--sadiqoon-gold);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .offline-icon {
+            font-size: 80px;
+            color: var(--sadiqoon-gold);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--sadiqoon-gold);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out 0.5s both;
+        }
+
+        .features h3 {
+            color: var(--sadiqoon-gold);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: right;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.05rem;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li i {
+            color: var(--sadiqoon-gold);
+            margin-left: 10px;
+            font-size: 1.2rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sadiqoon-gold) 0%, var(--sadiqoon-gold-dark) 100%);
+            color: var(--sadiqoon-green-dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .network-status {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: fadeInUp 0.6s ease-out 0.7s both;
+        }
+
+        .network-status.online {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #81C784;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .message {
+                font-size: 1rem;
+            }
+
+            .offline-icon {
+                font-size: 60px;
+            }
+
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-container">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="{% static 'images/sadiqoon_logo.png' %}" alt="شعار كتلة الصادقون" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <div class="offline-icon">
+            <i class="fas fa-wifi-slash" id="connectionIcon"></i>
+        </div>
+
+        <h1>غير متصل بالإنترنت</h1>
+        <div class="subtitle">كتلة الصادقون - المكتب الانتخابي</div>
+        
+        <p class="message">
+            لا يمكنك الوصول إلى الشبكة حالياً، لكن لا تقلق!<br>
+            يمكنك الاستمرار في استخدام البيانات المحفوظة محلياً.
+        </p>
+
+        <div class="features">
+            <h3><i class="fas fa-database"></i> متاح بدون إنترنت</h3>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> عرض البيانات المحفوظة مسبقاً</li>
+                <li><i class="fas fa-check-circle"></i> البحث في قاعدة البيانات المحلية</li>
+                <li><i class="fas fa-check-circle"></i> التصفح بين الصفحات المخزنة</li>
+                <li><i class="fas fa-sync"></i> سيتم المزامنة تلقائياً عند العودة للاتصال</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="retryConnection()">
+                <i class="fas fa-redo"></i>
+                إعادة المحاولة
+            </button>
+            <a href="/dashboard/" class="btn btn-secondary">
+                <i class="fas fa-home"></i>
+                العودة للرئيسية
+            </a>
+        </div>
+
+        <div class="network-status" id="networkStatus">
+            <i class="fas fa-exclamation-circle"></i>
+            حالة الاتصال: غير متصل
+        </div>
+    </div>
+
+    <!-- Font Awesome (fallback من الكاش) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        // مراقبة حالة الاتصال
+        function updateOnlineStatus() {
+            const statusDiv = document.getElementById('networkStatus');
+            const icon = document.getElementById('connectionIcon');
+            
+            if (navigator.onLine) {
+                statusDiv.className = 'network-status online';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> حالة الاتصال: متصل! جاري إعادة التوجيه...';
+                icon.className = 'fas fa-wifi';
+                
+                // إعادة التوجيه بعد ثانيتين
+                setTimeout(() => {
+                    window.location.href = '/dashboard/';
+                }, 2000);
+            } else {
+                statusDiv.className = 'network-status';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> حالة الاتصال: غير متصل';
+                icon.className = 'fas fa-wifi-slash';
+            }
+        }
+
+        function retryConnection() {
+            updateOnlineStatus();
+            
+            if (!navigator.onLine) {
+                // محاولة إعادة التحميل
+                fetch('/dashboard/', { method: 'HEAD' })
+                    .then(() => {
+                        window.location.href = '/dashboard/';
+                    })
+                    .catch(() => {
+                        alert('لا يزال الاتصال غير متاح. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.');
+                    });
+            }
+        }
+
+        // الاستماع لتغييرات الاتصال
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // التحقق من الحالة عند التحميل
+        updateOnlineStatus();
+
+        // التحقق الدوري كل 5 ثواني
+        setInterval(() => {
+            if (navigator.onLine) {
+                fetch('/dashboard/', { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            updateOnlineStatus();
+                        }
+                    })
+                    .catch(() => {
+                        // لم ينجح الاتصال رغم أن navigator.onLine يقول متصل
+                    });
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,476 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}ناخبو المعرّف {{ introducer.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voter-row {
+        transition: background-color 0.3s;
+    }
+
+    .voter-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    .voter-row.new-added {
+        animation: highlightRow 2s ease-out;
+    }
+
+    @keyframes highlightRow {
+        from {
+            background-color: #d4edda;
+        }
+
+        to {
+            background-color: transparent;
+        }
+    }
+
+    .add-voter-section {
+        background: linear-gradient(135deg, #1B5E20, #2E7D32);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .add-voter-section .form-control {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .add-voter-section .form-control:focus {
+        border-color: #FFD700;
+        box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+    }
+
+    .voter-info-preview {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+
+    .stats-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-card .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-users"></i> ناخبو المعرّف</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'introducer_list' %}">المعرفين</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'introducer_detail' introducer.pk %}">{{
+                            introducer.full_name }}</a></li>
+                    <li class="breadcrumb-item active">إدارة الناخبين</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{% url 'introducer_detail' introducer.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة للتفاصيل
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Add Voters -->
+        <div class="col-lg-5">
+            <!-- Introducer Info Card -->
+            <div class="card mb-3 stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-success p-3">
+                                <i class="fas fa-id-card fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">{{ introducer.full_name }}</h5>
+                            <small class="text-muted">كود: {{ introducer.introducer_code }}</small><br>
+                            <small class="text-muted"><i class="fas fa-phone"></i> {{ introducer.phone|default:"-"
+                                }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="stat-number text-success" id="votersCountStat">{{ voters_count }}</div>
+                            <small class="text-muted">ناخب مسجّل</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Voter Form -->
+            <div class="add-voter-section">
+                <h5><i class="fas fa-plus-circle"></i> إضافة ناخب جديد</h5>
+                <p class="small opacity-75">أدخل رقم الناخب وسيتم جلب بياناته تلقائياً</p>
+
+                <form id="addVoterForm">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الناخب *</label>
+                            <input type="text" id="voterNumber" class="form-control form-control-lg"
+                                placeholder="أدخل رقم الناخب" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" id="voterPhone" class="form-control form-control-lg"
+                                placeholder="07xxxxxxxx">
+                        </div>
+                    </div>
+
+                    <!-- Voter Info Preview -->
+                    <div id="voterInfoPreview" class="voter-info-preview d-none mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-warning text-dark">معاينة بيانات الناخب</span>
+                            <span id="previewStatus"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <strong id="previewName">-</strong>
+                            </div>
+                            <div class="col-6 small mt-2">
+                                <i class="fas fa-calendar"></i> <span id="previewDOB">-</span>
+                            </div>
+                            <div class="col-6 small mt-2">
+                                <i class="fas fa-map-marker-alt"></i> <span id="previewCenter">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="voterError" class="alert alert-danger d-none mt-3">
+                        <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+                    </div>
+
+                    <button type="submit" id="addVoterBtn" class="btn btn-warning btn-lg w-100 mt-3" disabled>
+                        <i class="fas fa-plus"></i> إضافة الناخب
+                    </button>
+                </form>
+            </div>
+
+            <!-- Quick Add Multiple -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-bolt"></i> إضافة سريعة متعددة</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">أدخل أرقام الناخبين (كل رقم في سطر جديد)</p>
+                    <textarea id="bulkVoterNumbers" class="form-control" rows="4"
+                        placeholder="مثال:&#10;12345678&#10;87654321&#10;11223344"></textarea>
+                    <button type="button" id="bulkAddBtn" class="btn btn-info w-100 mt-2">
+                        <i class="fas fa-users"></i> إضافة متعددة
+                    </button>
+                    <div id="bulkResult" class="mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Voters List -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> قائمة الناخبين
+                        <span class="badge bg-primary" id="votersCountBadge">{{ voters_count }}</span>
+                    </h5>
+                    <div>
+                        <input type="text" id="searchVoters" class="form-control form-control-sm" placeholder="بحث..."
+                            style="width: 200px;">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover table-striped mb-0" id="votersTable">
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>كود الناخب</th>
+                                    <th>رقم الناخب</th>
+                                    <th>الاسم</th>
+                                    <th>الهاتف</th>
+                                    <th>المركز</th>
+                                    <th style="width: 80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="votersTableBody">
+                                {% for voter in voters %}
+                                <tr class="voter-row" data-voter-id="{{ voter.pk }}">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><span class="badge bg-dark">{{ voter.voter_code|default:"-" }}</span></td>
+                                    <td><strong>{{ voter.voter_number }}</strong></td>
+                                    <td>{{ voter.full_name }}</td>
+                                    <td>{{ voter.phone|default:"-" }}</td>
+                                    <td><small>{{ voter.voting_center_name|truncatechars:25 }}</small></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-voter-btn"
+                                            data-voter-id="{{ voter.pk }}" title="إزالة من المعرف">
+                                            <i class="fas fa-unlink"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noVotersRow">
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                        لا يوجد ناخبين مسجلين لهذا المعرف
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        const introducerId = "{{ introducer.pk }}";
+        let currentVoterData = null;
+
+    // Search voter on number input
+    $('#voterNumber').on('input', function () {
+        const voterNumber = $(this).val().trim();
+
+        if (voterNumber.length >= 5) {
+            $.ajax({
+                url: '{% url "voter_lookup_ajax" %}',
+                data: {
+                    voter_number: voterNumber,
+                    introducer_id: introducerId
+                },
+                success: function (data) {
+                    if (data.found) {
+                        currentVoterData = data;
+                        $('#voterInfoPreview').removeClass('d-none');
+                        $('#voterError').addClass('d-none');
+                        $('#previewName').text(data.full_name);
+                        $('#previewDOB').text(data.date_of_birth || '-');
+                        $('#previewCenter').text(data.voting_center_name || '-');
+
+                        if (data.already_assigned) {
+                            $('#previewStatus').html('<span class="badge bg-warning">مرتبط بمعرف آخر</span>');
+                        } else if (data.same_introducer) {
+                            $('#previewStatus').html('<span class="badge bg-info">مسجل بالفعل</span>');
+                            $('#addVoterBtn').prop('disabled', true);
+                            return;
+                        } else {
+                            $('#previewStatus').html('<span class="badge bg-success">متاح للإضافة</span>');
+                        }
+                        $('#addVoterBtn').prop('disabled', false);
+                    } else {
+                        currentVoterData = null;
+                        $('#voterInfoPreview').addClass('d-none');
+                        $('#voterError').removeClass('d-none');
+                        $('#errorText').text('لم يتم العثور على الناخب');
+                        $('#addVoterBtn').prop('disabled', true);
+                    }
+                },
+                error: function () {
+                    $('#voterError').removeClass('d-none');
+                    $('#errorText').text('خطأ في الاتصال');
+                    $('#addVoterBtn').prop('disabled', true);
+                }
+            });
+        } else {
+            $('#voterInfoPreview').addClass('d-none');
+            $('#voterError').addClass('d-none');
+            $('#addVoterBtn').prop('disabled', true);
+            currentVoterData = null;
+        }
+    });
+
+    // Add voter form submit
+    $('#addVoterForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const voterNumber = $('#voterNumber').val().trim();
+        const phone = $('#voterPhone').val().trim();
+
+        if (!voterNumber) return;
+
+        $('#addVoterBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...');
+
+        $.ajax({
+            url: '{% url "add_voter_to_introducer" introducer.pk %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                voter_number: voterNumber,
+                phone: phone
+            },
+            success: function (data) {
+                if (data.success) {
+                    // Add row to table
+                    const newRow = `
+                        <tr class="voter-row new-added" data-voter-id="${data.voter.id}">
+                            <td>${parseInt($('#votersTableBody tr').length) + 1}</td>
+                            <td><span class="badge bg-dark">${data.voter.voter_code || '-'}</span></td>
+                            <td><strong>${data.voter.voter_number}</strong></td>
+                            <td>${data.voter.full_name}</td>
+                            <td>${data.voter.phone || '-'}</td>
+                            <td><small>${data.voter.voting_center_name || '-'}</small></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-voter-btn" 
+                                        data-voter-id="${data.voter.id}" title="إزالة">
+                                    <i class="fas fa-unlink"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Remove "no voters" row if exists
+                    $('#noVotersRow').remove();
+                    $('#votersTableBody').prepend(newRow);
+
+                    // Update counts
+                    updateCounts(data.total_voters);
+
+                    // Clear form
+                    $('#voterNumber').val('');
+                    $('#voterPhone').val('');
+                    $('#voterInfoPreview').addClass('d-none');
+                    currentVoterData = null;
+
+                    // Show success toast
+                    showToast('success', 'تمت إضافة الناخب بنجاح');
+                } else {
+                    showToast('error', data.error || 'حدث خطأ');
+                }
+            },
+            error: function () {
+                showToast('error', 'خطأ في الاتصال');
+            },
+            complete: function () {
+                $('#addVoterBtn').prop('disabled', false).html('<i class="fas fa-plus"></i> إضافة الناخب');
+            }
+        });
+    });
+
+    // Remove voter
+    $(document).on('click', '.remove-voter-btn', function () {
+        const voterId = $(this).data('voter-id');
+        const row = $(this).closest('tr');
+
+        if (!confirm('هل تريد إزالة هذا الناخب من قائمة المعرف؟')) return;
+
+        $.ajax({
+            url: '{% url "remove_voter_from_introducer" introducer.pk %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                voter_id: voterId
+            },
+            success: function (data) {
+                if (data.success) {
+                    row.fadeOut(300, function () {
+                        $(this).remove();
+                        updateCounts(data.total_voters);
+
+                        // Add "no voters" row if empty
+                        if ($('#votersTableBody tr').length === 0) {
+                            $('#votersTableBody').html(`
+                                <tr id="noVotersRow">
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                        لا يوجد ناخبين مسجلين لهذا المعرف
+                                    </td>
+                                </tr>
+                            `);
+                        }
+                    });
+                    showToast('success', 'تم إزالة الناخب');
+                } else {
+                    showToast('error', data.error || 'حدث خطأ');
+                }
+            }
+        });
+    });
+
+    // Bulk add
+    $('#bulkAddBtn').on('click', function () {
+        const numbers = $('#bulkVoterNumbers').val().trim().split('\n').filter(n => n.trim());
+
+        if (numbers.length === 0) {
+            showToast('error', 'أدخل أرقام الناخبين');
+            return;
+        }
+
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...');
+
+        $.ajax({
+            url: '{% url "bulk_add_voters_to_introducer" introducer.pk %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                voter_numbers: numbers.join(',')
+            },
+            success: function (data) {
+                $('#bulkResult').removeClass('d-none').html(`
+                    <div class="alert alert-${data.added > 0 ? 'success' : 'warning'} mb-0">
+                        <strong>تمت العملية:</strong><br>
+                        ✅ تم إضافة: ${data.added} ناخب<br>
+                        ⚠️ موجود مسبقاً: ${data.already_exists}<br>
+                        ❌ غير موجود: ${data.not_found}
+                    </div>
+                `);
+
+                if (data.added > 0) {
+                    // Reload page to show new voters
+                    setTimeout(() => location.reload(), 1500);
+                }
+            },
+            complete: function () {
+                $('#bulkAddBtn').prop('disabled', false).html('<i class="fas fa-users"></i> إضافة متعددة');
+            }
+        });
+    });
+
+    // Search voters
+    $('#searchVoters').on('input', function () {
+        const term = $(this).val().toLowerCase();
+        $('#votersTableBody tr').each(function () {
+            const text = $(this).text().toLowerCase();
+            $(this).toggle(text.includes(term));
+        });
+    });
+
+    function updateCounts(count) {
+        $('#votersCountStat').text(count);
+        $('#votersCountBadge').text(count);
+    }
+
+    function showToast(type, message) {
+        const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+        const toast = $(`
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+                <div class="toast show ${bgClass} text-white">
+                    <div class="toast-body">
+                        <i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle me-2"></i>
+                        ${message}
+                    </div>
+                </div>
+            </div>
+        `);
+        $('body').append(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+});
+</script>
+{% endblock %}

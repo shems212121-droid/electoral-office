@@ -1,0 +1,155 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}وكلاء الكيانات السياسية{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2><i class="fas fa-user-shield"></i> وكلاء الكيانات السياسية</h2>
+    <p class="text-muted">3000 وكيل موزعين على المراكز والمحطات في البصرة</p>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h2>{{ total_agents }}</h2>
+                    <p class="mb-0">إجمالي الوكلاء</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-dark">
+                <div class="card-body">
+                    <h2>{{ registered }}</h2>
+                    <p class="mb-0">مسجلين</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h2>{{ approved }}</h2>
+                    <p class="mb-0">معتمدين</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h2>{{ badge_issued }}</h2>
+                    <p class="mb-0">تم إصدار باجاتهم</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">الكيان السياسي</label>
+                    <select name="entity" class="form-select">
+                        <option value="">الكل</option>
+                        {% for entity in entities %}
+                        <option value="{{ entity.id }}" {% if entity_filter == entity.id|stringformat:"s" %}selected{%
+                            endif %}>
+                            {{ entity.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">مدير المركز</label>
+                    <select name="director" class="form-select">
+                        <option value="">الكل</option>
+                        {% for director in directors %}
+                        <option value="{{ director.id }}" {% if director_filter == director.id|stringformat:"s"
+                            %}selected{% endif %}>
+                            {{ director.full_name }} - مركز {{ director.assigned_center_number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">بحث</label>
+                    <input type="text" name="search" class="form-control" placeholder="الاسم، رقم المركز..."
+                        value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> بحث</button>
+                </div>
+            </form>
+            <div class="mt-3">
+                <a href="{% url 'political_entity_agent_add' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> إضافة وكيل جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agents List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>الاسم</th>
+                            <th>الكيان السياسي</th>
+                            <th>مدير المركز</th>
+                            <th>رقم المركز</th>
+                            <th>رقم المحطة</th>
+                            <th>رقم الهاتف</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for agent in agents %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ agent.full_name }}</td>
+                            <td><span class="badge bg-secondary">{{ agent.political_entity.name }}</span></td>
+                            <td>{{ agent.center_director.full_name|default:"غير محدد" }}</td>
+                            <td>{{ agent.assigned_center_number }}</td>
+                            <td>{{ agent.assigned_station_number|default:"-" }}</td>
+                            <td>{{ agent.phone }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if agent.status == 'badge_issued' %}bg-success
+                                    {% elif agent.status == 'approved' %}bg-info
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {{ agent.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'political_entity_agent_detail' agent.pk %}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'political_entity_agent_edit' agent.pk %}"
+                                    class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle"></i> لا يوجد وكلاء مسجلين حالياً
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

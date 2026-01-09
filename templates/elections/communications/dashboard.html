@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مركز الاتصالات الموحد{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white shadow-lg border-0"
+                style="background: linear-gradient(45deg, #1a237e, #283593);">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fw-bold mb-1"><i class="fas fa-headset me-2"></i>مركز الاتصالات الموحد</h2>
+                            <p class="mb-0 opacity-75">ابحث عن أي شخص (ناخب، مرتكز، معرف، وكيل) وسجل ملاحظات الاتصال</p>
+                        </div>
+                        <div class="text-end border-start border-white border-opacity-25 ps-4">
+                            <h2 class="mb-0 fw-bold">{{ today_count }}</h2>
+                            <small class="text-white-50">اتصالات اليوم</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="row justify-content-center mb-5 position-relative">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <label class="form-label fw-bold text-primary mb-2">
+                        <i class="fas fa-search me-1"></i> بحث شامل
+                    </label>
+                    <div class="input-group input-group-lg border rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-3"><i
+                                class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-0 shadow-none"
+                            placeholder="اكتب الاسم، رقم الهاتف، أو رقم الناخب..." autocomplete="off">
+                    </div>
+
+                    <!-- Results List (Floating) -->
+                    <div id="searchResults" class="list-group mt-2 shadow rounded-3 d-none bg-white">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Logs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-history text-warning me-2"></i>آخر الاتصالات
+                        المسجلة</h5>
+
+                    {% if my_calls_count > 0 %}
+                    <span class="badge bg-success rounded-pill">مكالماتك اليوم: {{ my_calls_count }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary">
+                                <tr>
+                                    <th class="ps-4">الشخص</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>المتصل</th>
+                                    <th>الحالة</th>
+                                    <th>الملاحظات</th>
+                                    <th>التوقيت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="avatar-sm bg-light-primary rounded-circle me-3 d-flex align-items-center justify-content-center text-primary fw-bold">
+                                                {{ log.content_object.full_name|slice:":1"|default:"?" }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-dark fw-bold">{{
+                                                    log.content_object.full_name|default:"غير معروف" }}</h6>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                    {{ log.content_type.name }} | {{
+                                                    log.content_object.voter_number|default:"-" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td dir="ltr" class="font-monospace">{{ log.phone_number }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-xs rounded-circle bg-secondary me-2"
+                                                style="width:24px;height:24px;"></div>
+                                            <small>{{ log.caller.get_full_name|default:log.caller.username }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill 
+                                            {% if log.call_status == 'answered' %}bg-success
+                                            {% elif log.call_status == 'no_answer' %}bg-warning text-dark
+                                            {% elif log.call_status == 'wrong_number' %}bg-danger
+                                            {% elif log.call_status == 'busy' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ log.get_call_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate text-muted" style="max-width: 250px;"
+                                            title="{{ log.outcome }}">
+                                            {{ log.outcome|default:"-" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted" title="{{ log.created_at }}">{{
+                                            log.created_at|date:"H:i" }} <span class="text-xs ms-1">{{
+                                                log.created_at|date:"d/m" }}</span></small>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-3 d-block opacity-50"></i>
+                                        لا توجد سجلات اتصال حديثة. ابدأ بالبحث وتسجيل الاتصالات!
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Call Modal -->
+<div class="modal fade" id="logCallModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold text-primary">
+                    <i class="fas fa-phone-alt me-2"></i>تسجيل مكالمة
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="logCallForm">
+                    <input type="hidden" name="model_name" id="modalModelName">
+                    <input type="hidden" name="object_id" id="modalObjectId">
+
+                    <div class="text-center mb-4 bg-light rounded-3 p-3">
+                        <h5 id="modalPersonName" class="fw-bold mb-1 text-dark"></h5>
+                        <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                            <span id="modalPersonType" class="badge bg-secondary"></span>
+                            <small id="modalPersonInfo" class="text-muted"></small>
+                        </div>
+                        <h3 id="modalPersonPhone" class="mt-2 text-primary font-monospace fw-bold" dir="ltr"></h3>
+                        <input type="hidden" name="phone_number" id="hiddenPhoneInput">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase ls-1">حالة الاتصال <span
+                                class="text-danger">*</span></label>
+                        {{ form.call_status }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase ls-1">ملاحظات / النتيجة</label>
+                        {{ form.outcome }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="fas fa-save me-2"></i> حفظ السجل
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const logCallModal = new bootstrap.Modal(document.getElementById('logCallModal'));
+        const logCallForm = document.getElementById('logCallForm');
+        let debounceTimer;
+
+        // Search Logic
+        searchInput.addEventListener('input', function () {
+            const query = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                searchResults.classList.add('d-none');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                // Show loading state
+                searchResults.classList.remove('d-none');
+                searchResults.innerHTML = '<div class="p-3 text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i>جاري البحث...</div>';
+
+                fetch(`{% url 'search_contacts' %}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        if (data.results.length > 0) {
+                            data.results.forEach(item => {
+                                const badgeClass = {
+                                    'ناخب': 'bg-secondary',
+                                    'مرتكز': 'bg-primary',
+                                    'معرف': 'bg-info',
+                                    'مراقب': 'bg-warning text-dark',
+                                    'وكيل': 'bg-dark',
+                                    'مدير مركز': 'bg-danger'
+                                }[item.type] || 'bg-secondary';
+
+                                const itemHtml = `
+                                <a href="#" class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center result-item border-bottom" 
+                                   data-id="${item.id}" 
+                                   data-model="${item.model}"
+                                   data-name="${item.name}"
+                                   data-phone="${item.phone}"
+                                   data-type="${item.type}"
+                                   data-info="${item.info}">
+                                    <div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge ${badgeClass} me-2 rounded-1">${item.type}</span>
+                                            <h6 class="mb-0 fw-bold text-dark">${item.name}</h6>
+                                        </div>
+                                        <small class="text-muted"><i class="fas fa-info-circle me-1 opacity-50"></i>${item.info}</small>
+                                    </div>
+                                    <div class="text-end ps-3">
+                                        <div class="fw-bold text-dark font-monospace mb-2" dir="ltr" style="font-size: 0.95rem;">
+                                            ${item.phone ? `<i class="fas fa-phone fa-xs text-secondary me-1"></i>${item.phone}` : '<span class="text-muted text-xs">لا يوجد رقم</span>'}
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 call-btn">
+                                            اتصل
+                                        </button>
+                                    </div>
+                                </a>
+                            `;
+                                searchResults.insertAdjacentHTML('beforeend', itemHtml);
+                            });
+
+                            // Add click listeners to items
+                            document.querySelectorAll('.result-item').forEach(item => {
+                                item.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    openLogModal(this.dataset);
+                                });
+                            });
+
+                        } else {
+                            searchResults.innerHTML = `
+                            <div class="list-group-item p-4 text-center text-muted border-0">
+                                <i class="far fa-frown fa-2x mb-2 d-block opacity-50"></i>
+                                لا توجد نتائج مطابقة
+                            </div>
+                        `;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Search error:', err);
+                        searchResults.innerHTML = '<div class="p-3 text-center text-danger">حدث خطأ في البحث</div>';
+                    });
+            }, 400); // 400ms debounce
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('d-none');
+            }
+        });
+
+        // Open Modal
+        function openLogModal(data) {
+            document.getElementById('modalModelName').value = data.model;
+            document.getElementById('modalObjectId').value = data.id;
+            document.getElementById('modalPersonName').innerText = data.name;
+            document.getElementById('modalPersonType').innerText = data.type;
+
+            // Set badge color dynamically
+            const badgeClass = {
+                'ناخب': 'bg-secondary',
+                'مرتكز': 'bg-primary',
+                'معرف': 'bg-info',
+                'مراقب': 'bg-warning text-dark',
+                'وكيل': 'bg-dark',
+                'مدير مركز': 'bg-danger'
+            }[data.type] || 'bg-secondary';
+            document.getElementById('modalPersonType').className = `badge ${badgeClass}`;
+
+            document.getElementById('modalPersonInfo').innerText = data.info;
+            document.getElementById('modalPersonPhone').innerText = data.phone || 'لا يوجد رقم';
+            document.getElementById('hiddenPhoneInput').value = data.phone;
+
+            // Reset Form fields
+            logCallForm.reset();
+            // Important: Re-set hidden values because reset() clears them
+            document.getElementById('modalModelName').value = data.model;
+            document.getElementById('modalObjectId').value = data.id;
+            document.getElementById('hiddenPhoneInput').value = data.phone;
+
+            // Disable submit if no phone
+            const submitBtn = logCallForm.querySelector('button[type="submit"]');
+            if (!data.phone) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-ban me-2"></i> لا يمكن الاتصال (بدون رقم)';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> حفظ السجل';
+            }
+
+            searchResults.classList.add('d-none'); // Hide search results
+            logCallModal.show();
+        }
+
+        // Submit Log
+        logCallForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الحفظ...';
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch(`{% url 'log_call' %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        // Success feedback
+                        submitBtn.classList.remove('btn-primary');
+                        submitBtn.classList.add('btn-success');
+                        submitBtn.innerHTML = '<i class="fas fa-check me-2"></i> تم الحفظ!';
+
+                        setTimeout(() => {
+                            logCallModal.hide();
+                            window.location.reload();
+                        }, 800);
+                    } else {
+                        alert('خطأ: ' + result.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حفظ السجل');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                });
+        });
+    });
+</script>
+
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .bg-light-primary {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        color: #0d6efd !important;
+    }
+
+    #searchResults {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 400px;
+        overflow-y: auto;
+        border-top: 3px solid #0d6efd;
+    }
+
+    .ls-1 {
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}

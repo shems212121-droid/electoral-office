@@ -1,0 +1,76 @@
+{% load static %}
+<div class="top-navbar d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded-3">
+    <div class="d-flex align-items-center">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="btn btn-link d-md-none me-3 p-0 text-dark" id="sidebarToggle" type="button">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+
+        <h5 class="mb-0 fw-bold text-primary">
+            <!-- Removed 'Saad' initial -->
+            {% block page_title %}{{ page_title|default:"المكتب الانتخابي - البصرة" }}{% endblock %}
+        </h5>
+    </div>
+
+    <!-- Developer Credit -->
+    <!-- Developer Credit -->
+    <div class="developer-credit-wrapper d-none d-md-flex position-absolute start-50 translate-middle-x">
+        <div class="developer-badge">
+            <i class="fas fa-laptop-code text-gold me-2"></i>
+            <span class="developer-text">إعداد: علاء الزغابي</span>
+        </div>
+    </div>
+    <style>
+        /* Position fix for the navbar to allow absolute centering */
+        .top-navbar {
+            position: relative;
+        }
+
+        .developer-badge {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            /* Gold border */
+            padding: 6px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            animation: floatBadge 4s ease-in-out infinite;
+        }
+
+        .text-gold {
+            color: #DAA520;
+        }
+
+        .developer-text {
+            font-family: 'Segoe UI', 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            background: linear-gradient(45deg, #0D3310, #1a5c20);
+            /* Dark Green Text */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes floatBadge {
+
+            0%,
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 2px 10px rgba(218, 165, 32, 0.1);
+            }
+
+            50% {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(218, 165, 32, 0.2);
+            }
+        }
+    </style>
+
+    <div class="user-profile d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center text-dark fw-semibold">
+            <i class="fas fa-user-circle text-warning fs-4 ms-2"></i>
+            <span>{{ user.username }}</span>
+        </div>
+    </div>
+</div>

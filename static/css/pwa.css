@@ -1,0 +1,136 @@
+/* PWA Styles */
+
+/* Install Banner */
+.pwa-install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, var(--sadiqoon-green) 0%, var(--sadiqoon-green-dark) 100%);
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    border-top: 3px solid var(--sadiqoon-gold);
+    animation: slideUp 0.3s ease-out;
+}
+
+.pwa-install-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 15px;
+}
+
+.pwa-install-icon {
+    font-size: 2rem;
+    color: var(--sadiqoon-gold);
+}
+
+.pwa-install-text {
+    flex: 1;
+}
+
+.pwa-install-text strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 3px;
+}
+
+.pwa-install-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.pwa-install-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* PWA Success and Update Messages */
+.pwa-success-message,
+.pwa-update-notification,
+.pwa-status-message {
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pwa-success-message i,
+.pwa-update-notification i,
+.pwa-status-message i {
+    font-size: 1.5rem;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateX(-50%) translateY(-100%);
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    .pwa-install-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .pwa-install-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pwa-install-banner {
+        padding: 20px 15px;
+    }
+}
+
+/* Offline Indicator */
+body.offline::before {
+    content: "وضع Offline - بعض الميزات قد لا تعمل";
+    display: block;
+    background: #ff9800;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+}

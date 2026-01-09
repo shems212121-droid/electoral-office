@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}الإدارة والأرشيف - المكتب الانتخابي{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        opacity: 0.3;
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+    }
+
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5"><i class="bi bi-archive-fill me-2"></i>الإدارة والأرشيف</h1>
+            <p class="lead text-muted">نظام متكامل لإدارة الكتب الواردة والصادرة، وثائق المرشحين، والأرشفة الإلكترونية
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white" onclick="location.href='{% url 'archive:letter_list' %}'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title">إجمالي الكتب</h6>
+                    <h2 class="mb-0">{{ total_letters|default:0 }}</h2>
+                    <i class="bi bi-envelope stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white"
+                onclick="location.href='{% url 'archive:letter_list' %}?letter_type=incoming'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title">الكتب الواردة</h6>
+                    <h2 class="mb-0">{{ incoming_letters|default:0 }}</h2>
+                    <i class="bi bi-arrow-down-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white"
+                onclick="location.href='{% url 'archive:letter_list' %}?letter_type=outgoing'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title">الكتب الصادرة</h6>
+                    <h2 class="mb-0">{{ outgoing_letters|default:0 }}</h2>
+                    <i class="bi bi-arrow-up-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-dark"
+                onclick="location.href='{% url 'archive:letter_list' %}?status=pending'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title">قيد الانتظار</h6>
+                    <h2 class="mb-0">{{ pending_letters|default:0 }}</h2>
+                    <i class="bi bi-clock-history stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card" onclick="location.href='{% url 'archive:candidate_document_list' %}'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title text-muted">وثائق المرشحين</h6>
+                    <h3 class="mb-0 text-primary">{{ total_candidate_docs|default:0 }}</h3>
+                    <i class="bi bi-person-badge text-primary stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card" onclick="location.href='{% url 'archive:template_list' %}'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title text-muted">الفورمات الجاهزة</h6>
+                    <h3 class="mb-0 text-success">{{ total_templates|default:0 }}</h3>
+                    <i class="bi bi-file-earmark-text text-success stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card" onclick="location.href='{% url 'archive:archived_document_list' %}'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title text-muted">الوثائق المؤرشفة</h6>
+                    <h3 class="mb-0 text-info">{{ total_archived_docs|default:0 }}</h3>
+                    <i class="bi bi-archive text-info stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-danger text-white"
+                onclick="location.href='{% url 'archive:letter_list' %}?priority=urgent'">
+                <div class="card-body position-relative">
+                    <h6 class="card-title">الكتب العاجلة</h6>
+                    <h3 class="mb-0">{{ urgent_letters|default:0 }}</h3>
+                    <i class="bi bi-exclamation-triangle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill me-2 text-warning"></i>إجراءات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:letter_add' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle me-2"></i>كتاب جديد
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:candidate_document_add' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-cloud-upload me-2"></i>رفع وثائق مرشح
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:template_add' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-file-plus me-2"></i>فورمات جديد
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:archived_document_add' %}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-archive-fill me-2"></i>أرشفة وثيقة
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:candidate_info_list' %}" class="btn btn-outline-purple w-100"
+                                style="color: #6f42c1; border-color: #6f42c1;">
+                                <i class="bi bi-file-person me-2"></i>معلومات المرشحين
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'archive:candidate_interview_list' %}" class="btn btn-outline-dark w-100">
+                                <i class="bi bi-people-fill me-2"></i>مقابلات المرشحين
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Letters & Overdue Letters -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>آخر الكتب</h5>
+                    <a href="{% url 'archive:letter_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_letters %}
+                    <div class="list-group list-group-flush">
+                        {% for letter in recent_letters %}
+                        <a href="{% url 'archive:letter_detail' letter.pk %}"
+                            class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ letter.letter_number }}</h6>
+                                    <p class="mb-1 text-truncate" style="max-width: 300px;">{{ letter.subject }}</p>
+                                    <small class="text-muted">{{ letter.letter_date }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if letter.letter_type == 'incoming' %}
+                                    <span class="badge bg-success">وارد</span>
+                                    {% else %}
+                                    <span class="badge bg-info">صادر</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        لا توجد كتب حتى الآن
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>الكتب المتأخرة</h5>
+                    <span class="badge bg-white text-danger">{{ overdue_letters|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if overdue_letters %}
+                    <div class="list-group list-group-flush">
+                        {% for letter in overdue_letters %}
+                        <a href="{% url 'archive:letter_detail' letter.pk %}"
+                            class="list-group-item list-group-item-action list-group-item-danger">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ letter.letter_number }}</h6>
+                                    <p class="mb-1 text-truncate" style="max-width: 300px;">{{ letter.subject }}</p>
+                                    <small>{{ letter.letter_date }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if letter.priority == 'very_urgent' %}
+                                    <span class="badge bg-danger priority-badge">عاجل جداً</span>
+                                    {% elif letter.priority == 'urgent' %}
+                                    <span class="badge bg-warning priority-badge">عاجل</span>
+                                    {% elif letter.priority == 'important' %}
+                                    <span class="badge bg-info priority-badge">مهم</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-success">
+                        <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+                        لا توجد كتب متأخرة
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

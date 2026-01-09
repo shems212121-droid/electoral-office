@@ -1,0 +1,179 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}الوثائق المؤرشفة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item active">الوثائق المؤرشفة</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-archive me-2"></i>الوثائق المؤرشفة</h4>
+            <a href="{% url 'archive:archived_document_add' %}" class="btn btn-light">
+                <i class="fas fa-plus me-2"></i>أرشفة وثيقة جديدة
+            </a>
+        </div>
+        <div class="card-body">
+            <!-- البحث والفلترة -->
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="search" class="form-control"
+                            placeholder="ابحث في العنوان، الوصف، أو الكلمات المفتاحية..."
+                            value="{{ request.GET.search }}">
+                    </div>
+                    <div class="col-md-4">
+                        <select name="folder" class="form-select">
+                            <option value="">جميع المجلدات</option>
+                            {% for folder in folders %}
+                            <option value="{{ folder.id }}" {% if request.GET.folder==folder.id|stringformat:"s"
+                                %}selected{% endif %}>
+                                {{ folder.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>بحث
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- قائمة الوثائق -->
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>العنوان</th>
+                            <th>المجلد</th>
+                            <th>رقم الوثيقة</th>
+                            <th>تاريخ الأرشفة</th>
+                            <th class="text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in page_obj %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ document.title }}</strong>
+                                {% if document.description %}
+                                <br><small class="text-muted">{{ document.description|truncatewords:10 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ document.folder.name }}</span>
+                            </td>
+                            <td>{{ document.document_number|default:"—" }}</td>
+                            <td>{{ document.created_at|date:"Y/m/d" }}</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'archive:archived_document_download' document.pk %}"
+                                        class="btn btn-success" title="تحميل">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{% url 'archive:archived_document_edit' document.pk %}"
+                                        class="btn btn-warning" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger"
+                                        onclick="confirmDelete('{{ document.pk }}', '{{ document.title|escapejs }}')"
+                                        title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.folder %}&folder={{ request.GET.folder }}{% endif %}">السابق</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.folder %}&folder={{ request.GET.folder }}{% endif %}">{{
+                            num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.folder %}&folder={{ request.GET.folder }}{% endif %}">التالي</a>
+                        </li>
+                        {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>لا توجد وثائق مؤرشفة حالياً.
+                <a href="{% url 'archive:archived_document_add' %}" class="alert-link">أرشف وثيقة جديدة الآن</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-trash me-2"></i>تأكيد الحذف</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف الوثيقة: <strong id="docTitle"></strong>؟</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>لا يمكن التراجع عن هذا الإجراء!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form method="post" id="deleteForm" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>حذف
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(pk, title) {
+        document.getElementById('docTitle').textContent = title;
+        document.getElementById('deleteForm').action = '/archive/documents/' + pk + '/delete/';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+{% endblock %}

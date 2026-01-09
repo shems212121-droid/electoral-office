@@ -1,0 +1,383 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}تسجيل مراقب جديد - المكتب الانتخابي{% endblock %}
+
+{% block page_title %}تسجيل مراقب جديد{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-title {
+        background: linear-gradient(135deg, var(--sadiqoon-green) 0%, var(--sadiqoon-green-dark) 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .face-capture-container {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    #videoPreview {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    #capturedImage {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        display: none;
+    }
+
+    .capture-btn {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        font-size: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-user-tie me-2"></i>تسجيل مراقب جديد</span>
+                    <a href="{% url 'observer_registration_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>العودة للقائمة
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="observerForm">
+                    {% csrf_token %}
+
+                    <!-- Section 1: Basic Info -->
+                    <div class="section-title">
+                        <i class="fas fa-user me-2"></i>المعلومات الشخصية
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">الاسم الرباعي الكامل <span class="text-danger">*</span></label>
+                            {{ form.full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">اسم الأم الثلاثي</label>
+                            {{ form.mother_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">تاريخ الميلاد</label>
+                            {{ form.date_of_birth }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الجنس</label>
+                            {{ form.gender }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الحالة الاجتماعية</label>
+                            {{ form.marital_status }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">التحصيل الدراسي</label>
+                            {{ form.education }}
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Contact Info -->
+                    <div class="section-title">
+                        <i class="fas fa-phone me-2"></i>معلومات الاتصال
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            {{ form.email }}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Voter Info -->
+                    <div class="section-title">
+                        <i class="fas fa-id-card me-2"></i>معلومات الناخب
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الناخب <span class="text-danger">*</span></label>
+                            {{ form.voter_number }}
+                            <div id="voterLookupStatus" class="mt-1"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم البطاقة الوطنية الموحدة</label>
+                            {{ form.national_id }}
+                        </div>
+
+                        <!-- Auto-filled fields -->
+                        <div class="col-md-6" id="autoFields" style="display: none;">
+                            <label class="form-label text-muted">اسم مركز الاقتراع</label>
+                            {{ form.voting_center_name }}
+                        </div>
+                        <div class="col-md-3" id="autoFields2" style="display: none;">
+                            <label class="form-label text-muted">رقم مركز الاقتراع</label>
+                            {{ form.voting_center_number }}
+                        </div>
+                        <div class="col-md-3" id="autoFields3" style="display: none;">
+                            <label class="form-label text-muted">رقم المحطة</label>
+                            {{ form.station_number }}
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Address -->
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt me-2"></i>عنوان السكن
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">المحافظة</label>
+                            {{ form.governorate }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">القضاء</label>
+                            {{ form.district }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الناحية</label>
+                            {{ form.sub_district }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رقم المحلة</label>
+                            {{ form.neighborhood_number }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الزقاق</label>
+                            {{ form.alley }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">أقرب نقطة دالة</label>
+                            {{ form.nearest_landmark }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">العنوان الكامل</label>
+                            {{ form.full_address }}
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Assignment -->
+                    <div class="section-title">
+                        <i class="fas fa-link me-2"></i>الربط التنظيمي
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">رمز المرتكز/المرشح</label>
+                            {{ form.reference_code }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رقم مركز المراقبة</label>
+                            {{ form.monitoring_center_number }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">اسم مركز المراقبة</label>
+                            {{ form.monitoring_center_name }}
+                        </div>
+                    </div>
+
+                    <!-- Section 6: Face Capture -->
+                    <div class="section-title">
+                        <i class="fas fa-camera me-2"></i>التقاط الوجه والصورة الشخصية
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">الصورة الشخصية</label>
+                            {{ form.photo }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="face-capture-container">
+                                <h6 class="mb-3"><i class="fas fa-user-circle me-2"></i>التقاط الوجه (اختياري)</h6>
+                                <video id="videoPreview" autoplay playsinline></video>
+                                <canvas id="captureCanvas" style="display: none;"></canvas>
+                                <img id="capturedImage" alt="الصورة الملتقطة">
+                                <div class="mt-3">
+                                    <button type="button" id="startCameraBtn" class="btn btn-outline-primary">
+                                        <i class="fas fa-video me-2"></i>تشغيل الكاميرا
+                                    </button>
+                                    <button type="button" id="captureBtn" class="btn btn-primary capture-btn d-none">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                    <button type="button" id="retakeBtn" class="btn btn-outline-secondary d-none">
+                                        <i class="fas fa-redo me-2"></i>إعادة التقاط
+                                    </button>
+                                </div>
+                                <input type="hidden" name="face_capture_data" id="faceCaptureData">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 7: Documents -->
+                    <div class="section-title">
+                        <i class="fas fa-file-alt me-2"></i>المستندات المقدمة
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.photo_submitted }}
+                                <label class="form-check-label">تم تقديم الصورة الشخصية</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.voter_card_submitted }}
+                                <label class="form-check-label">تم تقديم بطاقة الناخب</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.national_id_submitted }}
+                                <label class="form-check-label">تم تقديم البطاقة الوطنية</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 8: Password & Notes -->
+                    <div class="section-title">
+                        <i class="fas fa-lock me-2"></i>كلمة المرور والملاحظات
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">كلمة المرور</label>
+                            {{ form.password }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">ملاحظات</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'observer_registration_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>إرسال التسجيل
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        let stream = null;
+        const video = document.getElementById('videoPreview');
+        const canvas = document.getElementById('captureCanvas');
+        const capturedImage = document.getElementById('capturedImage');
+
+        // Voter lookup
+        let lookupTimeout;
+        $('#id_voter_number').on('input', function () {
+            clearTimeout(lookupTimeout);
+            const voterNumber = $(this).val().trim();
+
+            if (voterNumber.length >= 6) {
+                $('#voterLookupStatus').html('<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> جاري البحث...</span>');
+
+                lookupTimeout = setTimeout(function () {
+                    $.ajax({
+                        url: '{% url "voter_lookup_ajax" %}',
+                        data: { voter_number: voterNumber },
+                        success: function (response) {
+                            if (response.found) {
+                                $('#id_voting_center_name').val(response.voting_center_name || '');
+                                $('#id_voting_center_number').val(response.voting_center_number || '');
+                                $('#id_station_number').val(response.station_number || '');
+                                $('#id_registration_center_name').val(response.registration_center_name || '');
+                                $('#id_registration_center_number').val(response.registration_center_number || '');
+
+                                // Auto-fill name if empty
+                                if (!$('#id_full_name').val()) {
+                                    $('#id_full_name').val(response.full_name || '');
+                                }
+
+                                $('#autoFields, #autoFields2, #autoFields3').show();
+                                $('#voterLookupStatus').html('<span class="text-success"><i class="fas fa-check-circle"></i> تم التحقق من رقم الناخب</span>');
+                            } else {
+                                $('#voterLookupStatus').html('<span class="text-danger"><i class="fas fa-times-circle"></i> رقم غير موجود</span>');
+                            }
+                        }
+                    });
+                }, 500);
+            }
+        });
+
+        // Camera functionality
+        $('#startCameraBtn').on('click', async function () {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                $(this).addClass('d-none');
+                $('#captureBtn').removeClass('d-none');
+            } catch (err) {
+                alert('لا يمكن الوصول إلى الكاميرا. تأكد من السماح للمتصفح بالوصول للكاميرا.');
+                console.error(err);
+            }
+        });
+
+        $('#captureBtn').on('click', function () {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            capturedImage.src = imageData;
+            capturedImage.style.display = 'block';
+            video.style.display = 'none';
+
+            $('#faceCaptureData').val(imageData);
+
+            $(this).addClass('d-none');
+            $('#retakeBtn').removeClass('d-none');
+
+            // Stop camera
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        $('#retakeBtn').on('click', async function () {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                capturedImage.style.display = 'none';
+
+                $('#faceCaptureData').val('');
+                $(this).addClass('d-none');
+                $('#captureBtn').removeClass('d-none');
+            } catch (err) {
+                alert('لا يمكن الوصول إلى الكاميرا.');
+            }
+        });
+    });
+</script>
+{% endblock %}

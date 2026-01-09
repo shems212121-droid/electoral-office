@@ -1,0 +1,206 @@
+{% load static %}
+<div class="sidebar d-flex flex-column flex-shrink-0 p-3" id="mainSidebar">
+
+    <div class="sidebar-header text-center mb-4">
+        <div class="sadiqoon-logo mx-auto mb-2">
+            <div class="golden-logo-wrapper">
+                <img src="{% static 'images/sadiqoon_logo.png' %}" alt="شعار كتلة الصادقون"
+                    class="img-fluid rounded-circle golden-logo-img">
+            </div>
+            <style>
+                .golden-logo-wrapper {
+                    position: relative;
+                    padding: 4px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+                    box-shadow: 0 0 20px rgba(218, 165, 32, 0.6);
+                    width: 120px;
+                    height: 120px;
+                    margin: 0 auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: goldPulseWrapper 3s infinite ease-in-out;
+                }
+
+                .golden-logo-img {
+                    background: #fff;
+                    border-radius: 50%;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border: 2px solid #fff;
+                    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                }
+
+                .golden-logo-wrapper:hover .golden-logo-img {
+                    transform: scale(0.92);
+                }
+
+                @keyframes goldPulseWrapper {
+                    0% {
+                        box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+                        transform: scale(1);
+                    }
+
+                    50% {
+                        box-shadow: 0 0 35px rgba(255, 215, 0, 0.9);
+                        transform: scale(1.02);
+                    }
+
+                    100% {
+                        box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+                        transform: scale(1);
+                    }
+                }
+            </style>
+        </div>
+        <h5 class="fw-bold mb-0">كتلة الصادقون</h5>
+    </div>
+
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <a href="{% url 'dashboard' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                aria-current="page">
+                <i class="fas fa-tachometer-alt"></i>
+                لوحة التحكم
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'candidate_list' %}"
+                class="nav-link {% if 'candidate' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-user-tie"></i>
+                المرشحين
+            </a>
+        </li>
+
+        <li class="nav-divider my-3 border-top border-secondary"></li>
+
+        <li class="px-2 mb-1 text-uppercase text-white-50 small fw-bold">الجمهور والمراقبين</li>
+
+        <li>
+            <a href="{% url 'anchor_list' %}"
+                class="nav-link {% if 'anchor' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                المرتكزات
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'introducer_list' %}"
+                class="nav-link {% if 'introducer' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-address-book"></i>
+                المعرفين
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'observer_registration_list' %}"
+                class="nav-link {% if 'observer_registration' in request.resolver_match.url_name or 'monitor' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-eye"></i>
+                المراقبين والوكلاء
+            </a>
+        </li>
+
+        <li class="nav-divider my-3 border-top border-secondary"></li>
+        <li class="px-2 mb-1 text-uppercase text-white-50 small fw-bold">إدارة العمل</li>
+
+        <li>
+            <a href="{% url 'task_list' %}"
+                class="nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-tasks"></i>
+                المهام
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'communications_dashboard' %}"
+                class="nav-link {% if 'communications' in request.path %}active{% endif %}">
+                <i class="fas fa-headset"></i>
+                مركز الاتصالات
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'finance_dashboard' %}"
+                class="nav-link {% if 'finance' in request.path or 'transaction' in request.path %}active{% endif %}">
+                <i class="fas fa-wallet"></i>
+                الحسابات
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'sub_room_list' %}"
+                class="nav-link {% if 'sub_room' in request.path or 'sub-rooms' in request.path %}active{% endif %}">
+                <i class="fas fa-building"></i>
+                غرف العمليات الفرعية
+            </a>
+        </li>
+
+        <li class="nav-divider my-3 border-top border-secondary"></li>
+        <li class="px-2 mb-1 text-uppercase text-white-50 small fw-bold">الإدارة والأرشيف</li>
+
+        <li>
+            <a href="{% url 'archive:dashboard' %}"
+                class="nav-link {% if 'archive' in request.path %}active{% endif %}">
+                <i class="fas fa-archive"></i>
+                الأرشيف
+            </a>
+        </li>
+
+        {% if user.is_staff or user.is_superuser %}
+        <li>
+            <a href="{% url 'admin_directors_monitor' %}"
+                class="nav-link {% if 'management/directors' in request.path %}active{% endif %}">
+                <i class="fas fa-user-shield"></i>
+                لوحة الإدارة
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="nav-divider my-3 border-top border-secondary"></li>
+        <li class="px-2 mb-1 text-uppercase text-white-50 small fw-bold">جرد الأصوات</li>
+
+        <li>
+            <a href="{% url 'general_vote_count' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'general_vote_count' %}active{% endif %}">
+                <i class="fas fa-check-square"></i>
+                جرد عام
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'special_vote_count' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'special_vote_count' %}active{% endif %}">
+                <i class="fas fa-star"></i>
+                جرد خاص
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'combined_results' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'combined_results' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i>
+                النتائج المجمعة
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'sainte_lague_calculator' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'sainte_lague_calculator' %}active{% endif %}">
+                <i class="fas fa-calculator"></i>
+                حاسبة سانت ليغو
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'comprehensive_reports' %}"
+                class="nav-link {% if 'reports' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-file-alt"></i>
+                التقارير
+            </a>
+        </li>
+
+        <li class="mt-auto pt-3 border-top border-secondary">
+            <form method="post" action="{% url 'logout' %}" class="form-inline">
+                {% csrf_token %}
+                <button type="submit" class="nav-link w-100 text-start text-danger bg-transparent border-0">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>

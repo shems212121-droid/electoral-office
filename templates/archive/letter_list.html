@@ -1,0 +1,233 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}الكتب الواردة والصادرة - الأرشيف{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .letter-card {
+        transition: all 0.3s;
+        border-left: 4px solid transparent;
+    }
+
+    .letter-card:hover {
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .letter-card.incoming {
+        border-left-color: #28a745;
+    }
+
+    .letter-card.outgoing {
+        border-left-color: #17a2b8;
+    }
+
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-envelope me-2"></i>الكتب الواردة والصادرة</h2>
+                    <p class="text-muted">إدارة ومتابعة جميع المراسلات الرسمية</p>
+                </div>
+                <a href="{% url 'archive:letter_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>كتاب جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- البحث والفلترة -->
+    <div class="card search-card mb-4">
+        <form method="get" action="">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    {{ search_form.search }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.letter_type }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.priority }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.status }}
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>بحث
+                    </button>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-md-3">
+                    {{ search_form.date_from }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.date_to }}
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'archive:letter_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-redo me-2"></i>إعادة تعيين
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- قائمة الكتب -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                قائمة الكتب ({{ page_obj.paginator.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم الكتاب</th>
+                            <th>النوع</th>
+                            <th>الموضوع</th>
+                            <th>التاريخ</th>
+                            <th>الأولوية</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for letter in page_obj %}
+                        <tr
+                            class="letter-card {% if letter.letter_type == 'incoming' %}incoming{% else %}outgoing{% endif %}">
+                            <td>
+                                <strong>{{ letter.letter_number }}</strong>
+                            </td>
+                            <td>
+                                {% if letter.letter_type == 'incoming' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-arrow-down me-1"></i>وارد
+                                </span>
+                                {% else %}
+                                <span class="badge bg-info">
+                                    <i class="fas fa-arrow-up me-1"></i>صادر
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 300px;" title="{{ letter.subject }}">
+                                    {{ letter.subject }}
+                                </div>
+                            </td>
+                            <td>{{ letter.letter_date|date:"Y/m/d" }}</td>
+                            <td>
+                                {% if letter.priority == 'very_urgent' %}
+                                <span class="badge bg-danger priority-badge">عاجل جداً</span>
+                                {% elif letter.priority == 'urgent' %}
+                                <span class="badge bg-warning text-dark priority-badge">عاجل</span>
+                                {% elif letter.priority == 'important' %}
+                                <span class="badge bg-info priority-badge">مهم</span>
+                                {% else %}
+                                <span class="badge bg-secondary priority-badge">عادي</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if letter.status == 'completed' %}
+                                <span class="badge bg-success">مكتمل</span>
+                                {% elif letter.status == 'in_progress' %}
+                                <span class="badge bg-primary">قيد المعالجة</span>
+                                {% elif letter.status == 'archived' %}
+                                <span class="badge bg-secondary">مؤرشف</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'archive:letter_detail' letter.pk %}"
+                                        class="btn btn-outline-primary" title="التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'archive:letter_edit' letter.pk %}" class="btn btn-outline-warning"
+                                        title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'archive:letter_delete' letter.pk %}" class="btn btn-outline-danger"
+                                        title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">الأولى</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابقة</a>
+                        </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">التالية</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">الأخيرة</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 text-muted">لا توجد كتب</h4>
+                <p class="text-muted">لم يتم العثور على أي كتب مطابقة</p>
+                <a href="{% url 'archive:letter_add' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus-circle me-2"></i>إضافة أول كتاب
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

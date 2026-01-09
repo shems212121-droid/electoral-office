@@ -1,0 +1,102 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}{{ agent.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-user-shield"></i> {{ agent.full_name }}</h2>
+    <p class="text-muted">وكيل {{ agent.political_entity.name }}</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">المعلومات الأساسية</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">الكيان السياسي</th>
+                            <td>{{ agent.political_entity.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>مدير المركز</th>
+                            <td>{{ agent.center_director.full_name|default:"غير محدد" }}</td>
+                        </tr>
+                        <tr>
+                            <th>العمر</th>
+                            <td>{{ agent.age }} سنة</td>
+                        </tr>
+                        <tr>
+                            <th>رقم الهاتف</th>
+                            <td>{{ agent.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم الناخب</th>
+                            <td>{{ agent.voter_number }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">معلومات المحطة</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">رقم المركز</th>
+                            <td><strong>{{ agent.assigned_center_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>اسم المركز</th>
+                            <td>{{ agent.assigned_center_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم المحطة</th>
+                            <td>{{ agent.assigned_station_number|default:"غير محدد" }}</td>
+                        </tr>
+                        <tr>
+                            <th>المحافظة</th>
+                            <td>{{ agent.governorate }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                <span class="badge 
+                                    {% if agent.status == 'badge_issued' %}bg-success
+                                    {% elif agent.status == 'approved' %}bg-info
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {{ agent.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>الباج</th>
+                            <td>
+                                {% if agent.badge_issued %}
+                                <i class="fas fa-check-circle text-success"></i> {{ agent.badge_number }}
+                                {% else %}
+                                <i class="fas fa-times-circle text-danger"></i> لم يصدر
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'political_entity_agent_edit' agent.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> تعديل
+        </a>
+        <a href="{% url 'political_entity_agent_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة
+        </a>
+    </div>
+</div>
+{% endblock %}

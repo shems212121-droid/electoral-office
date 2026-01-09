@@ -1,0 +1,219 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-user-shield"></i> لوحة مراقبة مدراء المراكز</h2>
+            <p class="text-muted">مراقبة شاملة لجميع مدراء المراكز الانتخابية ونشاطاتهم</p>
+        </div>
+    </div>
+
+    <!-- إحصائيات عامة -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x mb-2"></i>
+                    <h3>{{ total_directors }}</h3>
+                    <p class="mb-0">إجمالي المدراء</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x mb-2"></i>
+                    <h3>{{ active_directors }}</h3>
+                    <p class="mb-0">مدراء نشطون</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-sign-in-alt fa-3x mb-2"></i>
+                    <h3>{{ logged_in_now }}</h3>
+                    <p class="mb-0">مسجلو دخول الآن</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list fa-3x mb-2"></i>
+                    <h3>{{ total_attendance_records }}</h3>
+                    <p class="mb-0">إجمالي سجلات الحضور</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- روابط سريعة -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{% url 'attendance_reports' %}" class="btn btn-info btn-lg btn-block">
+                <i class="fas fa-chart-bar"></i> تقارير الحضور التفصيلية
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'center_director_add' %}" class="btn btn-success btn-lg btn-block">
+                <i class="fas fa-plus"></i> إضافة مدير مركز جديد
+            </a>
+        </div>
+    </div>
+
+    <!-- قائمة المدراء -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> قائمة مدراء المراكز</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>الاسم</th>
+                                    <th>المركز</th>
+                                    <th>نوع الاقتراع</th>
+                                    <th>الحالة</th>
+                                    <th>سجل دخول</th>
+                                    <th>آخر دخول</th>
+                                    <th>سجلات حضور</th>
+                                    <th>اليوم</th>
+                                    <th>وكلاء/مراقبون</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for director in directors %}
+                                <tr class="{% if director.is_logged_in %}table-success{% endif %}">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ director.full_name }}</strong>
+                                        {% if director.is_logged_in %}
+                                        <span class="badge badge-success ml-1">متصل</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ director.assigned_center_number }}
+                                        <br><small class="text-muted">{{ director.assigned_center_name|truncatewords:5
+                                            }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ director.voting_type|yesno:'primary,secondary' }}">
+                                            {{ director.get_voting_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ director.status|yesno:'success,secondary' }}">
+                                            {{ director.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ director.login_count }}</td>
+                                    <td>
+                                        {% if director.last_login %}
+                                        <small>{{ director.last_login.login_time|date:"Y-m-d H:i" }}</small>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-info">{{ director.attendance_records_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-warning">{{ director.today_records }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <small>{{ director.agents_count }} / {{ director.monitors_count }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'director_activity_detail' director.id %}"
+                                                class="btn btn-info" title="تفاصيل النشاط">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                            <a href="{% url 'center_director_detail' director.id %}"
+                                                class="btn btn-primary" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'center_director_edit' director.id %}"
+                                                class="btn btn-warning" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted">لا يوجد مدراء مسجلين</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- آخر تسجيلات الدخول -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> آخر تسجيلات الدخول</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_logins %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>المدير</th>
+                                    <th>المركز</th>
+                                    <th>وقت الدخول</th>
+                                    <th>وقت الخروج</th>
+                                    <th>المدة</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logins %}
+                                <tr>
+                                    <td>{{ log.director.full_name }}</td>
+                                    <td>{{ log.director.assigned_center_number }}</td>
+                                    <td>{{ log.login_time|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        {% if log.logout_time %}
+                                        {{ log.logout_time|date:"H:i" }}
+                                        {% else %}
+                                        <span class="badge badge-success">نشط</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.get_session_duration }}</td>
+                                    <td><small>{{ log.ip_address|default:"-" }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">لا توجد سجلات دخول</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}قائمة الناخبين - المكتب الانتخابي{% endblock %}
+
+{%block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<style>
+    .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .classification-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-users"></i> قائمة الناخبين</h1>
+        <div>
+            <span class="badge bg-primary fs-6">
+                <i class="fas fa-chart-bar"></i> إجمالي: {{ total_count|intcomma }}
+            </span>
+        </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">بحث</label>
+                <input type="text" name="q" class="form-control" placeholder="رقم الناخب، الاسم، أو الهاتف"
+                    value="{{ request.GET.q }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">التصنيف</label>
+                <select name="classification" class="form-select">
+                    <option value="">الكل</option>
+                    <option value="supporter" {% if request.GET.classification == 'supporter' %}selected{% endif %}>مؤيد
+                    </option>
+                    <option value="neutral" {% if request.GET.classification == 'neutral' %}selected{% endif %}>محايد
+                    </option>
+                    <option value="opponent" {% if request.GET.classification == 'opponent' %}selected{% endif %}>معارض
+                    </option>
+                    <option value="unknown" {% if request.GET.classification == 'unknown' %}selected{% endif %}>غير محدد
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">حالة التخصيص</label>
+                <select name="has_introducer" class="form-select">
+                    <option value="">الكل</option>
+                    <option value="yes" {% if request.GET.has_introducer == 'yes' %}selected{% endif %}>مخصص</option>
+                    <option value="no" {% if request.GET.has_introducer == 'no' %}selected{% endif %}>غير مخصص</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- جدول الناخبين -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="votersTable" class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم الناخب</th>
+                            <th>الاسم الكامل</th>
+                            <th>الهاتف</th>
+                            <th>مركز التسجيل</th>
+                            <th>رقم مركز التسجيل</th>
+                            <th>المحطة</th>
+                            <th>المركز الانتخابي</th>
+                            <th>المحافظة</th>
+                            <th>التصنيف</th>
+                            <th>المعرّف</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for voter in voters %}
+                        <tr>
+                            <td><strong>{{ voter.voter_number }}</strong></td>
+                            <td>{{ voter.full_name }}</td>
+                            <td>{{ voter.phone|default:"-" }}</td>
+                            <td>{{ voter.registration_center_name|truncatechars:25|default:"-" }}</td>
+                            <td>{{ voter.registration_center_number|default:"-" }}</td>
+                            <td>{{ voter.station_number|default:"-" }}</td>
+                            <td>{{ voter.voting_center_name|truncatechars:25|default:"-" }}</td>
+                            <td>{{ voter.governorate }}</td>
+                            <td>
+                                {% if voter.classification == 'supporter' %}
+                                <span class="badge bg-success">مؤيد</span>
+                                {% elif voter.classification == 'neutral' %}
+                                <span class="badge bg-info">محايد</span>
+                                {% elif voter.classification == 'opponent' %}
+                                <span class="badge bg-danger">معارض</span>
+                                {% else %}
+                                <span class="badge bg-secondary">غير محدد</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if voter.introducer %}
+                                <span class="badge bg-primary">{{ voter.introducer.full_name }}</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'voter_detail' voter.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> عرض
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                لا توجد نتائج
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="تنقل الصفحات">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">الأولى</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">السابقة</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالية</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">الأخيرة</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#votersTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
+            },
+            order: [[0, 'asc']],
+            pageLength: 50,
+            paging: false,
+            searching: false,
+            info: false
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل التسجيل - {{ registration.full_name }}{% endblock %}
+
+{% block page_title %}تفاصيل تسجيل المرتكز{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- عنوان الصفحة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 style="color: var(--sadiqoon-green-dark); font-weight: 800;">
+            <i class="fas fa-user-check" style="color: var(--sadiqoon-gold);"></i>
+            تفاصيل التسجيل
+        </h3>
+        <div>
+            <a href="{% url 'electoral_public_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- المعلومات الأساسية -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> المعلومات الأساسية
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">الاسم الكامل</label>
+                            <h5 class="mb-0" style="color: var(--sadiqoon-green-dark); font-weight: 700;">
+                                <i class="fas fa-user text-warning"></i>
+                                {{ registration.full_name|default:"غير متوفر" }}
+                            </h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">رقم الهاتف</label>
+                            <h5 class="mb-0" style="color: var(--sadiqoon-green-dark); font-weight: 700;">
+                                <i class="fas fa-phone text-success"></i>
+                                {{ registration.phone_number }}
+                            </h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">رقم الناخب</label>
+                            <h5 class="mb-0" style="color: var(--sadiqoon-green-dark); font-weight: 700;">
+                                <i class="fas fa-id-card text-primary"></i>
+                                {{ registration.voter_number }}
+                            </h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">رمز المرتكز/المرشح</label>
+                            <h5 class="mb-0" style="color: var(--sadiqoon-green-dark); font-weight: 700;">
+                                <i class="fas fa-qrcode text-info"></i>
+                                {{ registration.reference_code|default:"لا يوجد" }}
+                            </h5>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- معلومات مراكز الاقتراع -->
+                    <h6 style="color: var(--sadiqoon-green); font-weight: 700; margin-top: 20px;">
+                        <i class="fas fa-map-marker-alt"></i> معلومات مراكز الاقتراع
+                    </h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">المحافظة</label>
+                            <p class="mb-0 fw-bold">{{ registration.governorate }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">مركز الاقتراع</label>
+                            <p class="mb-0 fw-bold">
+                                {{ registration.voting_center_name|default:"غير متوفر" }}
+                                {% if registration.voting_center_number %}
+                                <span class="badge bg-secondary">{{ registration.voting_center_number }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">مركز التسجيل</label>
+                            <p class="mb-0 fw-bold">
+                                {{ registration.registration_center_name|default:"غير متوفر" }}
+                                {% if registration.registration_center_number %}
+                                <span class="badge bg-secondary">{{ registration.registration_center_number }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">رقم المحطة</label>
+                            <p class="mb-0 fw-bold">
+                                {% if registration.station_number %}
+                                <span class="badge bg-info">محطة {{ registration.station_number }}</span>
+                                {% else %}
+                                غير متوفر
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- الملاحظات -->
+                    {% if registration.notes %}
+                    <hr>
+                    <h6 style="color: var(--sadiqoon-green); font-weight: 700; margin-top: 20px;">
+                        <i class="fas fa-sticky-note"></i> ملاحظات
+                    </h6>
+                    <div class="alert alert-info mt-3">
+                        {{ registration.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- الحالة والتواريخ -->
+        <div class="col-md-4">
+            <!-- بطاقة الحالة -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-flag"></i> الحالة
+                </div>
+                <div class="card-body text-center">
+                    {% if registration.status == 'approved' %}
+                    <div class="stat-icon-modern success mx-auto mb-3"
+                        style="width: 80px; height: 80px; font-size: 40px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="text-success fw-bold">معتمد</h4>
+                    <p class="text-muted small">تم اعتماد التسجيل بنجاح</p>
+                    {% elif registration.status == 'pending' %}
+                    <div class="stat-icon-modern warning mx-auto mb-3"
+                        style="width: 80px; height: 80px; font-size: 40px;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4 class="text-warning fw-bold">قيد المراجعة</h4>
+                    <p class="text-muted small">في انتظار المراجعة والموافقة</p>
+                    {% elif registration.status == 'rejected' %}
+                    <div class="stat-icon-modern"
+                        style="background: rgba(220, 53, 69, 0.1); color: #dc3545; width: 80px; height: 80px; font-size: 40px; margin: 0 auto 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h4 class="text-danger fw-bold">مرفوض</h4>
+                    <p class="text-muted small">تم رفض التسجيل</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- بطاقة التواريخ -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-calendar-alt"></i> التواريخ
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small d-flex align-items-center">
+                            <i class="fas fa-calendar-plus text-success me-2"></i>
+                            تاريخ التسجيل
+                        </label>
+                        <p class="mb-0 fw-bold">
+                            {{ registration.registered_at|date:"Y-m-d" }}
+                            <br>
+                            <small class="text-muted">{{ registration.registered_at|date:"h:i A" }}</small>
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="mb-0">
+                        <label class="text-muted small d-flex align-items-center">
+                            <i class="fas fa-sync text-info me-2"></i>
+                            آخر تحديث
+                        </label>
+                        <p class="mb-0 fw-bold">
+                            {{ registration.updated_at|date:"Y-m-d" }}
+                            <br>
+                            <small class="text-muted">{{ registration.updated_at|date:"h:i A" }}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- إجراءات سريعة -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bolt"></i> إجراءات سريعة
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'electoral_public_list' %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-list"></i> عرض القائمة
+                    </a>
+                    <button class="btn btn-outline-secondary w-100" onclick="window.print()">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+
+        .btn,
+        .card-header,
+        .sidebar,
+        .top-navbar,
+        .dark-mode-toggle {
+            display: none !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>
+{% endblock %}

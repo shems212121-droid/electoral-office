@@ -1,0 +1,53 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info
+dist/
+build/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+*.pot
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files
+*.xlsx
+*.xls
+*.csv
+*.pdf
+1111.png
+1122.xlsx
+1133.xlsx
+cloudflared.exe
+*.db
+test.db
+voters_decrypted*.sqlite
+
+# Documentation files (keep in repo but mention)
+!requirements.txt
+!Procfile
+!runtime.txt
+!railway.json

@@ -1,0 +1,489 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}{% if object %}تعديل مرشح{% else %}إضافة مرشح جديد{% endif %} - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus"></i>
+                        {% if object %}تعديل بيانات المرشح{% else %}إضافة مرشح جديد{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="partyCandidateForm">
+                        {% csrf_token %}
+
+                        <!-- Display Errors -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>يرجى تصحيح الأخطاء التالية:</strong>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- Alert -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>البحث التلقائي:</strong> أدخل رقم الناخب وسيتم ملء البيانات تلقائياً من قاعدة
+                            البيانات
+                        </div>
+
+                        <!-- Voter Number - FIRST FIELD -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-id-card"></i> رقم الناخب <span class="text-danger">*</span>
+                            </label>
+                            {{ form.voter_number }}
+                            <div id="voterLookupSpinner" class="spinner-border spinner-border-sm text-primary mt-2"
+                                style="display: none;"></div>
+                            <div id="voterLookupError" class="text-danger mt-2" style="display: none;"></div>
+                            <div id="voterLookupSuccess" class="text-success mt-2" style="display: none;">
+                                <i class="fas fa-check-circle"></i> تم العثور على الناخب وملء البيانات تلقائياً
+                            </div>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> أدخل رقم الناخب وستُملأ البيانات الأخرى تلقائياً
+                            </small>
+                        </div>
+
+                        <!-- Auto-filled Voter Details Section -->
+                        <div class="card mb-4 border-primary">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-user-circle"></i> بيانات الناخب التلقائية</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Full Name -->
+                                <div class="mb-3">
+                                    <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                                    {{ form.full_name }}
+                                </div>
+
+                                <div class="row">
+                                    <!-- Mother Name -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">اسم الأم الثلاثي</label>
+                                        {{ form.mother_name_triple }}
+                                    </div>
+
+                                    <!-- Date of Birth -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">تاريخ الميلاد</label>
+                                        {{ form.date_of_birth }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Voting Center -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">مركز الاقتراع</label>
+                                        {{ form.voting_center_name }}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">رقم مركز الاقتراع</label>
+                                        {{ form.voting_center_number }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Registration Center -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">مركز التسجيل</label>
+                                        {{ form.registration_center_name }}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">رقم مركز التسجيل</label>
+                                        {{ form.registration_center_number }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <!-- Family Number -->
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">رقم العائلة</label>
+                                        {{ form.family_number }}
+                                    </div>
+
+                                    <!-- Station Number -->
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">رقم المحطة</label>
+                                        {{ form.station_number }}
+                                    </div>
+
+                                    <!-- Governorate -->
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">المحافظة</label>
+                                        {{ form.governorate }}
+                                    </div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="mb-3">
+                                    <label class="form-label">الحالة</label>
+                                    {{ form.status }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-phone"></i> رقم الهاتف
+                            </label>
+                            {{ form.phone }}
+                            <small class="form-text text-muted">رقم هاتف المرشح للتواصل</small>
+                        </div>
+
+                        <!-- Party and Council Information -->
+                        <div class="card mb-4 border-success">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-flag"></i> معلومات الترشح</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Party Selection -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">الحزب/القائمة <span
+                                                class="text-danger">*</span></label>
+                                        {{ form.party }}
+                                        {% if form.party.help_text %}
+                                        <small class="form-text text-muted">{{ form.party.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Council Type -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-building"></i> نوع المجلس <span
+                                                class="text-danger">*</span>
+                                        </label>
+                                        {{ form.council_type }}
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle"></i> حدد نوع المجلس الذي يخوض المرشح
+                                            الانتخابات له
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Serial Number -->
+                                <div class="mb-3">
+                                    <label class="form-label">الرقم التسلسلي <span class="text-danger">*</span></label>
+                                    {{ form.serial_number }}
+                                    {% if form.serial_number.help_text %}
+                                    <small class="form-text text-muted">{{ form.serial_number.help_text }}</small>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Address -->
+                                <div class="mb-3">
+                                    <label class="form-label">العنوان</label>
+                                    {{ form.address }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Photo -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-camera"></i> الصورة الشخصية
+                            </label>
+
+                            <div class="row">
+                                <!-- Current/Preview Photo Column -->
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div id="photoPreviewContainer" class="mb-2">
+                                            {% if object.photo %}
+                                            <img id="photoPreview" src="{{ object.photo.url }}"
+                                                alt="{{ object.full_name }}" class="img-thumbnail rounded-circle"
+                                                style="width: 200px; height: 200px; object-fit: cover; border: 3px solid #1B5E20;">
+                                            {% else %}
+                                            <div id="photoPreview"
+                                                class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
+                                                style="width: 200px; height: 200px; border: 3px dashed #ccc;">
+                                                <i class="fas fa-user fa-4x text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% if object.photo %}
+                                        <small class="text-muted d-block">الصورة الحالية</small>
+                                        <label class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input" name="clear_photo"
+                                                id="clearPhotoCheckbox">
+                                            <span class="form-check-label text-danger">حذف الصورة</span>
+                                        </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Upload Controls Column -->
+                                <div class="col-md-8">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="mb-3">
+                                            {{ form.photo }}
+                                            <small class="form-text text-muted d-block mt-2">
+                                                <i class="fas fa-info-circle"></i>
+                                                الصيغ المدعومة: JPG, PNG, GIF | الحجم الأقصى: 5MB
+                                            </small>
+                                        </div>
+
+                                        <div id="fileInfo" class="alert alert-info" style="display: none;">
+                                            <i class="fas fa-file-image"></i> <strong>الملف المختار:</strong>
+                                            <div id="fileName" class="mt-1"></div>
+                                            <div id="fileSize" class="mt-1 small"></div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="document.querySelector('input[name=photo]').click()">
+                                            <i class="fas fa-upload"></i> اختيار صورة
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" id="clearPreviewBtn"
+                                            style="display: none;" onclick="clearPhotoPreview()">
+                                            <i class="fas fa-times"></i> إلغاء الاختيار
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biography -->
+                        <div class="mb-3">
+                            <label class="form-label">السيرة الذاتية</label>
+                            {{ form.biography }}
+                            {% if form.biography.help_text %}
+                            <small class="form-text text-muted">{{ form.biography.help_text }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                {% if object %}حفظ التعديلات{% else %}إضافة المرشح{% endif %}
+                            </button>
+                            <a href="{% url 'candidate_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Voter Number Lookup
+        const voterNumberInput = document.querySelector('input[name="voter_number"]');
+
+        if (voterNumberInput) {
+            const spinner = document.getElementById('voterLookupSpinner');
+            const errorDiv = document.getElementById('voterLookupError');
+            const successDiv = document.getElementById('voterLookupSuccess');
+
+            let lookupTimeout = null;
+
+            voterNumberInput.addEventListener('input', function () {
+                const voterNumber = this.value.trim();
+
+                if (lookupTimeout) {
+                    clearTimeout(lookupTimeout);
+                }
+
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                if (voterNumber.length < 3) {
+                    return;
+                }
+
+                spinner.style.display = 'inline-block';
+
+                lookupTimeout = setTimeout(() => {
+                    fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.error || 'خطأ في البحث');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            spinner.style.display = 'none';
+
+                            // Fill all auto-populated fields from voter data
+                            const fullNameInput = document.querySelector('input[name="full_name"]');
+                            const dateOfBirthInput = document.querySelector('input[name="date_of_birth"]');
+                            const phoneInput = document.querySelector('input[name="phone"]');
+                            const votingCenterNameInput = document.querySelector('input[name="voting_center_name"]');
+                            const votingCenterNumberInput = document.querySelector('input[name="voting_center_number"]');
+                            const registrationCenterNameInput = document.querySelector('input[name="registration_center_name"]');
+                            const registrationCenterNumberInput = document.querySelector('input[name="registration_center_number"]');
+                            const familyNumberInput = document.querySelector('input[name="family_number"]');
+                            const stationNumberInput = document.querySelector('input[name="station_number"]');
+                            const governorateInput = document.querySelector('input[name="governorate"]');
+                            const statusInput = document.querySelector('input[name="status"]');
+
+                            // Populate all fields
+                            if (fullNameInput && data.full_name) {
+                                fullNameInput.value = data.full_name;
+                            }
+                            if (dateOfBirthInput && data.date_of_birth) {
+                                dateOfBirthInput.value = data.date_of_birth;
+                            }
+                            if (phoneInput && data.phone) {
+                                phoneInput.value = data.phone;
+                            }
+                            if (votingCenterNameInput && data.voting_center_name) {
+                                votingCenterNameInput.value = data.voting_center_name;
+                            }
+                            if (votingCenterNumberInput && data.voting_center_number) {
+                                votingCenterNumberInput.value = data.voting_center_number;
+                            }
+                            if (registrationCenterNameInput && data.registration_center_name) {
+                                registrationCenterNameInput.value = data.registration_center_name;
+                            }
+                            if (registrationCenterNumberInput && data.registration_center_number) {
+                                registrationCenterNumberInput.value = data.registration_center_number;
+                            }
+                            if (familyNumberInput && data.family_number) {
+                                familyNumberInput.value = data.family_number;
+                            }
+                            if (stationNumberInput && data.station_number) {
+                                stationNumberInput.value = data.station_number;
+                            }
+                            if (governorateInput && data.governorate) {
+                                governorateInput.value = data.governorate;
+                            }
+                            if (statusInput && data.status) {
+                                statusInput.value = data.status;
+                            }
+
+                            successDiv.style.display = 'block';
+                            setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+                        })
+                        .catch(error => {
+                            spinner.style.display = 'none';
+                            errorDiv.textContent = error.message;
+                            errorDiv.style.display = 'block';
+                        });
+                }, 500);
+            });
+        }
+
+        // Photo Upload Preview
+        const photoInput = document.querySelector('input[name="photo"]');
+        const photoPreview = document.getElementById('photoPreview');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const clearPreviewBtn = document.getElementById('clearPreviewBtn');
+        const clearPhotoCheckbox = document.getElementById('clearPhotoCheckbox');
+
+        if (photoInput) {
+            photoInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+                if (file) {
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('يرجى اختيار صورة بصيغة JPG, PNG أو GIF');
+                        photoInput.value = '';
+                        return;
+                    }
+
+                    // Validate file size (5MB max)
+                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    if (file.size > maxSize) {
+                        alert('حجم الصورة كبير جداً! الحد الأقصى: 5MB');
+                        photoInput.value = '';
+                        return;
+                    }
+
+                    // Show file info
+                    fileName.textContent = file.name;
+                    fileSize.textContent = `الحجم: ${(file.size / 1024).toFixed(2)} KB`;
+                    fileInfo.style.display = 'block';
+                    clearPreviewBtn.style.display = 'inline-block';
+
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        // If preview is a div (placeholder), replace with img
+                        if (photoPreview.tagName === 'DIV') {
+                            const newImg = document.createElement('img');
+                            newImg.id = 'photoPreview';
+                            newImg.className = 'img-thumbnail rounded-circle';
+                            newImg.style.cssText = 'width: 200px; height: 200px; object-fit: cover; border: 3px solid #1B5E20;';
+                            photoPreview.parentNode.replaceChild(newImg, photoPreview);
+                            document.getElementById('photoPreview').src = e.target.result;
+                        } else {
+                            photoPreview.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+
+                    // Uncheck clear photo if checked
+                    if (clearPhotoCheckbox) {
+                        clearPhotoCheckbox.checked = false;
+                    }
+                }
+            });
+        }
+
+        // Clear photo checkbox handler
+        if (clearPhotoCheckbox) {
+            clearPhotoCheckbox.addEventListener('change', function () {
+                if (this.checked) {
+                    if (!confirm('هل أنت متأكد من حذف الصورة؟')) {
+                        this.checked = false;
+                    }
+                }
+            });
+        }
+    });
+
+    // Clear photo preview function
+    function clearPhotoPreview() {
+        const photoInput = document.querySelector('input[name="photo"]');
+        const photoPreview = document.getElementById('photoPreview');
+        const fileInfo = document.getElementById('fileInfo');
+        const clearPreviewBtn = document.getElementById('clearPreviewBtn');
+
+        photoInput.value = '';
+        fileInfo.style.display = 'none';
+        clearPreviewBtn.style.display = 'none';
+
+        // Reset to placeholder if no existing photo
+        {% if not object.photo %}
+        if (photoPreview.tagName === 'IMG') {
+            const newDiv = document.createElement('div');
+            newDiv.id = 'photoPreview';
+            newDiv.className = 'rounded-circle bg-light d-inline-flex align-items-center justify-content-center';
+            newDiv.style.cssText = 'width: 200px; height: 200px; border: 3px dashed #ccc;';
+            newDiv.innerHTML = '<i class="fas fa-user fa-4x text-muted"></i>';
+            photoPreview.parentNode.replaceChild(newDiv, photoPreview);
+        }
+        {% else %}
+        // Reset to original photo
+        photoPreview.src = "{{ object.photo.url }}";
+        {% endif %}
+    }
+</script>
+{% endblock %}

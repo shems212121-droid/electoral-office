@@ -1,0 +1,177 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% if is_edit %}تعديل كتاب{% else %}كتاب جديد{% endif %} - الأرشيف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:letter_list' %}">الكتب</a></li>
+                    <li class="breadcrumb-item active">{% if is_edit %}تعديل{% else %}جديد{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        {% if is_edit %}تعديل كتاب: {{ letter.letter_number }}{% else %}إضافة كتاب جديد{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>يرجى تصحيح الأخطاء
+                                التالية:</h5>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- معلومات الكتاب الأساسية -->
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>معلومات الكتاب
+                                </h5>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">نوع الكتاب <span class="text-danger">*</span></label>
+                                {{ form.letter_type }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">رقم الكتاب <span class="text-danger">*</span></label>
+                                {{ form.letter_number }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">تاريخ الكتاب <span class="text-danger">*</span></label>
+                                {{ form.letter_date }}
+                            </div>
+
+                            <!-- جهات الاتصال -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-exchange-alt me-2 text-success"></i>جهات الاتصال
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">الجهة المرسلة</label>
+                                {{ form.from_entity }}
+                                <small class="form-text text-muted">للكتب الواردة</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">الجهة المستقبلة</label>
+                                {{ form.to_entity }}
+                                <small class="form-text text-muted">للكتب الصادرة</small>
+                            </div>
+
+                            <!-- التفاصيل -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-file-alt me-2 text-info"></i>التفاصيل
+                                </h5>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">الموضوع <span class="text-danger">*</span></label>
+                                {{ form.subject }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">التفاصيل/الملاحظات</label>
+                                {{ form.description }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">المرفقات</label>
+                                {{ form.attachment }}
+                                <small class="form-text text-muted d-block">
+                                    يمكنك إرفاق ملفات PDF، Word، أو صور
+                                </small>
+                                {% if is_edit and letter.attachment %}
+                                <div class="mt-2">
+                                    <a href="{{ letter.attachment.url }}" target="_blank"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-paperclip me-1"></i>عرض المرفق الحالي
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- الحالة والأولوية -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-flag me-2 text-warning"></i>الحالة والأولوية
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">الأولوية</label>
+                                {{ form.priority }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">الحالة</label>
+                                {{ form.status }}
+                            </div>
+
+                            <!-- الأزرار -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'archive:letter_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>إلغاء
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if is_edit %}تحديث الكتاب{% else %}حفظ الكتاب{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // تحديث النص المساعد بناءً على نوع الكتاب
+    document.querySelector('#id_letter_type').addEventListener('change', function () {
+        const fromEntityLabel = document.querySelector('label[for="id_from_entity"]');
+        const toEntityLabel = document.querySelector('label[for="id_to_entity"]');
+
+        if (this.value === 'incoming') {
+            fromEntityLabel.innerHTML = 'الجهة المرسلة <span class="text-danger">*</span>';
+            toEntityLabel.innerHTML = 'الجهة المستقبلة';
+        } else {
+            fromEntityLabel.innerHTML = 'الجهة المرسلة';
+            toEntityLabel.innerHTML = 'الجهة المستقبلة <span class="text-danger">*</span>';
+        }
+    });
+</script>
+{% endblock %}

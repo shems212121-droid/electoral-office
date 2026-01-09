@@ -1,0 +1,197 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ candidate.full_name }} - كتلة الصادقون{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-user-circle"></i> تفاصيل المرشح</h1>
+        <div>
+            <a href="{% url 'candidate_edit' candidate.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'candidate_delete' candidate.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> حذف
+            </a>
+            <a href="{% url 'candidate_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> رجوع للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Info Card -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    {% if candidate.photo %}
+                    <img src="{{ candidate.photo.url }}" alt="{{ candidate.full_name }}" class="img-thumbnail mb-3"
+                        style="max-width: 250px;">
+                    {% else %}
+                    <div class="bg-light p-5 mb-3 rounded">
+                        <i class="fas fa-user fa-5x text-muted"></i>
+                    </div>
+                    {% endif %}
+
+                    <h3 class="mb-1">{{ candidate.full_name }}</h3>
+                    <p class="text-muted mb-2">
+                        <span class="badge bg-info fs-6">
+                            {{ candidate.party.serial_number }}-{{ candidate.serial_number }}
+                        </span>
+                    </p>
+                    <p class="text-muted">{{ candidate.party.name }}</p>
+                </div>
+            </div>
+
+            <!-- Vote Statistics -->
+            <div class="card shadow">
+                <div class="card-header" style="background: linear-gradient(135deg, #1B5E20, #0D3310); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> إحصائيات الأصوات</h5>
+                </div>
+                <div class="card-body">
+                    <!-- التصويت العام -->
+                    <div class="mb-4 p-3 rounded" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong style="color: #1B5E20;">التصويت العام</strong>
+                            </div>
+                            <h3 class="mb-0" style="color: #1B5E20;">{{ candidate.get_general_votes|intcomma }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- التصويت الخاص -->
+                    <div class="mb-4 p-3 rounded" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-star text-primary"></i>
+                                <strong style="color: #1565C0;">التصويت الخاص</strong>
+                            </div>
+                            <h3 class="mb-0" style="color: #1565C0;">{{ candidate.get_special_votes|intcomma }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- المجموع الكلي -->
+                    <div class="p-4 rounded text-center" style="background: linear-gradient(135deg, #FFD700, #DAA520);">
+                        <h6 class="mb-2" style="color: #0D3310;"><i class="fas fa-calculator"></i> المجموع الكلي</h6>
+                        <h1 class="display-4 mb-0" style="color: #0D3310; font-weight: 800;">{{ total_votes|intcomma }}
+                        </h1>
+                        <small style="color: #0D3310;">صوت</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Card -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #1B5E20, #0D3310); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> المعلومات الأساسية</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th width="30%">الرقم التعريفي:</th>
+                                <td>
+                                    <span class="badge bg-info">{{ candidate.party.serial_number }}-{{
+                                        candidate.serial_number }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>الاسم الكامل:</th>
+                                <td><strong>{{ candidate.full_name }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>الحزب/القائمة:</th>
+                                <td>{{ candidate.party.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>رقم الناخب:</th>
+                                <td>{{ candidate.voter_number|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>رقم الهاتف:</th>
+                                <td>
+                                    {% if candidate.phone %}
+                                    <i class="fas fa-phone"></i> {{ candidate.phone }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>تاريخ الإضافة:</th>
+                                <td>{{ candidate.created_at|date:"Y/m/d - H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <th>آخر تحديث:</th>
+                                <td>{{ candidate.updated_at|date:"Y/m/d - H:i" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- إحصائيات المحطات -->
+            <div class="card shadow mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #FFD700, #DAA520); color: #0D3310;">
+                    <h5 class="mb-0"><i class="fas fa-building"></i> إحصائيات المحطات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded" style="background: #E8F5E9;">
+                                <h4 class="text-success mb-0">{{ candidate.get_stations_voted_count|intcomma }}</h4>
+                                <small class="text-muted">محطات صوّتت</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded" style="background: #FFEBEE;">
+                                <h4 class="text-danger mb-0">{{ candidate.get_stations_not_voted_count|intcomma }}</h4>
+                                <small class="text-muted">محطات لم تُصوِّت</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded" style="background: #E3F2FD;">
+                                <h4 class="text-primary mb-0">3,000</h4>
+                                <small class="text-muted">إجمالي المحطات</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- شريط التقدم -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>نسبة التغطية</span>
+                            <span>{{ candidate.get_stations_voted_count }} من 3000</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            {% widthratio candidate.get_stations_voted_count 3000 100 as coverage_percent %}
+                            <div class="progress-bar" role="progressbar"
+                                style="width: {{ coverage_percent }}%; background: linear-gradient(135deg, #1B5E20, #2E7D32);"
+                                aria-valuenow="{{ coverage_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ coverage_percent }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biography Card -->
+            {% if candidate.biography %}
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> السيرة الذاتية</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-justify">{{ candidate.biography|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

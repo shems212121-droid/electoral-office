@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}مقارنة الغرف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-bar-chart-fill"></i> مقارنة بين جميع الغرف</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>الاسم</th>
+                                    <th>الحالة</th>
+                                    <th>المشرف</th>
+                                    <th>المرتكزات</th>
+                                    <th>المعرفين</th>
+                                    <th>الناخبين</th>
+                                    <th>المدراء</th>
+                                    <th>الوكلاء</th>
+                                    <th>المجموع</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for room in comparison_data %}
+                                <tr>
+                                    <td><strong>{{ room.room_code }}</strong></td>
+                                    <td>{{ room.room_name }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {% if room.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if room.is_active %}نشط{% else %}غير نشط{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ room.supervisor }}</td>
+                                    <td class="text-center">{{ room.anchors }}</td>
+                                    <td class="text-center">{{ room.introducers }}</td>
+                                    <td class="text-center">{{ room.voters }}</td>
+                                    <td class="text-center">{{ room.directors }}</td>
+                                    <td class="text-center">{{ room.agents }}</td>
+                                    <td class="text-center fw-bold">{{ room.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'sub_room_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> العودة
+            </a>
+            <a href="{% url 'sub_room_statistics' %}" class="btn btn-primary">
+                <i class="bi bi-graph-up"></i> الإحصائيات التفصيلية
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

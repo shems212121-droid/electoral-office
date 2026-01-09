@@ -1,0 +1,206 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}تسجيلات المراقبين - المكتب الانتخابي{% endblock %}
+
+{% block page_title %}تسجيلات المراقبين{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ total_count }}</h3>
+                    <p class="mb-0">إجمالي المراقبين</p>
+                </div>
+                <i class="fas fa-user-tie fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ pending_count }}</h3>
+                    <p class="mb-0">قيد المراجعة</p>
+                </div>
+                <i class="fas fa-hourglass-half fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ approved_count }}</h3>
+                    <p class="mb-0">معتمدين</p>
+                </div>
+                <i class="fas fa-user-check fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Card -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-clipboard-list me-2"></i>قائمة المراقبين المسجلين</span>
+            <a href="{% url 'observer_registration_create' %}" class="btn btn-warning">
+                <i class="fas fa-plus me-1"></i>تسجيل مراقب جديد
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Search & Filters -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                        placeholder="البحث بالاسم أو رقم الناخب أو الهاتف..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- جميع الحالات --</option>
+                    <option value="pending" {% if status_filter == "pending" %}selected{% endif %}>قيد المراجعة</option>
+                    <option value="approved" {% if status_filter == "approved" %}selected{% endif %}>معتمد</option>
+                    <option value="badge_issued" {% if status_filter == "badge_issued" %}selected{% endif %}>تم إصدار
+                        الباج</option>
+                    <option value="rejected" {% if status_filter == "rejected" %}selected{% endif %}>مرفوض</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i>تصفية
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'observer_registration_list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-redo me-1"></i>إعادة تعيين
+                </a>
+            </div>
+        </form>
+
+        <!-- Results Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم الكامل</th>
+                        <th>رقم الهاتف</th>
+                        <th>رقم الناخب</th>
+                        <th>التحصيل الدراسي</th>
+                        <th>الحالة</th>
+                        <th>تاريخ التسجيل</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for observer in observers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if observer.photo %}
+                                <img src="{{ observer.photo.url }}" alt="{{ observer.full_name }}"
+                                    class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+                                    style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ observer.full_name }}</strong>
+                                    {% if observer.face_captured %}
+                                    <span class="badge bg-info ms-1" title="تم التقاط الوجه"><i
+                                            class="fas fa-face-smile"></i></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td dir="ltr" class="text-end">{{ observer.phone_number }}</td>
+                        <td dir="ltr" class="text-end">{{ observer.voter_number }}</td>
+                        <td>{{ observer.get_education_display }}</td>
+                        <td>
+                            {% if observer.status == "pending" %}
+                            <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                            {% elif observer.status == "approved" %}
+                            <span class="badge bg-success">معتمد</span>
+                            {% elif observer.status == "badge_issued" %}
+                            <span class="badge bg-primary">تم إصدار الباج</span>
+                            {% else %}
+                            <span class="badge bg-danger">مرفوض</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ observer.registered_at|date:"Y-m-d" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'observer_registration_detail' observer.pk %}"
+                                    class="btn btn-outline-primary" title="تفاصيل">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if observer.status == "pending" %}
+                                <a href="{% url 'approve_observer' observer.pk %}" class="btn btn-outline-success"
+                                    title="موافقة">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <a href="{% url 'reject_observer' observer.pk %}" class="btn btn-outline-danger"
+                                    title="رفض">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-user-slash fa-3x text-muted mb-3 d-block"></i>
+                            <p class="text-muted">لا توجد تسجيلات مراقبين بعد</p>
+                            <a href="{% url 'observer_registration_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>تسجيل أول مراقب
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&search={{ search }}&status={{ status_filter }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&search={{ search }}&status={{ status_filter }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

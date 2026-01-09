@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}مدراء المراكز - {{ room.room_code }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-briefcase"></i> مدراء المراكز - {{ room.room_code }} - {{ room.name }}</h2>
+            <p class="text-muted">إجمالي: {{ total_count }} مدير</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if directors %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>كود المدير</th>
+                                    <th>الاسم</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>رقم المركز</th>
+                                    <th>اسم المركز</th>
+                                    <th>نوع الاقتراع</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for director in directors %}
+                                <tr>
+                                    <td><code>{{ director.director_code|default:"-" }}</code></td>
+                                    <td>{{ director.full_name }}</td>
+                                    <td>{{ director.phone }}</td>
+                                    <td>{{ director.assigned_center_number }}</td>
+                                    <td>{{ director.assigned_center_name }}</td>
+                                    <td>{{ director.get_voting_type_display }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {% if director.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ director.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if directors.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if directors.has_previous %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ directors.previous_page_number }}">السابق</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ directors.number }} من {{
+                                    directors.paginator.num_pages }}</span></li>
+                            {% if directors.has_next %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ directors.next_page_number }}">التالي</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-center text-muted">لا يوجد مدراء مراكز في هذه الغرفة</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{% url 'sub_room_dashboard' room.pk %}" class="btn btn-secondary">العودة</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

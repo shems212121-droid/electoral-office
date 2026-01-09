@@ -1,0 +1,443 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}إدارة المهام - المكتب الانتخابي{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kanban-column {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        min-height: 400px;
+    }
+
+    .task-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-right: 4px solid;
+        transition: all 0.2s;
+    }
+
+    .task-card:hover {
+        transform: translateX(-5px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .task-card.pending {
+        border-right-color: #6c757d;
+    }
+
+    .task-card.in_progress {
+        border-right-color: #ffc107;
+    }
+
+    .task-card.completed {
+        border-right-color: #28a745;
+    }
+
+    .task-card.cancelled {
+        border-right-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tasks"></i> إدارة المهام</h1>
+        <a href="{% url 'task_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة مهمة جديدة
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- معلقة -->
+        <div class="col-lg-3 mb-4">
+            <div class="kanban-column">
+                <h5 class="text-secondary mb-3">
+                    <i class="fas fa-clock"></i> معلقة ({{ pending_tasks.count }})
+                </h5>
+                {% for task in pending_tasks %}
+                <div class="task-card pending">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">{{ task.title }}</h6>
+                        <!-- Dropdown Actions Menu -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-secondary p-0" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'task_edit' task.pk %}">
+                                        <i class="fas fa-edit text-primary"></i> تحرير
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="in_progress">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-play text-warning"></i> بدء التنفيذ
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-check text-success"></i> إكمال
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-times text-danger"></i> إلغاء
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ task.pk }}">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2">{{ task.description|truncatechars:100 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> {{ task.assigned_to }}
+                        </small>
+                        {% if task.due_date %}
+                        <small class="text-danger">
+                            <i class="fas fa-calendar"></i> {{ task.due_date|date:"Y/m/d" }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteModal{{ task.pk }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">تأكيد الحذف</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>هل أنت متأكد من حذف المهمة: <strong>{{ task.title }}</strong>؟</p>
+                                    <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> هذا الإجراء لا
+                                        يمكن التراجع عنه!</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">إلغاء</button>
+                                    <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد مهام</p>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <!-- قيد التنفيذ -->
+        <div class="col-lg-3 mb-4">
+            <div class="kanban-column">
+                <h5 class="text-warning mb-3">
+                    <i class="fas fa-spinner"></i> قيد التنفيذ ({{ in_progress_tasks.count }})
+                </h5>
+                {% for task in in_progress_tasks %}
+                <div class="task-card in_progress">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">{{ task.title }}</h6>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-secondary p-0" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'task_edit' task.pk %}">
+                                        <i class="fas fa-edit text-primary"></i> تحرير
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-check text-success"></i> إكمال
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="pending">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-undo text-secondary"></i> إعادة إلى معلقة
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ task.pk }}">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2">{{ task.description|truncatechars:100 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> {{ task.assigned_to }}
+                        </small>
+                        {% if task.due_date %}
+                        <small class="text-danger">
+                            <i class="fas fa-calendar"></i> {{ task.due_date|date:"Y/m/d" }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ task.pk }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">تأكيد الحذف</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>هل أنت متأكد من حذف المهمة: <strong>{{ task.title }}</strong>؟</p>
+                                    <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> هذا الإجراء لا
+                                        يمكن التراجع عنه!</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">إلغاء</button>
+                                    <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد مهام</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- مكتملة -->
+        <div class="col-lg-3 mb-4">
+            <div class="kanban-column">
+                <h5 class="text-success mb-3">
+                    <i class="fas fa-check-circle"></i> مكتملة ({{ completed_tasks.count }})
+                </h5>
+                {% for task in completed_tasks %}
+                <div class="task-card completed">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">{{ task.title }}</h6>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-secondary p-0" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'task_edit' task.pk %}">
+                                        <i class="fas fa-edit text-primary"></i> تحرير
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="pending">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-undo text-warning"></i> إعادة فتح
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ task.pk }}">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2">{{ task.description|truncatechars:100 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> {{ task.assigned_to }}
+                        </small>
+                        {% if task.due_date %}
+                        <small class="text-success">
+                            <i class="fas fa-calendar-check"></i> {{ task.due_date|date:"Y/m/d" }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ task.pk }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">تأكيد الحذف</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>هل أنت متأكد من حذف المهمة: <strong>{{ task.title }}</strong>؟</p>
+                                    <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> هذا الإجراء لا
+                                        يمكن التراجع عنه!</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">إلغاء</button>
+                                    <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد مهام</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ملغاة -->
+        <div class="col-lg-3 mb-4">
+            <div class="kanban-column">
+                <h5 class="text-danger mb-3">
+                    <i class="fas fa-times-circle"></i> ملغاة ({{ cancelled_tasks.count }})
+                </h5>
+                {% for task in cancelled_tasks %}
+                <div class="task-card cancelled">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">{{ task.title }}</h6>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-secondary p-0" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'task_edit' task.pk %}">
+                                        <i class="fas fa-edit text-primary"></i> تحرير
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'task_change_status' task.pk %}"
+                                        class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="pending">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-undo text-warning"></i> إعادة فتح
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ task.pk }}">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2">{{ task.description|truncatechars:100 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> {{ task.assigned_to }}
+                        </small>
+                        {% if task.due_date %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> {{ task.due_date|date:"Y/m/d" }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ task.pk }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">تأكيد الحذف</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>هل أنت متأكد من حذف المهمة: <strong>{{ task.title }}</strong>؟</p>
+                                    <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> هذا الإجراء لا
+                                        يمكن التراجع عنه!</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">إلغاء</button>
+                                    <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">لا توجد مهام</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

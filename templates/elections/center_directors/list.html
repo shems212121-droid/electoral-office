@@ -1,0 +1,194 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}مدراء المراكز الانتخابية{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .stats-card h3 {
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .stats-card p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+    }
+
+    .director-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+
+    .director-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .badge-general {
+        background-color: #28a745;
+    }
+
+    .badge-special {
+        background-color: #17a2b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-user-tie"></i> مدراء المراكز الانتخابية</h2>
+            <p class="text-muted">إدارة مدراء المراكز العامة والخاصة والمسؤولين عن وكلاء الكيان</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>{{ total_general }}</h3>
+                <p><i class="fas fa-building"></i> مراكز عامة (522 متوقع)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h3>{{ total_special }}</h3>
+                <p><i class="fas fa-star"></i> مراكز خاصة (37 متوقع)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h3>{{ active_directors }}</h3>
+                <p><i class="fas fa-check-circle"></i> مدراء نشطين</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h3>{{ directors.count }}</h3>
+                <p><i class="fas fa-users"></i> إجمالي المدراء</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">نوع الاقتراع</label>
+                    <select name="voting_type" class="form-select">
+                        <option value="">الكل</option>
+                        <option value="general" {% if voting_type_filter == 'general' %}selected{% endif %}>عام</option>
+                        <option value="special" {% if voting_type_filter == 'special' %}selected{% endif %}>خاص</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">الحالة</label>
+                    <select name="status" class="form-select">
+                        <option value="">الكل</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>نشط</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>غير نشط</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">بحث</label>
+                    <input type="text" name="search" class="form-control" placeholder="الاسم، الهاتف، رقم المركز..."
+                        value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-3">
+                <a href="{% url 'center_director_add' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> إضافة مدير مركز جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Directors List -->
+    <div class="row">
+        {% for director in directors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="director-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0">{{ director.full_name }}</h5>
+                    <span
+                        class="badge {% if director.voting_type == 'general' %}badge-general{% else %}badge-special{% endif %}">
+                        {{ director.get_voting_type_display }}
+                    </span>
+                </div>
+
+                <p class="mb-2">
+                    <i class="fas fa-building text-primary"></i>
+                    <strong>مركز {{ director.assigned_center_number }}</strong><br>
+                    <small class="text-muted">{{ director.assigned_center_name }}</small>
+                </p>
+
+                <div class="row text-center mb-2">
+                    <div class="col-6">
+                        <strong>{{ director.agents_count }}</strong><br>
+                        <small class="text-muted">وكلاء الكيان</small>
+                    </div>
+                    <div class="col-6">
+                        <span
+                            class="badge {% if director.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ director.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <i class="fas fa-phone text-success"></i> {{ director.phone }}
+                </div>
+
+                <div class="btn-group w-100" role="group">
+                    <a href="{% url 'center_director_detail' director.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> تفاصيل
+                    </a>
+                    <a href="{% url 'center_director_edit' director.pk %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a href="{% url 'political_entity_agent_add' %}?director={{ director.pk }}"
+                        class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-user-plus"></i> إضافة وكيل
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> لا يوجد مدراء مراكز مسجلين حالياً
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // إمكانية إضافة JavaScript إضافي هنا
+</script>
+{% endblock %}

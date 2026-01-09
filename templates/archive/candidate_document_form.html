@@ -1,0 +1,175 @@
+{% extends 'elections/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if is_edit %}تعديل وثائق{% else %}رفع وثائق جديدة{% endif %} - المرشحين{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:candidate_document_list' %}">وثائق المرشحين</a>
+                    </li>
+                    <li class="breadcrumb-item active">{% if is_edit %}تعديل{% else %}جديد{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cloud-upload me-2"></i>
+                        {% if is_edit %}تعديل وثائق: {{ document.candidate.full_name }}{% else %}رفع وثائق مرشح{% endif
+                        %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i>يرجى تصحيح الأخطاء التالية:
+                            </h5>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- اختيار المرشح -->
+                            <div class="col-12">
+                                <label class="form-label">المرشح <span class="text-danger">*</span></label>
+                                {{ form.candidate }}
+                            </div>
+
+                            <!-- السيرة الذاتية والصور -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>السيرة الذاتية والصور
+                                </h5>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">السيرة الذاتية (CV)</label>
+                                {{ form.cv_file }}
+                                <small class="form-text text-muted">PDF أو Word</small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">الصورة الشخصية</label>
+                                {{ form.personal_photo }}
+                                <small class="form-text text-muted">صورة واضحة</small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">صورة الحملة الانتخابية</label>
+                                {{ form.campaign_photo }}
+                                <small class="form-text text-muted">صورة دعائية</small>
+                            </div>
+
+                            <!-- الوثائق الرسمية -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-file-alt me-2 text-success"></i>الوثائق الرسمية
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">نسخة الهوية</label>
+                                {{ form.id_copy }}
+                                <small class="form-text text-muted">البطاقة الوطنية الموحدة</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">شهادة حسن السيرة والسلوك</label>
+                                {{ form.certificate_of_good_conduct }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class=" form-label">الشهادات الدراسية</label>
+                                {{ form.educational_certificates }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">وثائق أخرى</label>
+                                {{ form.other_documents }}
+                            </div>
+
+                            <!-- الملاحظات -->
+                            <div class="col-12 mt-4">
+                                <label class="form-label">ملاحظات</label>
+                                {{ form.notes }}
+                            </div>
+
+                            <!-- الوثائق الحالية -->
+                            {% if is_edit %}
+                            <div class="col-12 mt-4">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>الوثائق الحالية:</h6>
+                                    <div class="row g-2 mt-2">
+                                        {% if document.cv_file %}
+                                        <div class="col-md-3">
+                                            <span class="badge bg-success"><i class="fas fa-check me-1"></i>CV
+                                                موجود</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if document.personal_photo %}
+                                        <div class="col-md-3">
+                                            <span class="badge bg-success"><i class="fas fa-check me-1"></i>صورة
+                                                شخصية</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if document.campaign_photo %}
+                                        <div class="col-md-3">
+                                            <span class="badge bg-success"><i class="fas fa-check me-1"></i>صورة
+                                                حملة</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if document.id_copy %}
+                                        <div class="col-md-3">
+                                            <span class="badge bg-success"><i
+                                                    class="fas fa-check me-1"></i>الهوية</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <small class="d-block mt-2 text-muted">
+                                        💡 اترك الحقل فارغاً للاحتفاظ بالملف الحالي
+                                    </small>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- الأزرار -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'archive:candidate_document_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>إلغاء
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if is_edit %}تحديث الوثائق{% else %}رفع الوثائق{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

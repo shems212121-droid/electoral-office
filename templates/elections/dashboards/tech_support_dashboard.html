@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة تحكم الدعم الفني{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-primary"><i class="fas fa-headset me-2"></i>لوحة تحكم الدعم الفني</h2>
+        <p class="text-muted">مراقبة النظام وأداء المستخدمين</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <h1 class="display-4 fw-bold">{{ total_users }}</h1>
+                <p class="mb-0">إجمالي المستخدمين</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <h1 class="display-4 fw-bold">{{ total_voters }}</h1>
+                <p class="mb-0">سجل الناخبين</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <h1 class="display-4 fw-bold">{{ communications_count }}</h1>
+                <p class="mb-0">سجلات الاتصال</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body text-center">
+                <h1 class="display-4 fw-bold">{{ tasks_count }}</h1>
+                <p class="mb-0">إجمالي المهام</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i>آخر النشاطات في النظام</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>المستخدم</th>
+                    <th>النشاط</th>
+                    <th>التوقيت</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-light rounded-circle text-center me-2" style="width: 32px; height: 32px; line-height: 32px;">
+                                <i class="fas fa-user text-secondary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ log.user.get_full_name|default:log.user.username }}</h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ log.notes|truncatechars:50 }}</td>
+                    <td class="text-muted small">{{ log.created_at|timesince }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-muted">لا توجد نشاطات مسجلة حديثاً</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ director.full_name }} - مدير مركز{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-user-tie"></i> {{ director.full_name }}</h2>
+            <p class="text-muted">مدير مركز {{ director.assigned_center_number }} - {{ director.get_voting_type_display }}</p>
+        </div>
+    </div>
+
+    <!-- Director Information -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> معلومات المدير</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">الاسم الكامل</th>
+                            <td>{{ director.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم الهاتف</th>
+                            <td><i class="fas fa-phone text-success"></i> {{ director.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>البريد الإلكتروني</th>
+                            <td>{{ director.email|default:"لم يتم التحديد" }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم الناخب</th>
+                            <td>{{ director.voter_number|default:"لم يتم التحديد" }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                <span
+                                    class="badge {% if director.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ director.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-building"></i> معلومات المركز</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">نوع الاقتراع</th>
+                            <td>
+                                <span
+                                    class="badge {% if director.voting_type == 'general' %}bg-success{% else %}bg-info{% endif %}">
+                                    {{ director.get_voting_type_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>رقم المركز</th>
+                            <td><strong>{{ director.assigned_center_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>اسم المركز</th>
+                            <td>{{ director.assigned_center_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>المحافظة</th>
+                            <td>{{ director.governorate }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ بداية المهمة</th>
+                            <td>{{ director.start_date|default:"لم يتم التحديد" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h2>{{ total_agents }}</h2>
+                    <p class="mb-0">إجمالي الوكلاء</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-dark">
+                <div class="card-body">
+                    <h2>{{ registered_agents }}</h2>
+                    <p class="mb-0">مسجلين</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h2>{{ approved_agents }}</h2>
+                    <p class="mb-0">معتمدين</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h2>{{ stations_covered }}</h2>
+                    <p class="mb-0">محطات مغطاة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agents List -->
+    <div class="card">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users"></i> وكلاء الكيان ({{ agents.count }})</h5>
+            <a href="{% url 'political_entity_agent_add' %}?director={{ director.pk }}" class="btn btn-sm btn-light">
+                <i class="fas fa-plus"></i> إضافة وكيل جديد
+            </a>
+        </div>
+        <div class="card-body">
+            {% if agents %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>الاسم</th>
+                            <th>الكيان السياسي</th>
+                            <th>رقم الهاتف</th>
+                            <th>رقم المحطة</th>
+                            <th>الحالة</th>
+                            <th>الباج</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for agent in agents %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ agent.full_name }}</td>
+                            <td><span class="badge bg-secondary">{{ agent.political_entity.name }}</span></td>
+                            <td>{{ agent.phone }}</td>
+                            <td>{{ agent.assigned_station_number|default:"غير محدد" }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if agent.status == 'badge_issued' %}bg-success
+                                    {% elif agent.status == 'approved' %}bg-info
+                                    {% elif agent.status == 'verified' %}bg-primary
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {{ agent.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if agent.badge_issued %}
+                                <i class="fas fa-check-circle text-success"></i> {{ agent.badge_number }}
+                                {% else %}
+                                <i class="fas fa-times-circle text-danger"></i> لم يصدر
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'political_entity_agent_detail' agent.pk %}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'political_entity_agent_edit' agent.pk %}"
+                                    class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> لا يوجد وكلاء مسجلين لهذا المركز حالياً
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-4 mb-5">
+        <a href="{% url 'center_director_edit' director.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> تعديل البيانات
+        </a>
+        <a href="{% url 'center_director_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة للقائمة
+        </a>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fas fa-trash"></i> حذف المدير
+        </button>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من حذف مدير المركز <strong>{{ director.full_name }}</strong>؟
+                <br><br>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    سيتم إلغاء ربط جميع الوكلاء بهذا المدير ({{ total_agents }} وكيل)
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'center_director_delete' director.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">نعم، احذف</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

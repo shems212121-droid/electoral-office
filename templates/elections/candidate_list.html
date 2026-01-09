@@ -1,0 +1,89 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}قائمة المرشحين - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-user-tie"></i> قائمة المرشحين</h1>
+        <a href="{% url 'candidate_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة مرشح جديد
+        </a>
+    </div>
+
+    <div class="row">
+        {% for candidate in candidates %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">{{ candidate.full_name }}</h4>
+                    <p class="text-muted">الكود: <strong>{{ candidate.candidate_code }}</strong></p>
+
+                    <div class="mb-3">
+                        <i class="fas fa-phone"></i> {{ candidate.phone }}<br>
+                        {% if candidate.email %}
+                        <i class="fas fa-envelope"></i> {{ candidate.email }}
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <h5>{{ candidate.get_anchors_count }}</h5>
+                            <small class="text-muted">مرتكزات</small>
+                        </div>
+                        <div class="col-3">
+                            <h5>{{ candidate.get_introducers_count }}</h5>
+                            <small class="text-muted">معرّفين</small>
+                        </div>
+                        <div class="col-3">
+                            <h5>{{ candidate.get_voters_count }}</h5>
+                            <small class="text-muted">ناخبين</small>
+                        </div>
+                        <div class="col-3">
+                            <h5>{{ candidate.get_monitors_count }}</h5>
+                            <small class="text-muted">مراقبين</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="{% url 'candidate_detail' candidate.pk %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-eye"></i> عرض التفاصيل
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <p class="text-muted">لا يوجد مرشحين</p>
+            <a href="{% url 'candidate_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة أول مرشح
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1">الأولى</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابقة</a></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">التالية</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">الأخيرة</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}لوحة إدخال النتائج{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2>🗳️ نظام إدخال نتائج الانتخابات</h2>
+            <p class="text-muted">مرحباً، {{ request.user.username }}</p>
+        </div>
+    </div>
+
+    <!-- Stats for this user only -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h1>{{ stats.today_entries }}</h1>
+                    <p>إدخالات اليوم</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h1>{{ stats.total_entries }}</h1>
+                    <p>إجمال ما أدخلته</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'result_entry_add' %}" class="btn btn-lg btn-warning btn-block font-weight-bold">
+                <i class="fas fa-plus-circle"></i> إدخال نتيجة جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Entries Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">📋 آخر 50 إدخال قمت به</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>المحطة</th>
+                                    <th>المرشح</th>
+                                    <th>النوع</th>
+                                    <th>الأصوات</th>
+                                    <th>الوقت</th>
+                                    <th>ملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        {{ entry.station.center.name }}
+                                        <br>
+                                        <small class="text-muted">محطة: {{ entry.station.station_number }}</small>
+                                    </td>
+                                    <td>
+                                        {{ entry.candidate.full_name }}
+                                        <br>
+                                        <small class="text-muted">{{ entry.candidate.party.name }}</small>
+                                    </td>
+                                    <td>
+                                        {% if entry.vote_type == 'general' %}
+                                        <span class="badge badge-primary">عام</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">خاص</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="font-weight-bold" style="font-size: 1.2em;">{{ entry.vote_count
+                                            }}</span>
+                                    </td>
+                                    <td>{{ entry.entered_at|date:"H:i Y-m-d" }}</td>
+                                    <td>{{ entry.notes|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <p class="text-muted">لم تقم بإدخال أي نتائج بعد</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

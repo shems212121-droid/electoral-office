@@ -1,0 +1,131 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ introducer.full_name }} - تفاصيل المعرّف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-id-card"></i> {{ introducer.full_name }}</h1>
+        <div>
+            <a href="{% url 'introducer_edit' introducer.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'introducer_delete' introducer.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> حذف
+            </a>
+            <a href="{% url 'introducer_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4><i class="fas fa-info-circle"></i> المعلومات الأساسية</h4>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>الكود:</strong> {{ introducer.introducer_code }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>المرتكز:</strong>
+                            <a href="{% url 'anchor_detail' introducer.anchor.pk %}">{{ introducer.anchor.full_name
+                                }}</a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>المرشح:</strong>
+                            <a href="{% url 'candidate_detail' introducer.anchor.candidate.pk %}">
+                                {{ introducer.anchor.candidate.full_name }}
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>رقم الهاتف:</strong> {{ introducer.phone }}
+                        </div>
+                        {% if introducer.email %}
+                        <div class="col-md-6 mb-3">
+                            <strong>البريد الإلكتروني:</strong> {{ introducer.email }}
+                        </div>
+                        {% endif %}
+                        <div class="col-md-12 mb-3">
+                            <strong>العنوان:</strong> {{ introducer.address|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الناخبين -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> الناخبين المخصصين ({{ voters_count }})</h5>
+                    <a href="{% url 'introducer_voters' introducer.pk %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> إدارة الناخبين
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if voters %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>رقم الناخب</th>
+                                    <th>الاسم</th>
+                                    <th>المركز</th>
+                                    <th>التصنيف</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for voter in voters %}
+                                <tr>
+                                    <td>{{ voter.voter_number }}</td>
+                                    <td>{{ voter.full_name }}</td>
+                                    <td>{{ voter.voting_center_name|truncatechars:30 }}</td>
+                                    <td>
+                                        {% if voter.classification == 'supporter' %}
+                                        <span class="badge bg-success">مؤيد</span>
+                                        {% elif voter.classification == 'neutral' %}
+                                        <span class="badge bg-info">محايد</span>
+                                        {% elif voter.classification == 'opponent' %}
+                                        <span class="badge bg-danger">معارض</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">غير محدد</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'voter_detail' voter.pk %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            عرض
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-muted py-3">لا يوجد ناخبين مخصصين</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>الإحصائيات</h5>
+                    <hr>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-users"></i> الناخبين</span>
+                            <h3 class="mb-0">{{ voters_count|intcomma }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

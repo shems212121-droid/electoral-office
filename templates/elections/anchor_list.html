@@ -1,0 +1,94 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}المرتكزات - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-anchor"></i> قائمة المرتكزات</h1>
+        <a href="{% url 'anchor_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة مرتكز
+        </a>
+    </div>
+
+    <!-- Filter -->
+    {% if candidates %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <select name="candidate" class="form-select">
+                        <option value="">جميع المرشحين</option>
+                        {% for cand in candidates %}
+                        <option value="{{ cand.id }}" {% if request.GET.candidate|stringformat:'s' == cand.id|stringformat:'s' %}selected{% endif %}>
+                            {{ cand.full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">فلترة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>الاسم</th>
+                            <th>المرشح</th>
+                            <th>الهاتف</th>
+                            <th>المعرّفين</th>
+                            <th>الناخبين</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for anchor in anchors %}
+                        <tr>
+                            <td><strong>{{ anchor.anchor_code }}</strong></td>
+                            <td>{{ anchor.full_name }}</td>
+                            <td>{{ anchor.candidate.full_name }}</td>
+                            <td>{{ anchor.phone }}</td>
+                            <td><span class="badge bg-info">{{ anchor.get_introducers_count }}</span></td>
+                            <td><span class="badge bg-success">{{ anchor.get_voters_count|intcomma }}</span></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'anchor_detail' anchor.pk %}" class="btn btn-outline-info"
+                                        title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'anchor_edit' anchor.pk %}" class="btn btn-outline-primary"
+                                        title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'anchor_delete' anchor.pk %}" class="btn btn-outline-danger"
+                                        title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                لا توجد مرتكزات
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

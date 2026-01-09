@@ -1,0 +1,212 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}تفاصيل الناخب - {{ voter.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 18px;
+        color: #212529;
+    }
+
+    .log-item {
+        padding: 15px;
+        border-right: 3px solid #667eea;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-user"></i> تفاصيل الناخب</h1>
+        <a href="{% url 'voter_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- معلومات الناخب الأساسية -->
+        <div class="col-md-6 mb-3">
+            <div class="info-card">
+                <h4 class="mb-4"><i class="fas fa-id-card"></i> المعلومات الشخصية</h4>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="info-label">رقم الناخب</div>
+                        <div class="info-value">{{ voter.voter_number }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">الحالة</div>
+                        <div class="info-value">{{ voter.status|default:"-" }}</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">الاسم الكامل</div>
+                    <div class="info-value">{{ voter.full_name }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="info-label">تاريخ الميلاد</div>
+                        <div class="info-value">{{ voter.date_of_birth|default:"-" }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">اسم الأم</div>
+                        <div class="info-value">{{ voter.mother_name|default:"-" }}</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">رقم الهاتف</div>
+                    <div class="info-value">{{ voter.phone|default:"-" }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">رقم العائلة</div>
+                    <div class="info-value">{{ voter.family_number|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات الاقتراع -->
+        <div class="col-md-6 mb-3">
+            <div class="info-card">
+                <h4 class="mb-4"><i class="fas fa-poll"></i> معلومات الاقتراع</h4>
+
+                <div class="mb-3">
+                    <div class="info-label">المحافظة</div>
+                    <div class="info-value">{{ voter.governorate }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">مركز الاقتراع</div>
+                    <div class="info-value">{{ voter.voting_center_name }}</div>
+                    <small class="text-muted">رقم: {{ voter.voting_center_number }}</small>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">مركز التسجيل</div>
+                    <div class="info-value">{{ voter.registration_center_name|default:"-" }}</div>
+                    {% if voter.registration_center_number %}
+                    <small class="text-muted">رقم: {{ voter.registration_center_number }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">رقم المحطة</div>
+                    <div class="info-value">{{ voter.station_number|default:"-" }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">التصنيف</div>
+                    <div class="info-value">
+                        {% if voter.classification == 'supporter' %}
+                        <span class="badge bg-success fs-6">مؤيد</span>
+                        {% elif voter.classification == 'neutral' %}
+                        <span class="badge bg-info fs-6">محايد</span>
+                        {% elif voter.classification == 'opponent' %}
+                        <span class="badge bg-danger fs-6">معارض</span>
+                        {% else %}
+                        <span class="badge bg-secondary fs-6">غير محدد</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="info-label">المعرّف</div>
+                    <div class="info-value">
+                        {% if voter.introducer %}
+                        <a href="{% url 'introducer_detail' voter.introducer.pk %}">
+                            {{ voter.introducer.full_name }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">غير مخصص</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- سجل الاتصالات -->
+    <div class="row">
+        <div class="col-12">
+            <div class="info-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="fas fa-phone"></i> سجل الاتصالات</h4>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#logModal">
+                        <i class="fas fa-plus"></i> إضافة اتصال
+                    </button>
+                </div>
+
+                {% if communication_logs %}
+                {% for log in communication_logs %}
+                <div class="log-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>{{ log.user.username }}</strong>
+                            <span class="badge bg-info">{{ log.get_result_display }}</span>
+                            {% if log.contact_type %}
+                            <span class="badge bg-secondary">{{ log.get_contact_type_display }}</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ log.created_at|date:"Y-m-d H:i" }}</small>
+                    </div>
+                    {% if log.notes %}
+                    <p class="mb-0 mt-2 text-muted">{{ log.notes }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    لا توجد اتصالات مسجلة
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal لإضافة اتصال -->
+<div class="modal fade" id="logModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'log_communication' voter.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">تسجيل اتصال جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ log_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

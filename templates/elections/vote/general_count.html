@@ -1,0 +1,667 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}جرد الأصوات العام{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/vote_entry_styles.css' %}">
+<style>
+    .form-select,
+    .form-control {
+        border-radius: 0.5rem;
+    }
+
+    .card {
+        border-radius: 1rem;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f0f8ff;
+    }
+
+    /* Scanner Styles */
+    #qr-reader {
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #qr-reader video {
+        object-fit: cover;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-vote-yea text-primary"></i> جرد الأصوات العام</h2>
+            <p class="text-muted">إدخال أصوات التصويت العام في مراكز الاقتراع</p>
+        </div>
+    </div>
+
+    <!-- نموذج الإدخال -->
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="card vote-entry-card shadow">
+                <div class="card-header card-header-enhanced bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle"></i> إدخال جرد جديد</h5>
+                </div>
+                <div class="card-body">
+                    <!-- قسم البحث عن مركز الاقتراع -->
+                    <div class="center-lookup-section">
+                        <label for="centerNumberInput">
+                            <i class="fas fa-search"></i> رقم مركز الاقتراع
+                        </label>
+                        <div class="input-group mb-3 direction-ltr">
+                            <button class="btn btn-outline-primary" type="button" id="scanBtn" title="مسح باركود">
+                                <i class="fas fa-qrcode"></i>
+                            </button>
+                            <input type="text" id="centerNumberInput"
+                                class="form-control form-control-enhanced text-start" placeholder="أدخل رقم المركز..."
+                                autocomplete="off">
+
+                        </div>
+                        <div class="loading-spinner" id="lookupSpinner">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">جاري البحث...</span>
+                            </div>
+                        </div>
+
+                        <!-- عرض معلومات المركز -->
+                        <div class="center-info-display" id="centerInfo">
+                            <div class="center-info-item">
+                                <i class="fas fa-building"></i>
+                                <span class="center-info-label">اسم المركز:</span>
+                                <span class="center-info-value" id="centerName">-</span>
+                            </div>
+                            <div class="center-info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span class="center-info-label">الموقع:</span>
+                                <span class="center-info-value" id="centerLocation">-</span>
+                            </div>
+                            <div class="center-info-item">
+                                <i class="fas fa-map-signs"></i>
+                                <span class="center-info-label">المنطقة:</span>
+                                <span class="center-info-value" id="centerArea">-</span>
+                            </div>
+                            <div class="center-info-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="center-info-label">النوع:</span>
+                                <span class="center-info-value">
+                                    <span class="success-badge" id="centerType">-</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- رسالة خطأ -->
+                        <div class="error-message" id="errorMessage">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="errorText"></span>
+                        </div>
+                    </div>
+
+                    <form method="post" id="voteCountForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_station" class="form-label">المحطة *</label>
+                            {{ form.station }}
+                            {% if form.station.errors %}
+                            <div class="text-danger small">{{ form.station.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_candidate" class="form-label">المرشح *</label>
+                            {{ form.candidate }}
+                            {% if form.candidate.errors %}
+                            <div class="text-danger small">{{ form.candidate.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_vote_count" class="form-label">عدد الأصوات *</label>
+                            {{ form.vote_count }}
+                            {% if form.vote_count.errors %}
+                            <div class="text-danger small">{{ form.vote_count.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg btn-enhanced">
+                                <i class="fas fa-save"></i> حفظ الجرد
+                            </button>
+                            <a href="{% url 'combined_results' %}" class="btn btn-info btn-enhanced">
+                                <i class="fas fa-chart-bar"></i> عرض النتائج
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول السجلات الأخيرة -->
+        <div class="col-lg-7">
+            <div class="card vote-entry-card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> آخر السجلات المدخلة (جرد عام)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>المحطة</th>
+                                    <th>المرشح</th>
+                                    <th>الأصوات</th>
+                                    <th>المُدخِل</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vote in vote_counts %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">{{ vote.station.full_number }}</small><br>
+                                        {{ vote.station.center.name }}
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ vote.candidate.party.color }}">
+                                            {{ vote.candidate.party.serial_number }}-{{ vote.candidate.serial_number }}
+                                        </span><br>
+                                        {{ vote.candidate.full_name }}
+                                    </td>
+                                    <td><strong class="text-primary">{{ vote.vote_count }}</strong></td>
+                                    <td><small>{{ vote.entered_by.username }}</small></td>
+                                    <td><small>{{ vote.entered_at|date:"Y-m-d H:i" }}</small></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-3x mb-2"></i><br>
+                                        لا توجد سجلات بعد
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Barcode Scanner Modal -->
+<div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-qrcode ms-2"></i> مسح باركود المحطة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="qr-reader" style="width: 100%;"></div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <p class="text-muted small mb-0">قم بتوجيه الكاميرا نحو رمز QR الخاص بالمحطة</p>
+                <div id="scanResult" class="d-none alert alert-success w-100 mt-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<!-- Batch Import Modal -->
+<div class="modal fade" id="batchImportModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i> استيراد بيانات جرد جماعي (QR)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-building"></i> المركز:</strong> <span
+                                id="batchCenterNumber"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-vote-yea"></i> المحطة:</strong> <span
+                                id="batchStationNumber"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>معرف المرشح (QR)</th>
+                                <th>عدد الأصوات</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batchVotesTableBody">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                        <tfoot class="table-light sticky-bottom">
+                            <tr>
+                                <th colspan="2" class="text-end">المجموع الكلي:</th>
+                                <th id="batchTotalVotes">0</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-0 small">
+                    <i class="fas fa-exclamation-circle"></i> يرجى التأكد من مطابقة أرقام المرشحين قبل الحفظ. سيتم تخطي
+                    أي مرشح غير موجود في النظام.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" onclick="submitBulkVotes()">
+                    <i class="fas fa-save"></i> تأكيد وحفظ الكل
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<script src="{% static 'js/qr-parser.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Clear vote count input explicitly
+        const voteCountInput = document.getElementById('id_vote_count');
+        if (voteCountInput) {
+            voteCountInput.value = '';
+        }
+
+        const centerNumberInput = document.getElementById('centerNumberInput');
+        const centerInfo = document.getElementById('centerInfo');
+        const errorMessage = document.getElementById('errorMessage');
+        const lookupSpinner = document.getElementById('lookupSpinner');
+        const stationSelect = document.getElementById('id_station');
+
+        // Scanner Variables
+        const scanBtn = document.getElementById('scanBtn');
+        const scannerModal = new bootstrap.Modal(document.getElementById('scannerModal'));
+        const scanResult = document.getElementById('scanResult');
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+
+        // Auto-typing timer
+        let typingTimer;
+        const typingDelay = 500;
+
+        centerNumberInput.addEventListener('input', function () {
+            clearTimeout(typingTimer);
+            const centerNumber = this.value.trim();
+
+            if (centerNumber.length > 0) {
+                typingTimer = setTimeout(() => lookupCenter(centerNumber), typingDelay);
+            } else {
+                hideCenterInfo();
+            }
+        });
+
+        // Scanner Button Click
+        scanBtn.addEventListener('click', function () {
+            scannerModal.show();
+        });
+
+        // Handle Modal Events
+        document.getElementById('scannerModal').addEventListener('shown.bs.modal', startScanner);
+        document.getElementById('scannerModal').addEventListener('hidden.bs.modal', stopScanner);
+
+        function startScanner() {
+            if (isScanning) return;
+
+            scanResult.classList.add('d-none');
+
+            html5QrcodeScanner = new Html5Qrcode("qr-reader");
+            
+            // Mobile-optimized QR box configuration
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const config = { 
+                fps: 10, 
+                qrbox: isMobile ? { width: 280, height: 280 } : { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            // Try multiple camera constraints with fallbacks for better mobile compatibility
+            const cameraConstraints = [
+                // First try: Rear camera with exact environment facing mode
+                { facingMode: { exact: "environment" } },
+                // Second try: Rear camera with ideal environment facing mode
+                { facingMode: "environment" },
+                // Third try: Any available camera
+                { facingMode: "user" },
+                // Fourth try: First available video device
+                true
+            ];
+
+            let constraintIndex = 0;
+
+            function tryStartCamera() {
+                if (constraintIndex >= cameraConstraints.length) {
+                    // All attempts failed
+                    scanResult.innerHTML = `
+                        <strong>تعذر الوصول إلى الكاميرا</strong><br>
+                        <small>يرجى التأكد من:</small><br>
+                        <small>• منح الأذونات للكاميرا في المتصفح</small><br>
+                        <small>• إغلاق أي تطبيقات أخرى تستخدم الكاميرا</small><br>
+                        <small>• إعادة تحميل الصفحة والمحاولة مرة أخرى</small>
+                    `;
+                    scanResult.classList.remove('d-none', 'alert-success');
+                    scanResult.classList.add('alert-danger');
+                    return;
+                }
+
+                const currentConstraint = cameraConstraints[constraintIndex];
+                console.log(`Trying camera constraint ${constraintIndex + 1}/${cameraConstraints.length}:`, currentConstraint);
+
+                html5QrcodeScanner.start(
+                    currentConstraint,
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                )
+                    .then(() => {
+                        isScanning = true;
+                        console.log(`QR Scanner started successfully with constraint ${constraintIndex + 1}`);
+                    })
+                    .catch(err => {
+                        console.warn(`Failed with constraint ${constraintIndex + 1}:`, err);
+                        constraintIndex++;
+                        
+                        // Show loading message while trying next option
+                        if (constraintIndex < cameraConstraints.length) {
+                            scanResult.innerHTML = `<small>جاري محاولة فتح الكاميرا... (${constraintIndex}/${cameraConstraints.length})</small>`;
+                            scanResult.classList.remove('d-none', 'alert-danger');
+                            scanResult.classList.add('alert-info');
+                            setTimeout(tryStartCamera, 500); // Small delay before retry
+                        } else {
+                            tryStartCamera(); // Show final error message
+                        }
+                    });
+            }
+
+            tryStartCamera();
+        }
+
+        function onScanFailure(error) {
+            // Handle scan failure silently - this is called frequently during scanning
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner && isScanning) {
+                html5QrcodeScanner.stop()
+                    .then(() => {
+                        html5QrcodeScanner.clear();
+                        isScanning = false;
+                        console.log("QR Scanner stopped successfully");
+                    })
+                    .catch(err => console.error("Failed to stop scanner", err));
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Play success sound
+            const audio = new Audio('/static/sounds/beep.mp3'); // Optional: Add a beep sound
+            audio.play().catch(e => console.log('Audio play failed', e));
+
+            stopScanner();
+            scannerModal.hide();
+
+            // Parse the scanned text
+            handleScannedData(decodedText);
+        }
+
+        function handleScannedData(text) {
+            console.log("QR Code scanned:", text);
+
+            try {
+                // استخدام محلل QR المتقدم
+                const parser = new IHECQRParser();
+                const result = parser.parse(text);
+
+                if (result.success) {
+                    console.log("Parsed QR data:", result);
+
+                    // ملء رقم المركز
+                    centerNumberInput.value = result.centerNumber;
+
+                    // تحميل بيانات المركز
+                    lookupCenter(result.centerNumber, result.stationNumber);
+
+                    // إذا كانت هناك بيانات أصوات، نعرضها للمستخدم
+                    if (result.votes && result.votes.length > 0) {
+                        showVotesImportDialog(result);
+                    } else if (result.isMockData) {
+                        // بيانات تجريبية - عرض رسالة
+                        alert(`تم قراءة QR بنجاح!\nالمركز: ${result.centerNumber}\nالمحطة: ${result.stationNumber}\n\nملاحظة: فك تش فير البيانات المشفرة قيد التطوير.\nيرجى إدخال الأصوات يدوياً حالياً.`);
+                    }
+                } else {
+                    // المحلل الجديد فشل، استخدام الطريقة القديمة
+                    handleLegacyFormat(text);
+                }
+
+            } catch (e) {
+                console.error("Parsing error:", e);
+                // في حالة الخطأ، استخدام الطريقة القديمة
+                handleLegacyFormat(text);
+            }
+        }
+
+        // دالة مساعدة للتنسيقات القديمة
+        function handleLegacyFormat(text) {
+            let center = '';
+            let station = '';
+
+            try {
+                if (text.startsWith('{')) {
+                    const data = JSON.parse(text);
+                    center = data.center || data.center_number || '';
+                    station = data.station || data.station_number || '';
+                } else if (text.includes('-')) {
+                    const parts = text.split('-');
+                    center = parts[0].trim();
+                    station = parts[1] ? parts[1].trim() : '';
+                } else {
+                    center = text.trim();
+                }
+
+                if (center) {
+                    centerNumberInput.value = center;
+                    lookupCenter(center, station);
+                }
+            } catch (e) {
+                console.error("Legacy parsing error:", e);
+                alert("صيغة الباركود غير مدعومة: " + text);
+            }
+        }
+
+
+        let currentQRData = null;
+
+        // عرض نافذة حوارية لاستيراد بيانات الأصوات
+        function showVotesImportDialog(qrData) {
+            currentQRData = qrData;
+
+            // Fill Modal Info
+            document.getElementById('batchCenterNumber').textContent = qrData.centerNumber;
+            document.getElementById('batchStationNumber').textContent = qrData.stationNumber;
+
+            // Calculate total
+            const totalVotes = qrData.votes.reduce((sum, v) => sum + v.voteCount, 0);
+            document.getElementById('batchTotalVotes').textContent = totalVotes;
+
+            const tableBody = document.getElementById('batchVotesTableBody');
+            tableBody.innerHTML = '';
+
+            qrData.votes.forEach((vote, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="fw-bold text-dark">${vote.candidateId}</span></td>
+                    <td>
+                        <span class="badge bg-primary rounded-pill fs-6">${vote.voteCount}</span>
+                    </td>
+                    <td><i class="fas fa-check text-success"></i> جاهز للاستيراد</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Show Modal
+            const modalElement = document.getElementById('batchImportModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+
+        // إرسال البيانات بشكل جماعي
+        window.submitBulkVotes = function () {
+            if (!currentQRData) return;
+
+            const submitBtn = document.querySelector('#batchImportModal .btn-success');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+            // Prepare Payload
+            const payload = {
+                center_number: currentQRData.centerNumber,
+                station_number: currentQRData.stationNumber,
+                vote_type: 'general',
+                votes: currentQRData.votes
+            };
+
+            fetch('/api/vote-count/bulk-save/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('خطأ: ' + data.error);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ في الاتصال بالخادم');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+        };
+
+        // دالة قديمة - تم الاحتفاظ بها للتوافق ولكنها غير مستخدمة الآن
+        function importVotesFromQR(qrData) {
+            showVotesImportDialog(qrData);
+        }
+
+
+        function lookupCenter(centerNumber, targetStationNumber = null) {
+            // Show loading spinner
+            lookupSpinner.classList.add('show');
+            errorMessage.classList.remove('show');
+            centerInfo.classList.remove('show');
+
+            // Make AJAX request
+            fetch(`/api/polling-center/${centerNumber}/`)
+                .then(response => response.json())
+                .then(data => {
+                    lookupSpinner.classList.remove('show');
+
+                    if (data.success) {
+                        // Check if this is a general voting center
+                        if (data.center.voting_type !== 'general') {
+                            showError('هذا المركز من نوع الاقتراع الخاص. يرجى استخدام صفحة جرد الأصوات الخاص.');
+                            return;
+                        }
+
+                        displayCenterInfo(data.center);
+                        updateStationOptions(data.stations, targetStationNumber);
+                    } else {
+                        showError(data.error || 'حدث خطأ في جلب البيانات');
+                        stationSelect.innerHTML = '<option value="">---------</option>';
+                    }
+                })
+                .catch(error => {
+                    lookupSpinner.classList.remove('show');
+                    showError('حدث خطأ في الاتصال بالخادم');
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayCenterInfo(center) {
+            document.getElementById('centerName').textContent = center.name;
+            document.getElementById('centerLocation').textContent = center.location || center.address || 'غير محدد';
+            document.getElementById('centerArea').textContent =
+                `${center.area || ''} ${center.neighborhood ? '/ ' + center.neighborhood : ''}`.trim() || 'غير محدد';
+            document.getElementById('centerType').textContent = center.voting_type_display;
+
+            centerInfo.classList.add('show');
+        }
+
+        function updateStationOptions(stations, targetStationNumber = null) {
+            // Clear current options except the first one
+            stationSelect.innerHTML = '<option value="">---------</option>';
+            let foundStationId = null;
+
+            // Add new stations
+            stations.forEach(station => {
+                const option = document.createElement('option');
+                option.value = station.id;
+                option.textContent = `محطة ${station.station_number} - ${station.full_number}`;
+                stationSelect.appendChild(option);
+
+                // Check if this matches our target station number
+                if (targetStationNumber && (station.station_number.toString() === targetStationNumber.toString())) {
+                    foundStationId = station.id;
+                }
+            });
+
+            // Auto-select station if found
+            if (foundStationId) {
+                stationSelect.value = foundStationId;
+                // Flash effect for visual feedback
+                stationSelect.classList.add('bg-warning');
+                setTimeout(() => stationSelect.classList.remove('bg-warning'), 1000);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            errorMessage.classList.add('show');
+            centerInfo.classList.remove('show');
+        }
+
+        function hideCenterInfo() {
+            centerInfo.classList.remove('show');
+            errorMessage.classList.remove('show');
+        }
+    });
+</script>
+{% endblock %}

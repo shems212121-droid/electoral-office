@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>التقرير اليومي - {{ report_date|date:"Y-m-d" }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: white;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stat-box {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            @page {
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container my-4">
+        <!-- Header -->
+        <div class="report-header">
+            <h1>التقرير اليومي للمكتب الانتخابي</h1>
+            <p class="mb-0">التاريخ: {{ report_date|date:"Y-m-d H:i" }}</p>
+        </div>
+
+        <!-- Print Button -->
+        <div class="text-center no-print mb-4">
+            <button onclick="window.print()" class="btn btn-primary btn-lg">
+                <i class="fas fa-print"></i> طباعة التقرير
+            </button>
+            <button onclick="window.close()" class="btn btn-secondary btn-lg">
+                إغلاق
+            </button>
+        </div>
+
+        <!-- الإحصائيات الرئيسية -->
+        <h3 class="mb-3">الإحصائيات الرئيسية</h3>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_voters|intcomma }}</div>
+                    <div>إجمالي الناخبين</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_candidates }}</div>
+                    <div>المرشحين</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_anchors }}</div>
+                    <div>المرتكزات</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_introducers }}</div>
+                    <div>المعرّفين</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تصنيف الناخبين -->
+        <h3 class="mb-3">تصنيف الناخبين</h3>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-box" style="border-color: #28a745;">
+                    <div class="stat-value" style="color: #28a745;">{{ supporter_count|intcomma }}</div>
+                    <div>مؤيد</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box" style="border-color: #17a2b8;">
+                    <div class="stat-value" style="color: #17a2b8;">{{ neutral_count|intcomma }}</div>
+                    <div>محايد</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box" style="border-color: #dc3545;">
+                    <div class="stat-value" style="color: #dc3545;">{{ opponent_count|intcomma }}</div>
+                    <div>معارض</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box" style="border-color: #6c757d;">
+                    <div class="stat-value" style="color: #6c757d;">{{ unknown_count|intcomma }}</div>
+                    <div>غير محدد</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- النشاط اليومي -->
+        <h3 class="mb-3">النشاط اليومي</h3>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-box">
+                    <div class="stat-value">{{ today_communications }}</div>
+                    <div>اتصالات اليوم</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box">
+                    <div class="stat-value">{{ yesterday_communications }}</div>
+                    <div>اتصالات الأمس</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box">
+                    <div class="stat-value">{{ assigned_voters|intcomma }}</div>
+                    <div>ناخبين مخصصين</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- المهام -->
+        <h3 class="mb-3">حالة المهام</h3>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-box" style="border-color: #6c757d;">
+                    <div class="stat-value" style="color: #6c757d;">{{ pending_tasks }}</div>
+                    <div>معلقة</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box" style="border-color: #ffc107;">
+                    <div class="stat-value" style="color: #ffc107;">{{ in_progress_tasks }}</div>
+                    <div>قيد التنفيذ</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-box" style="border-color: #28a745;">
+                    <div class="stat-value" style="color: #28a745;">{{ completed_tasks }}</div>
+                    <div>مكتملة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- أعلى المراكز -->
+        <h3 class="mb-3">أعلى 10 مراكز انتخابية</h3>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th width="60">#</th>
+                    <th>المركز الانتخابي</th>
+                    <th width="120">عدد الناخبين</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for area in top_areas %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ area.voting_center_name }}</td>
+                    <td class="text-center"><strong>{{ area.count|intcomma }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-center mt-5 text-muted">
+            <small>تم إنشاء هذا التقرير تلقائياً بواسطة نظام المكتب الانتخابي</small>
+        </div>
+    </div>
+</body>
+
+</html>

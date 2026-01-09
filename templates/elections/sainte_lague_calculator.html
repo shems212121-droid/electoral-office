@@ -1,0 +1,357 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}حاسبة سانت ليغو المعدل 2025{% endblock %}
+
+{% block page_title %}حاسبة مقاعد سانت ليغو{% endblock %}
+
+{% block content %}
+<div class="container-fluid animate-fadeInUp">
+    <div class="row">
+        <!-- Settings & Inputs -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-3d h-100">
+                <div class="card-header bg-gradient-primary text-white">
+                    <i class="fas fa-cogs ms-2"></i> إعدادات المعادلة
+                </div>
+                <div class="card-body">
+                    <form id="calculatorForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">عدد المقاعد الكلي (للمحافظة)</label>
+                            <input type="number" id="totalSeats" class="form-control" value="25" min="1">
+                            <small class="text-muted">عدد مقاعد الدائرة الانتخابية</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">القاسم الانتخابي (سانت ليغو المعدل)</label>
+                            <input type="number" id="divisor" class="form-control" value="{{ default_divisor|default:'1.7' }}" step="0.1" min="1">
+                            <small class="text-muted">القيمة المعتمدة عادة في العراق هي 1.7</small>
+                        </div>
+
+                        <hr class="my-4" style="border-color: var(--sadiqoon-gold);">
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="calculateSeats()">
+                                <i class="fas fa-calculator ms-2"></i> احتساب المقاعد
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                <i class="fas fa-undo ms-2"></i> تصفير
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parties Input -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-3d h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-vote-yea ms-2"></i> الكيانات والأصوات</span>
+                    <button type="button" class="btn btn-sm btn-light text-success fw-bold" onclick="addPartyRow()">
+                        <i class="fas fa-plus ms-1"></i> إضافة كيان
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="partiesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50%">اسم الكيان / القائمة</th>
+                                    <th style="width: 35%">عدد الأصوات الصحيحة</th>
+                                    <th style="width: 15%">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partiesList">
+                                <!-- Default Rows -->
+                                <tr class="party-row">
+                                    <td>
+                                        <input type="text" class="form-control party-name" placeholder="مثال: كتلة الصادقون">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control party-votes" placeholder="0" min="0">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="party-row">
+                                    <td>
+                                        <input type="text" class="form-control party-name" placeholder="مثال: ائتلاف دولة القانون">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control party-votes" placeholder="0" min="0">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="party-row">
+                                    <td>
+                                        <input type="text" class="form-control party-name" placeholder="كيان جديد...">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control party-votes" placeholder="0" min="0">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-success rounded-pill" onclick="addPartyRow()">
+                            <i class="fas fa-plus-circle ms-1"></i> إضافة صف جديد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row animate-fadeInUp" id="resultsSection" style="display: none;">
+        <div class="col-12">
+            <div class="card shadow-3d border-top-gold">
+                <div class="card-header bg-dark text-warning text-center py-3">
+                    <h4 class="mb-0"><i class="fas fa-trophy ms-2"></i> نتائج توزيع المقاعد</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted">مجموع الأصوات المحتسبة</h6>
+                                <h3 id="totalVotesDisplay" class="text-primary fw-bold">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted">العتبة الانتخابية التقريبية</h6>
+                                <h3 id="thresholdDisplay" class="text-info fw-bold">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted">عدد المقاعد الموزعة</h6>
+                                <h3 id="seatsDistributedDisplay" class="text-success fw-bold">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="resultsTable">
+                            <thead class="bg-gradient-success text-white">
+                                <tr>
+                                    <th>#</th>
+                                    <th>الكيان</th>
+                                    <th>الأصوات</th>
+                                    <th>المقاعد الفائزة</th>
+                                    <th>الملاحظات / الكسر المتبقي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                                <!-- Results will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <small><i class="fas fa-info-circle ms-1"></i> <strong>آلية الاحتساب:</strong> تم استخدام نظام سانت ليغو المعدل (تقسيم الأصوات على {{ default_divisor|default:'1.7' }}، 3، 5، 7... إلخ) واختيار أعلى النواتج لملء المقاعد.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function addPartyRow() {
+        const tbody = document.getElementById('partiesList');
+        const row = document.createElement('tr');
+        row.className = 'party-row fade-in';
+        row.innerHTML = `
+            <td>
+                <input type="text" class="form-control party-name" placeholder="اسم الكيان...">
+            </td>
+            <td>
+                <input type="number" class="form-control party-votes" placeholder="0" min="0">
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        
+        // Focus usually on the name field of new row
+        row.querySelector('.party-name').focus();
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        if (document.querySelectorAll('.party-row').length > 1) {
+            row.remove();
+        } else {
+            alert('يجب أن يكون هناك كيان واحد على الأقل.');
+        }
+    }
+
+    function resetForm() {
+        if(confirm('هل أنت متأكد من تصفير جميع المدخلات؟')) {
+            document.getElementById('calculatorForm').reset();
+            // Clear party inputs manually as form reset might not affect dynamically added inputs perfectly or we want to keep rows
+            document.querySelectorAll('.party-name').forEach(i => i.value = '');
+            document.querySelectorAll('.party-votes').forEach(i => i.value = '');
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+    }
+
+    function calculateSeats() {
+        const totalSeats = parseInt(document.getElementById('totalSeats').value) || 0;
+        const firstDivisor = parseFloat(document.getElementById('divisor').value) || 1.7;
+        
+        if (totalSeats <= 0) {
+            alert('يرجى إدخال عدد مقاعد صحيح.');
+            return;
+        }
+
+        const rows = document.querySelectorAll('.party-row');
+        let parties = [];
+        let totalVotes = 0;
+
+        rows.forEach(row => {
+            const name = row.querySelector('.party-name').value.trim();
+            const votes = parseInt(row.querySelector('.party-votes').value) || 0;
+            
+            if (name && votes > 0) {
+                parties.push({
+                    name: name,
+                    votes: votes,
+                    seats: 0,
+                    originalVotes: votes
+                });
+                totalVotes += votes;
+            }
+        });
+
+        if (parties.length === 0) {
+            alert('يرجى إدخال اسم الكيان وأصواته لواحد على الأقل.');
+            return;
+        }
+
+        // Sainte-Lague Algorithm
+        // We generate a list of quotients for each party
+        // Divisors: firstDivisor, 3, 5, 7, 9, ...
+        // We actally need to find the top N quotients where N = totalSeats.
+        
+        let allQuotients = [];
+
+        parties.forEach(party => {
+            // Calculate enough quotients. Usually need up to totalSeats per party in extreme case (one party takes all),
+            // but practically seats+1 is safe limit for loop.
+            // Divisors: 1.7, 3, 5, 7, ...
+            // Formula for divisor i (0-indexed): if i==0 then firstDivisor, else 2*i + 1
+            // Wait, standard is 1, 3, 5... Modified changes 1 to 1.7. 
+            // So: Divisor[0] = 1.7
+            // Divisor[1] = 3
+            // Divisor[2] = 5
+            
+            for (let i = 0; i < totalSeats; i++) {
+                let divisor;
+                if (i === 0) {
+                    divisor = firstDivisor;
+                } else {
+                    divisor = (2 * i) + 1; // For i=1 -> 3, i=2 -> 5
+                    // Wait, standard sequence is 1, 3, 5, 7.
+                    // Modified replaces 1 with X. The next terms remain 3, 5, 7?
+                    // Yes, usually.
+                    // Let's verify Modified Sainte-Laguë logic.
+                    // "The numbers of votes are divided by 1.4, 3, 5, 7..." (or 1.6, 1.7 etc).
+                    // So divisors are: First=1.7, then 3, 5, 7, 9...
+                }
+                
+                const quotient = party.originalVotes / divisor;
+                allQuotients.push({
+                    partyName: party.name,
+                    quotient: quotient,
+                    roundC: i + 1, // keeping track of which seat number for this party
+                    divisor: divisor
+                });
+            }
+        });
+
+        // Sort all quotients descending
+        allQuotients.sort((a, b) => b.quotient - a.quotient);
+
+        // Take top N seats
+        const winningQuotients = allQuotients.slice(0, totalSeats);
+        
+        // Reset party seats
+        parties.forEach(p => p.seats = 0);
+
+        // Assign seats
+        winningQuotients.forEach(win => {
+            const p = parties.find(party => party.name === win.partyName);
+            if (p) p.seats++;
+        });
+
+        // Display check
+        // Sort parties by seats won (desc), then votes
+        parties.sort((a, b) => b.seats - a.seats || b.votes - a.votes);
+
+        renderResults(parties, totalVotes, totalSeats, winningQuotients[winningQuotients.length-1].quotient);
+    }
+
+    function renderResults(parties, totalVotes, totalSeats, lastWinningQuotient) {
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+
+        parties.forEach((party, index) => {
+            const row = `
+                <tr class="${party.seats > 0 ? 'table-success fw-bold' : ''}">
+                    <td>${index + 1}</td>
+                    <td>${party.name}</td>
+                    <td>${party.originalVotes.toLocaleString()}</td>
+                    <td><span class="badge bg-${party.seats > 0 ? 'success' : 'secondary'} rounded-pill" style="font-size: 1.1em;">${party.seats}</span></td>
+                    <td>${party.seats > 0 ? 'فاز بـ ' + party.seats + ' مقعد' : '-'}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById('totalVotesDisplay').innerText = totalVotes.toLocaleString();
+        document.getElementById('seatsDistributedDisplay').innerText = totalSeats;
+        document.getElementById('thresholdDisplay').innerText = Math.floor(lastWinningQuotient).toLocaleString();
+
+        const resultsSection = document.getElementById('resultsSection');
+        resultsSection.style.display = 'block';
+        
+        // Scroll to results
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+<style>
+    .border-top-gold {
+        border-top: 5px solid var(--sadiqoon-gold);
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

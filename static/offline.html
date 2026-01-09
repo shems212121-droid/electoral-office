@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتب الانتخابي - Standalone</title>
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#FFD700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1B5E20;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .status-bar {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .online-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .offline .online-indicator {
+            background: #F44336;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #1B5E20;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0D3310;
+        }
+
+        .voter-list {
+            margin-top: 30px;
+        }
+
+        .voter-card {
+            background: #f9f9f9;
+            border-right: 4px solid #FFD700;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .badge-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #FF9800;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #F44336;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background: #F44336;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-success {
+            background: #4CAF50;
+        }
+
+        .notification-error {
+            background: #F44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗳️ المكتب الانتخابي - نسخة Offline</h1>
+
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <div>
+                <span class="online-indicator"></span>
+                <span id="statusText">جاري التحميل...</span>
+            </div>
+            <div class="buttons-row">
+                <button onclick="exportDB()">📤 تصدير</button>
+                <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
+                <button onclick="sync()">🔄 مزامنة</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display:none">
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">الناخبين</div>
+                <div class="stat-number" id="votersCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">المرشحين</div>
+                <div class="stat-number" id="candidatesCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">المرتكزات</div>
+                <div class="stat-number" id="anchorsCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">المعرفين</div>
+                <div class="stat-number" id="introducersCount">0</div>
+            </div>
+        </div>
+
+        <!-- Add Voter Form -->
+        <h2>➕ إضافة ناخب</h2>
+        <form id="voterForm" onsubmit="addVoter(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>رقم الناخب *</label>
+                    <input type="text" name="voter_number" required>
+                </div>
+                <div class="form-group">
+                    <label>الاسم الكامل *</label>
+                    <input type="text" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" name="phone">
+                </div>
+                <div class="form-group">
+                    <label>التصنيف</label>
+                    <select name="classification">
+                        <option value="">غير محدد</option>
+                        <option value="supporter">مؤيد</option>
+                        <option value="neutral">محايد</option>
+                        <option value="opponent">معارض</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit">حفظ الناخب</button>
+        </form>
+
+        <!-- Voters List -->
+        <h2 style="margin-top: 40px;">📋 قائمة الناخبين</h2>
+        <div id="votersList" class="voter-list"></div>
+    </div>
+
+    <!-- Include Local Database Scripts -->
+    <script src="localdb.js"></script>
+    <script src="sync.js"></script>
+
+    <script>
+        // Update online status
+        function updateOnlineStatus() {
+            const statusBar = document.getElementById('statusBar');
+            const statusText = document.getElementById('statusText');
+
+            if (navigator.onLine) {
+                statusBar.classList.remove('offline');
+                statusText.textContent = 'متصل بالإنترنت';
+            } else {
+                statusBar.classList.add('offline');
+                statusText.textContent = 'غير متصل - وضع Offline';
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        window.addEventListener('load', updateOnlineStatus);
+
+        // Show notification
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Add voter
+        async function addVoter(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                await localDB.add('voters', data);
+                showNotification('success', '✅ تمت إضافة الناخب بنجاح');
+                event.target.reset();
+                await loadVoters();
+                await updateStats();
+            } catch (error) {
+                showNotification('error', '❌ فشلت الإضافة: ' + error.message);
+            }
+        }
+
+        // Load voters
+        async function loadVoters() {
+            const votersList = document.getElementById('votersList');
+            const voters = await localDB.getAll('voters');
+
+            if (voters.length === 0) {
+                votersList.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">لا توجد بيانات</p>';
+                return;
+            }
+
+            votersList.innerHTML = voters.map((voter, index) => `
+                <div class="voter-card">
+                    <div>
+                        <strong>${voter.full_name}</strong><br>
+                        <small>رقم: ${voter.voter_number}</small>
+                    </div>
+                    <div>
+                        ${voter.classification ? `<span class="badge badge-${getClassColor(voter.classification)}">${getClassLabel(voter.classification)}</span>` : ''}
+                        ${voter.phone ? `<small>${voter.phone}</small>` : ''}
+                    </div>
+                    <div>
+                        <button class="btn-small btn-danger" onclick="deleteVoter(${voter.id})">حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete voter
+        async function deleteVoter(id) {
+            if (!confirm('هل أنت متأكد من الحذف؟')) return;
+
+            try {
+                await localDB.delete('voters', id);
+                showNotification('success', '✅ تم الحذف');
+                await loadVoters();
+                await updateStats();
+            } catch (error) {
+                showNotification('error', '❌ فشل الحذف');
+            }
+        }
+
+        // Update stats
+        async function updateStats() {
+            const stats = await localDB.getStats();
+            document.getElementById('votersCount').textContent = stats.voters || 0;
+            document.getElementById('candidatesCount').textContent = stats.candidates || 0;
+            document.getElementById('anchorsCount').textContent = stats.anchors || 0;
+            document.getElementById('introducersCount').textContent = stats.introducers || 0;
+        }
+
+        // Export database
+        async function exportDB() {
+            try {
+                await syncManager.exportDatabase();
+                showNotification('success', '✅ تم التصدير بنجاح');
+            } catch (error) {
+                showNotification('error', '❌ فشل التصدير');
+            }
+        }
+
+        // Import database
+        document.getElementById('importFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                await syncManager.importDatabase(file);
+                showNotification('success', '✅ تم الاستيراد بنجاح');
+                await loadVoters();
+                await updateStats();
+            } catch (error) {
+                showNotification('error', '❌ فشل الاستيراد');
+            }
+        });
+
+        // Sync
+        async function sync() {
+            if (!navigator.onLine) {
+                showNotification('error', '❌ لا يوجد اتصال بالإنترنت');
+                return;
+            }
+
+            try {
+                const result = await syncManager.fullSync();
+                showNotification('success', '✅ ' + result.message);
+            } catch (error) {
+                showNotification('error', '❌ فشلت المزامنة');
+            }
+        }
+
+        // Helper functions
+        function getClassColor(classification) {
+            return { 'supporter': 'success', 'neutral': 'warning', 'opponent': 'danger' }[classification] || 'secondary';
+        }
+
+        function getClassLabel(classification) {
+            return { 'supporter': 'مؤيد', 'neutral': 'محايد', 'opponent': 'معارض' }[classification] || 'غير محدد';
+        }
+
+        // Initialize
+        window.addEventListener('localdb-ready', async () => {
+            showNotification('success', '✅ قاعدة البيانات جاهزة');
+            await loadVoters();
+            await updateStats();
+        });
+    </script>
+</body>
+
+</html>

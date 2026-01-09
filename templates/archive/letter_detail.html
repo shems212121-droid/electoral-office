@@ -1,0 +1,212 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ letter.letter_number }} - تفاصيل الكتاب{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:letter_list' %}">الكتب</a></li>
+                    <li class="breadcrumb-item active">{{ letter.letter_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-envelope me-2"></i>
+                            تفاصيل الكتاب: {{ letter.letter_number }}
+                        </h4>
+                        <div>
+                            {% if letter.letter_type == 'incoming' %}
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-arrow-down me-1"></i>وارد
+                            </span>
+                            {% else %}
+                            <span class="badge bg-info fs-6">
+                                <i class="fas fa-arrow-up me-1"></i>صادر
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- الموضوع -->
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-2">الموضوع:</h5>
+                        <h3>{{ letter.subject }}</h3>
+                    </div>
+
+                    <hr>
+
+                    <!-- معلومات الكتاب -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">رقم الكتاب</small>
+                                <strong class="fs-5">{{ letter.letter_number }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">تاريخ الكتاب</small>
+                                <strong class="fs-5">{{ letter.letter_date|date:"Y/m/d" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- جهات الاتصال -->
+                    {% if letter.from_entity or letter.to_entity %}
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-exchange-alt me-2 text-success"></i>جهات الاتصال
+                        </h5>
+                        <div class="row g-3">
+                            {% if letter.from_entity %}
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded">
+                                    <small class="text-muted d-block mb-1">
+                                        <i class="fas fa-arrow-left me-1"></i>من
+                                    </small>
+                                    <strong>{{ letter.from_entity }}</strong>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if letter.to_entity %}
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded">
+                                    <small class="text-muted d-block mb-1">
+                                        <i class="fas fa-arrow-right me-1"></i>إلى
+                                    </small>
+                                    <strong>{{ letter.to_entity }}</strong>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- التفاصيل -->
+                    {% if letter.description %}
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-file-alt me-2 text-info"></i>التفاصيل والملاحظات
+                        </h5>
+                        <div class="p-3 bg-light rounded">
+                            {{ letter.description|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- المرفقات -->
+                    {% if letter.attachment %}
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-paperclip me-2 text-warning"></i>المرفقات
+                        </h5>
+                        <a href="{{ letter.attachment.url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>
+                            تحميل المرفق
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريط الجانبي -->
+        <div class="col-lg-4">
+            <!-- الحالة والأولوية -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">الحالة والأولوية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">الأولوية</small>
+                        {% if letter.priority == 'very_urgent' %}
+                        <span class="badge bg-danger fs-6 w-100 py-2">
+                            <i class="fas fa-exclamation-triangle me-1"></i>عاجل جداً
+                        </span>
+                        {% elif letter.priority == 'urgent' %}
+                        <span class="badge bg-warning text-dark fs-6 w-100 py-2">
+                            <i class="fas fa-exclamation me-1"></i>عاجل
+                        </span>
+                        {% elif letter.priority == 'important' %}
+                        <span class="badge bg-info fs-6 w-100 py-2">
+                            <i class="fas fa-star me-1"></i>مهم
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary fs-6 w-100 py-2">
+                            <i class="fas fa-circle me-1"></i>عادي
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <small class="text-muted d-block mb-2">الحالة</small>
+                        {% if letter.status == 'completed' %}
+                        <span class="badge bg-success fs-6 w-100 py-2">
+                            <i class="fas fa-check-circle me-1"></i>مكتمل
+                        </span>
+                        {% elif letter.status == 'in_progress' %}
+                        <span class="badge bg-primary fs-6 w-100 py-2">
+                            <i class="fas fa-spinner me-1"></i>قيد المعالجة
+                        </span>
+                        {% elif letter.status == 'archived' %}
+                        <span class="badge bg-secondary fs-6 w-100 py-2">
+                            <i class="fas fa-archive me-1"></i>مؤرشف
+                        </span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark fs-6 w-100 py-2">
+                            <i class="fas fa-clock me-1"></i>قيد الانتظار
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات النظام -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">معلومات النظام</h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1">تاريخ الإضافة</small>
+                    <strong class="d-block mb-3">{{ letter.created_at|date:"Y/m/d H:i" }}</strong>
+
+                    <small class="text-muted d-block mb-1">آخر تحديث</small>
+                    <strong class="d-block">{{ letter.updated_at|date:"Y/m/d H:i" }}</strong>
+                </div>
+            </div>
+
+            <!-- الإجراءات -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">الإجراءات</h5>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{% url 'archive:letter_edit' letter.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>تعديل
+                    </a>
+                    <a href="{% url 'archive:letter_delete' letter.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>حذف
+                    </a>
+                    <a href="{% url 'archive:letter_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

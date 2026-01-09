@@ -1,0 +1,117 @@
+{% extends 'elections/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}أرشفة وثيقة جديدة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:archived_document_list' %}">الوثائق
+                            المؤرشفة</a></li>
+                    <li class="breadcrumb-item active">{% if is_edit %}تعديل{% else %}جديد{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-archive me-2"></i>
+                        {% if is_edit %}تعديل وثيقة مؤرشفة{% else %}أرشفة وثيقة جديدة{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i>يرجى تصحيح الأخطاء التالية:
+                            </h5>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- المجلد -->
+                            <div class="col-md-6">
+                                <label class="form-label">المجلد <span class="text-danger">*</span></label>
+                                {{ form.folder }}
+                            </div>
+
+                            <!-- رقم الوثيقة -->
+                            <div class="col-md-6">
+                                <label class="form-label">رقم الوثيقة</label>
+                                {{ form.document_number }}
+                            </div>
+
+                            <!-- عنوان الوثيقة -->
+                            <div class="col-12">
+                                <label class="form-label">عنوان الوثيقة <span class="text-danger">*</span></label>
+                                {{ form.title }}
+                            </div>
+
+                            <!-- الوصف -->
+                            <div class="col-12">
+                                <label class="form-label">الوصف</label>
+                                {{ form.description }}
+                            </div>
+
+                            <!-- الملف -->
+                            <div class="col-12">
+                                <label class="form-label">الملف <span class="text-danger">*</span></label>
+                                {{ form.file }}
+                                <small class="form-text text-muted d-block">يمكنك رفع PDF، Word، Excel، أو صور</small>
+                                {% if is_edit and document.file %}
+                                <div class="alert alert-info mt-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    الملف الحالي: <strong>{{ document.file.name }}</strong>
+                                    <br><small class="text-muted">💡 اترك الحقل فارغاً للاحتفاظ بالملف الحالي</small>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- الكلمات المفتاحية -->
+                            <div class="col-12">
+                                <label class="form-label">الكلمات المفتاحية (Tags)</label>
+                                {{ form.tags }}
+                                <small class="form-text text-muted d-block">افصل الكلمات بفواصل (مثال: انتخابات، مرشح،
+                                    2025)</small>
+                            </div>
+
+                            <!-- الأزرار -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'archive:archived_document_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>إلغاء
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if is_edit %}تحديث الوثيقة{% else %}أرشفة الوثيقة{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

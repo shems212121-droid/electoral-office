@@ -1,0 +1,190 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}الانضمام كجمهور انتخابي - المكتب الانتخابي{% endblock %}
+
+{% block page_title %}تسجيل جمهور انتخابي جديد{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-user-plus me-2"></i>الانضمام كجمهور انتخابي</span>
+                    <a href="{% url 'electoral_public_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>العودة للقائمة
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" id="electoralPublicForm">
+                    {% csrf_token %}
+                    
+                    <!-- Main Registration Fields -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.phone_number }}
+                                <label for="{{ form.phone_number.id_for_label }}">
+                                    <i class="fas fa-phone me-1"></i>رقم الهاتف
+                                </label>
+                            </div>
+                            <small class="text-muted">مثال: 07XXXXXXXXX</small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.voter_number }}
+                                <label for="{{ form.voter_number.id_for_label }}">
+                                    <i class="fas fa-id-card me-1"></i>رقم الناخب
+                                </label>
+                            </div>
+                            <div id="voterLookupStatus" class="mt-1"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.password }}
+                                <label for="{{ form.password.id_for_label }}">
+                                    <i class="fas fa-lock me-1"></i>كلمة المرور
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.reference_code }}
+                                <label for="{{ form.reference_code.id_for_label }}">
+                                    <i class="fas fa-link me-1"></i>رمز المرتكز أو المرشح
+                                </label>
+                            </div>
+                            <small class="text-muted">كود يربطك بالمرشح أو المرتكز</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Auto-filled Fields (Hidden by default, shown after lookup) -->
+                    <div id="autoFilledSection" class="mt-4" style="display: none;">
+                        <hr>
+                        <h6 class="text-muted mb-3"><i class="fas fa-info-circle me-1"></i>معلومات الناخب (تم جلبها تلقائياً)</h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    {{ form.full_name }}
+                                    <label for="{{ form.full_name.id_for_label }}">الاسم الكامل</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.voting_center_name }}
+                                    <label>اسم مركز الاقتراع</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.voting_center_number }}
+                                    <label>رقم مركز الاقتراع</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.registration_center_name }}
+                                    <label>اسم مركز التسجيل</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.registration_center_number }}
+                                    <label>رقم مركز التسجيل</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    {{ form.station_number }}
+                                    <label>رقم المحطة</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    {{ form.governorate }}
+                                    <label>المحافظة</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="mt-4">
+                        <label class="form-label">ملاحظات (اختياري)</label>
+                        {{ form.notes }}
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="mt-4 d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>إرسال
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let lookupTimeout;
+    
+    // Voter number lookup with debounce
+    $('#{{ form.voter_number.id_for_label }}').on('input', function() {
+        clearTimeout(lookupTimeout);
+        const voterNumber = $(this).val().trim();
+        
+        if (voterNumber.length >= 6) {
+            $('#voterLookupStatus').html('<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> جاري البحث...</span>');
+            
+            lookupTimeout = setTimeout(function() {
+                $.ajax({
+                    url: '{% url "voter_lookup_ajax" %}',
+                    data: { voter_number: voterNumber },
+                    success: function(response) {
+                        if (response.found) {
+                            // Fill auto fields
+                            $('#{{ form.full_name.id_for_label }}').val(response.full_name || '');
+                            $('#{{ form.voting_center_name.id_for_label }}').val(response.voting_center_name || '');
+                            $('#{{ form.voting_center_number.id_for_label }}').val(response.voting_center_number || '');
+                            $('#{{ form.registration_center_name.id_for_label }}').val(response.registration_center_name || '');
+                            $('#{{ form.registration_center_number.id_for_label }}').val(response.registration_center_number || '');
+                            $('#{{ form.station_number.id_for_label }}').val(response.station_number || '');
+                            $('#{{ form.governorate.id_for_label }}').val(response.governorate || 'البصرة');
+                            
+                            // Show auto-filled section
+                            $('#autoFilledSection').slideDown();
+                            $('#voterLookupStatus').html('<span class="text-success"><i class="fas fa-check-circle"></i> تم العثور على الناخب: ' + response.full_name + '</span>');
+                        } else {
+                            $('#autoFilledSection').slideUp();
+                            $('#voterLookupStatus').html('<span class="text-danger"><i class="fas fa-times-circle"></i> لم يتم العثور على رقم الناخب</span>');
+                        }
+                    },
+                    error: function() {
+                        $('#voterLookupStatus').html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> حدث خطأ في البحث</span>');
+                    }
+                });
+            }, 500);
+        } else {
+            $('#autoFilledSection').slideUp();
+            $('#voterLookupStatus').html('');
+        }
+    });
+});
+</script>
+{% endblock %}

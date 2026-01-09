@@ -1,0 +1,249 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}قائمة المرشحين - كتلة الصادقون{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-users"></i> قائمة المرشحين</h1>
+        <div>
+            <a href="{% url 'candidate_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة مرشح جديد
+            </a>
+            <a href="{% url 'export_party_candidates_excel' %}" class="btn btn-success ms-2">
+                <i class="fas fa-file-excel"></i> تصدير Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ candidates|length }}</h3>
+                    <small>إجمالي المرشحين</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card" style="background: linear-gradient(135deg, #1B5E20, #0D3310); color: white;">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">522</h3>
+                    <small>مراكز الاقتراع</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card" style="background: linear-gradient(135deg, #FFD700, #DAA520); color: #0D3310;">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">3,000</h3>
+                    <small>محطات الاقتراع</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">8</h3>
+                    <small>الأحزاب/القوائم</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">البحث</label>
+                    <input type="text" name="q" class="form-control" placeholder="ابحث بالاسم أو رقم الناخب..."
+                        value="{{ request.GET.q }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الحزب/القائمة</label>
+                    <select name="party" class="form-select">
+                        <option value="">الكل</option>
+                        {% for party in parties %}
+                        <option value="{{ party.id }}">
+                            {{ party.serial_number }} - {{ party.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> بحث
+                    </button>
+                    <a href="{% url 'candidate_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> إعادة تعيين
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Candidates Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> المرشحون
+                <span class="badge bg-primary">{{ page_obj.paginator.count }} مرشح</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>الكود</th>
+                            <th>الرقم</th>
+                            <th>الاسم الكامل</th>
+                            <th>الحزب/القائمة</th>
+                            <th class="text-center" style="background: #2E7D32; color: white;">
+                                <i class="fas fa-check-circle"></i> عام
+                            </th>
+                            <th class="text-center" style="background: #1565C0; color: white;">
+                                <i class="fas fa-star"></i> خاص
+                            </th>
+                            <th class="text-center" style="background: #FFD700; color: #0D3310;">
+                                <i class="fas fa-calculator"></i> المجموع
+                            </th>
+                            <th class="text-center">محطات صوّتت</th>
+                            <th class="text-center">لم تُصوِّت</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidates %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <span class="badge bg-dark" style="font-size: 0.9rem;">
+                                    {{ candidate.candidate_code|default:"03--" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ candidate.party.serial_number }}-{{ candidate.serial_number }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'candidate_detail' candidate.pk %}" class="text-decoration-none">
+                                    <strong>{{ candidate.full_name }}</strong>
+                                </a>
+                                <br>
+                                <small>
+                                    {% if candidate.council_type == 'parliament' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-landmark"></i> مجلس النواب
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-city"></i> مجلس المحافظة
+                                    </span>
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>{{ candidate.party.name }}</td>
+                            <td class="text-center">
+                                <span class="badge" style="background: #2E7D32; color: white; font-size: 1rem;">
+                                    {{ candidate.get_general_votes|intcomma }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge" style="background: #1565C0; color: white; font-size: 1rem;">
+                                    {{ candidate.get_special_votes|intcomma }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge"
+                                    style="background: linear-gradient(135deg, #FFD700, #DAA520); color: #0D3310; font-size: 1.1rem; font-weight: bold;">
+                                    {{ candidate.get_total_votes|intcomma }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">{{ candidate.stations_voted|intcomma }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">{{ candidate.stations_not_voted|intcomma }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'candidate_detail' candidate.pk %}" class="btn btn-outline-info"
+                                        title="عرض">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'candidate_edit' candidate.pk %}" class="btn btn-outline-primary"
+                                        title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'candidate_delete' candidate.pk %}" class="btn btn-outline-danger"
+                                        title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted">لا يوجد مرشحين</p>
+                                <a href="{% url 'candidate_create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> إضافة أول مرشح
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.party %}&party={{ request.GET.party }}{% endif %}">
+                    الأولى
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.party %}&party={{ request.GET.party }}{% endif %}">
+                    السابقة
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.party %}&party={{ request.GET.party }}{% endif %}">
+                    التالية
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.party %}&party={{ request.GET.party }}{% endif %}">
+                    الأخيرة
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

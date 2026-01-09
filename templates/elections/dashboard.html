@@ -1,0 +1,603 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}لوحة التحكم - المكتب الانتخابي{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Title */
+    .dashboard-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .dashboard-title i {
+        font-size: 32px;
+        color: var(--sadiqoon-gold);
+        animation: pulse 2s infinite;
+    }
+
+    /* Activity Items */
+    .activity-item {
+        padding: var(--spacing-md);
+        border-right: 4px solid var(--sadiqoon-gold);
+        margin-bottom: var(--spacing-md);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        transition: var(--transition-base);
+    }
+
+    .activity-item:hover {
+        background: rgba(255, 215, 0, 0.1);
+        transform: translateX(-8px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Table improvements */
+    .table-modern {
+        border-top: 4px solid var(--sadiqoon-gold);
+    }
+
+    .table-hover tbody tr:hover {
+        background: rgba(255, 215, 0, 0.08);
+    }
+
+    /* Welcome message */
+    .welcome-section {
+        background: var(--gradient-primary);
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-xl);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .welcome-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .welcome-section h2 {
+        color: var(--sadiqoon-gold);
+        font-weight: 800;
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-section p {
+        color: rgba(255, 255, 255, 0.9);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Stat cards animation */
+    .stat-card-modern {
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Chart container */
+    .chart-container {
+        background: var(--bg-primary);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+        border-top: 4px solid var(--sadiqoon-gold);
+        transition: var(--transition-base);
+    }
+
+    .chart-container:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Section title */
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 3px solid var(--sadiqoon-gold);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .section-title i {
+        color: var(--sadiqoon-gold);
+        font-size: 20px;
+    }
+
+    /* Quick actions container */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 10px;
+    }
+
+    /* Quick Actions Buttons - أزرار الإجراءات السريعة */
+    .quick-action {
+        background: var(--bg-surface);
+        border: 1px solid rgba(27, 94, 32, 0.1);
+        color: var(--text-primary) !important;
+        padding: 25px 20px;
+        border-radius: 16px;
+        text-decoration: none !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .quick-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1B5E20 0%, #0D3310 100%);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        border-radius: 16px;
+    }
+
+    .quick-action i {
+        font-size: 32px;
+        color: #1B5E20;
+        margin-bottom: 5px;
+        transition: all 0.4s ease;
+        background: rgba(27, 94, 32, 0.1);
+        padding: 15px;
+        border-radius: 50%;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .quick-action span {
+        font-weight: 700;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    /* Hover Effects */
+    .quick-action:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(27, 94, 32, 0.2);
+        border-color: transparent;
+        color: #FFD700 !important;
+    }
+
+    .quick-action:hover::before {
+        opacity: 1;
+    }
+
+    .quick-action:hover i {
+        background: rgba(255, 255, 255, 0.15);
+        color: #FFD700;
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    /* Special Styling for Admin Button */
+    .quick-action.admin-btn {
+        border-color: rgba(255, 215, 0, 0.4);
+    }
+
+    .quick-action.admin-btn i {
+        color: #DAA520;
+        background: rgba(218, 165, 32, 0.1);
+    }
+
+    .quick-action.admin-btn:hover {
+        box-shadow: 0 15px 30px rgba(218, 165, 32, 0.3);
+    }
+
+    .quick-action.admin-btn::before {
+        background: linear-gradient(135deg, #B8860B 0%, #FFD700 100%);
+    }
+
+    .quick-action.admin-btn:hover i {
+        color: #0D3310;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .quick-action.admin-btn:hover {
+        color: #0D3310 !important;
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .quick-action {
+        background: var(--bg-secondary);
+        border-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="dark"] .quick-action i {
+        background: rgba(255, 255, 255, 0.05);
+        color: #4CAF50;
+    }
+
+    [data-theme="dark"] .quick-action:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-2">
+        <i class="fas fa-chart-line"></i> لوحة التحكم
+    </h1>
+
+    <!-- إحصائيات سريعة -->
+    <!-- إحصائيات سريعة (Hidden to reduce gap)
+    <div class="row mb-2">
+        <div class="col-md-3 mb-3 animate-fadeInUp">
+            <div class="stat-card-modern primary">
+                <div class="stat-icon-modern primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value-modern numbers">{{ total_voters|intcomma }}</div>
+                <div class="stat-label-modern">إجمالي الناخبين</div>
+                <small class="stat-sublabel-modern">معين: {{ assigned_voters|intcomma }}</small>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3 animate-fadeInUp" style="animation-delay: 0.1s">
+            <div class="stat-card-modern success">
+                <div class="stat-icon-modern success">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-value-modern numbers">{{ total_candidates|intcomma }}</div>
+                <div class="stat-label-modern">المرشحين</div>
+            </div>
+        </div>
+    </div>
+    -->
+
+    <!-- تم نقل رابط الإدارة والأرشيف إلى القائمة الرئيسية أدناه بتصميم موحد -->
+
+    <style>
+        .card:has(a):hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(255, 215, 0, 0.6) !important;
+        }
+    </style>
+
+    <!-- روابط سريعة - القائمة الرئيسية -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="section-title"><i class="fas fa-th-large"></i> القائمة الرئيسية</h5>
+
+                <div class="quick-actions-grid">
+                    <!-- الجمهور والمرشحين -->
+                    <a href="{% url 'candidate_list' %}" class="quick-action">
+                        <i class="fas fa-user-tie"></i> المرشحين
+                        <span class="badge bg-light text-primary ms-auto">{{ total_candidates }}</span>
+                    </a>
+                    <a href="{% url 'anchor_list' %}" class="quick-action">
+                        <i class="fas fa-anchor"></i> المرتكزات
+                        <span class="badge bg-light text-info ms-auto">{{ total_anchors }}</span>
+                    </a>
+                    <a href="{% url 'introducer_list' %}" class="quick-action">
+                        <i class="fas fa-hands-helping"></i> المعرفين
+                        <span class="badge bg-light text-success ms-auto">{{ total_introducers }}</span>
+                    </a>
+                    <a href="{% url 'observer_registration_list' %}" class="quick-action">
+                        <i class="fas fa-eye"></i> المراقبين والوكلاء
+                    </a>
+                    <a href="{% url 'sub_room_list' %}" class="quick-action">
+                        <i class="fas fa-building"></i> غرف العمليات
+                        <span class="badge bg-light text-primary ms-auto">{{ total_sub_rooms }}</span>
+                    </a>
+
+                    <!-- الإدارة والمالية -->
+                    <a href="{% url 'task_list' %}" class="quick-action">
+                        <i class="fas fa-tasks"></i> المهام
+                    </a>
+                    <a href="{% url 'finance_dashboard' %}" class="quick-action">
+                        <i class="fas fa-wallet"></i> الحسابات
+                    </a>
+                    <a href="{% url 'archive:dashboard' %}" class="quick-action">
+                        <i class="fas fa-archive"></i> الأرشيف
+                    </a>
+                    {% if user.is_superuser %}
+                    <a href="{% url 'data_reset' %}" class="quick-action text-danger border-danger">
+                        <i class="fas fa-trash-alt"></i> إعادة تعيين
+                    </a>
+                    {% endif %}
+                    {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'admin_directors_monitor' %}" class="quick-action">
+                        <i class="fas fa-user-shield"></i> لوحة الإدارة
+                    </a>
+                    {% endif %}
+
+                    <!-- جرد الاصوات -->
+                    <a href="{% url 'general_vote_count' %}" class="quick-action">
+                        <i class="fas fa-check-square"></i> جرد عام
+                    </a>
+                    <a href="{% url 'special_vote_count' %}" class="quick-action">
+                        <i class="fas fa-star"></i> جرد خاص
+                    </a>
+                    <a href="{% url 'combined_results' %}" class="quick-action">
+                        <i class="fas fa-chart-pie"></i> النتائج المجمعة
+                    </a>
+
+                    <!-- أدوات -->
+                    <a href="{% url 'sainte_lague_calculator' %}" class="quick-action">
+                        <i class="fas fa-calculator"></i> سانت ليغو
+                    </a>
+                    <a href="{% url 'comprehensive_reports' %}" class="quick-action">
+                        <i class="fas fa-file-alt"></i> التقارير
+                    </a>
+
+                    <!-- زر إظهار الإحصائيات -->
+                    <button type="button" class="quick-action" onclick="toggleStats()"
+                        style="border: 1px solid rgba(0,0,0,0.1); cursor: pointer;">
+                        <i class="fas fa-chart-line" style="color: #6c757d;"></i> الإحصائيات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- حاوية الإحصائيات المخفية -->
+    <div id="statsSection" style="display: none;" class="animate-fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-muted"><i class="fas fa-chart-bar me-2"></i> الإحصائيات والرسوم البيانية</h4>
+            <button class="btn btn-sm btn-outline-secondary" onclick="toggleStats()"><i class="fas fa-times"></i>
+                إغلاق</button>
+        </div>
+
+        <!-- نسبة التغطية والمهام -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="modern-card">
+                    <div class="modern-card-body">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie text-primary"></i> نسبة التغطية</h5>
+                        <div class="progress-modern">
+                            <div class="progress-bar-modern" role="progressbar"
+                                style="width: {{ coverage_percentage }}%;" aria-valuenow="{{ coverage_percentage }}"
+                                aria-valuemin="0" aria-valuemax="100">
+                                {{ coverage_percentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="modern-card">
+                    <div class="modern-card-body">
+                        <h5 class="mb-3"><i class="fas fa-tasks text-info"></i> معدل إنجاز المهام</h5>
+                        <div class="progress-modern">
+                            <div class="progress-bar-modern" role="progressbar"
+                                style="width: {{ task_completion_rate }}%; background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);"
+                                aria-valuenow="{{ task_completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ task_completion_rate|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2 d-block">مكتملة: {{ completed_tasks }} من {{ total_tasks
+                            }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الرسوم البيانية -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <h5 class="section-title"><i class="fas fa-chart-pie"></i> تصنيف الناخبين</h5>
+                    <div style="position: relative; height:300px; width:100%">
+                        <canvas id="classificationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="chart-container">
+                    <h5 class="section-title"><i class="fas fa-chart-bar"></i> أعلى المرتكزات الانتخابية</h5>
+                    <div style="position: relative; height:300px; width:100%">
+                        <canvas id="areasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- آخر الاتصالات (تم حذف المهام الأخيرة حسب الطلب) -->
+        <div class="row mb-4">
+            <div class="col-12 mb-3">
+                <div class="chart-container">
+                    <h5 class="section-title"><i class="fas fa-phone"></i> آخر الاتصالات</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الناخب</th>
+                                    <th>النتيجة</th>
+                                    <th>الوقت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_communications %}
+                                <tr>
+                                    <td>
+                                        {% if log.content_type.model == 'voter' %}
+                                        <a href="{% url 'voter_detail' log.object_id %}">
+                                            {{ log.content_object.full_name }}
+                                        </a>
+                                        {% elif log.content_type.model == 'partycandidate' %}
+                                        <a href="{% url 'candidate_detail' log.object_id %}">
+                                            {{ log.content_object.full_name }}
+                                        </a>
+                                        {% else %}
+                                        {{ log.content_object.full_name|default:log.phone_number }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ log.get_call_status_display }}</span>
+                                    </td>
+                                    <td>{{ log.created_at|timesince }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">لا توجد اتصالات</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleStats() {
+            const statsSection = document.getElementById('statsSection');
+            if (statsSection.style.display === 'none') {
+                statsSection.style.display = 'block';
+                // Scroll to stats
+                statsSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                statsSection.style.display = 'none';
+            }
+        }
+    </script>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Classification Pie Chart
+    const classificationCtx = document.getElementById('classificationChart').getContext('2d');
+    new Chart(classificationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['مؤيد', 'محايد', 'معارض', 'غير محدد'],
+            datasets: [{
+                data: [
+                    {{ supporter_count }},
+            {{ neutral_count }}, 
+                    {{ opponent_count }},
+        {{ unknown_count }}
+                ],
+        backgroundColor: [
+        '#28a745',  // Green for supporters
+        '#17a2b8',  // Blue for neutral
+        '#dc3545',  // Red for opponents
+        '#6c757d'   // Gray for unknown
+    ],
+        borderWidth: 2,
+        borderColor: '#fff'
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: {
+                        family: 'Cairo',
+                        size: 14
+                    },
+                    padding: 15
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        let label = context.label || '';
+                        let value = context.parsed || 0;
+                        let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        let percentage = ((value / total) * 100).toFixed(1);
+                        return label + ': ' + value.toLocaleString() + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+    });
+
+    // Top Areas Bar Chart
+    const areasCtx = document.getElementById('areasChart').getContext('2d');
+    new Chart(areasCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for area in top_areas %}
+                    '{{ area.voting_center_name|truncatechars:20 }}'{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+            ],
+        datasets: [{
+            label: 'عدد الناخبين',
+            data: [
+                {% for area in top_areas %}
+                        {{ area.count }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+                ],
+    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+        borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 1
+            }]
+        },
+    options: {
+        responsive: true,
+            maintainAspectRatio: true,
+                plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                    ticks: {
+                    font: {
+                        family: 'Cairo'
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    font: {
+                        family: 'Cairo',
+                            size: 12
+                    }
+                }
+            }
+        }
+    }
+    });
+</script>
+{% endblock %}

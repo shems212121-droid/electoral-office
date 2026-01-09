@@ -1,0 +1,56 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}تأكيد حذف الكتاب - الأرشيف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        تأكيد الحذف
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>تحذير:</strong> هذا الإجراء لا يمكن التراجع عنه!
+                    </div>
+
+                    <h5 class="mb-3">هل أنت متأكد من حذف هذا الكتاب؟</h5>
+
+                    <div class="bg-light p-3 rounded mb-4">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">رقم الكتاب:</dt>
+                            <dd class="col-sm-8"><strong>{{ letter.letter_number }}</strong></dd>
+
+                            <dt class="col-sm-4">الموضوع:</dt>
+                            <dd class="col-sm-8">{{ letter.subject }}</dd>
+
+                            <dt class="col-sm-4">التاريخ:</dt>
+                            <dd class="col-sm-8">{{ letter.letter_date|date:"Y/m/d" }}</dd>
+
+                            <dt class="col-sm-4">النوع:</dt>
+                            <dd class="col-sm-8">{{ letter.get_letter_type_display }}</dd>
+                        </dl>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'archive:letter_detail' letter.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>تأكيد الحذف
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

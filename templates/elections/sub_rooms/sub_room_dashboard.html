@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}لوحة تحكم {{ room.room_code }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="bi bi-building"></i> {{ room.room_code }} - {{ room.name }}
+                        <span class="badge {% if room.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if room.is_active %}نشط{% else %}غير نشط{% endif %}
+                        </span>
+                    </h2>
+                    {% if room.supervisor %}
+                    <p class="text-muted">
+                        <i class="bi bi-person-badge"></i> المشرف: {{ room.supervisor.username }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'sub_room_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-right"></i> العودة للقائمة
+                    </a>
+                    <a href="{% url 'sub_room_update' room.pk %}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> تعديل
+                    </a>
+                    <a href="{% url 'sub_room_export' room.pk %}" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> تصدير
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-people" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ stats.introducers_count }}</h3>
+                    <p class="mb-0">المعرفين</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'sub_room_introducers' room.pk %}" class="text-white text-decoration-none">
+                        عرض التفاصيل <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-check" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ stats.voters_count }}</h3>
+                    <p class="mb-0">الناخبين</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'sub_room_voters' room.pk %}" class="text-white text-decoration-none">
+                        عرض التفاصيل <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ stats.directors_count }}</h3>
+                    <p class="mb-0">مدراء المراكز</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'sub_room_directors' room.pk %}" class="text-white text-decoration-none">
+                        عرض التفاصيل <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ stats.agents_count }}</h3>
+                    <p class="mb-0">وكلاء الكيان</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'sub_room_agents' room.pk %}" class="text-white text-decoration-none">
+                        عرض التفاصيل <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> الإحصائيات الإجمالية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <h4>{{ stats.anchors_count }}</h4>
+                            <small class="text-muted">المرتكزات</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4>{{ stats.introducers_count }}</h4>
+                            <small class="text-muted">المعرفين</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4>{{ stats.voters_count }}</h4>
+                            <small class="text-muted">الناخبين</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4>{{ stats.directors_count }}</h4>
+                            <small class="text-muted">مدراء المراكز</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4>{{ stats.agents_count }}</h4>
+                            <small class="text-muted">وكلاء الكيان</small>
+                        </div>
+                        <div class="col-md-2">
+                            <h4 class="text-primary">{{ stats.total_count }}</h4>
+                            <small class="text-muted"><strong>المجموع الكلي</strong></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Data -->
+    <div class="row">
+        <!-- Recent Introducers -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-people"></i> آخر المعرفين</h6>
+                </div>
+                <div class="card-body">
+                    {% if introducers %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>الاسم</th>
+                                    <th>المرتكز</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for introducer in introducers %}
+                                <tr>
+                                    <td><code>{{ introducer.introducer_code }}</code></td>
+                                    <td>{{ introducer.full_name }}</td>
+                                    <td>{{ introducer.anchor.full_name|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'sub_room_introducers' room.pk %}" class="btn btn-sm btn-primary">
+                        عرض الكل
+                    </a>
+                    {% else %}
+                    <p class="text-muted">لا يوجد معرفين</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Directors -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-briefcase"></i> آخر مدراء المراكز</h6>
+                </div>
+                <div class="card-body">
+                    {% if directors %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>الاسم</th>
+                                    <th>المركز</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for director in directors %}
+                                <tr>
+                                    <td><code>{{ director.director_code|default:"-" }}</code></td>
+                                    <td>{{ director.full_name }}</td>
+                                    <td>{{ director.assigned_center_number }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'sub_room_directors' room.pk %}" class="btn btn-sm btn-primary">
+                        عرض الكل
+                    </a>
+                    {% else %}
+                    <p class="text-muted">لا يوجد مدراء مراكز</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

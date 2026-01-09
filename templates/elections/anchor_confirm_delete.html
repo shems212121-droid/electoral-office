@@ -1,0 +1,58 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}تأكيد حذف المرتكز - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        تأكيد حذف المرتكز
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تحذير:</strong> هذا الإجراء لا يمكن التراجع عنه!
+                    </div>
+
+                    <p class="lead">هل أنت متأكد من حذف المرتكز التالي؟</p>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5>{{ anchor.full_name }}</h5>
+                            <p class="mb-0">
+                                <strong>الكود:</strong>
+                                <span class="badge bg-dark">{{ anchor.anchor_code }}</span>
+                            </p>
+                            <p class="mb-0"><strong>المرشح:</strong> {{ anchor.candidate.full_name }}</p>
+                            <p class="mb-0"><strong>الهاتف:</strong> {{ anchor.phone }}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>ملاحظة:</strong> سيتم حذف جميع البيانات المرتبطة بهذا المرتكز بما في ذلك المعرفين
+                        والناخبين.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف المرتكز
+                            </button>
+                            <a href="{% url 'anchor_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

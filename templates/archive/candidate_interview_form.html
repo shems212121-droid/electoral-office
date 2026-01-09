@@ -1,0 +1,152 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - الأرشيف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:candidate_interview_list' %}">المقابلات</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-tie me-2"></i>
+                        {{ title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- معلومات المقابلة -->
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2">تفاصيل المقابلة</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.candidate_name.label }}</label>
+                                {{ form.candidate_name }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.interview_date.label }}</label>
+                                {{ form.interview_date }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.interviewer.label }}</label>
+                                {{ form.interviewer }}
+                            </div>
+
+                            <!-- التقييم الشخصي -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary border-bottom pb-2">التقييم الشخصي (من 10)</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.appearance_score.label }}</label>
+                                {{ form.appearance_score }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.charisma_score.label }}</label>
+                                {{ form.charisma_score }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.speaking_score.label }}</label>
+                                {{ form.speaking_score }}
+                            </div>
+
+                            <!-- التقييم الثقافي -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary border-bottom pb-2">التقييم الثقافي والسياسي (من 10)</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.cultural_score.label }}</label>
+                                {{ form.cultural_score }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.political_awareness.label }}</label>
+                                {{ form.political_awareness }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.community_influence.label }}</label>
+                                {{ form.community_influence }}
+                            </div>
+
+                            <!-- التقييم العام -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary border-bottom pb-2">تقييمات أخرى (من 10)</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.loyalty_score.label }}</label>
+                                {{ form.loyalty_score }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.financial_capability.label }}</label>
+                                {{ form.financial_capability }}
+                            </div>
+
+                            <!-- الملاحظات -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-primary border-bottom pb-2">الملاحظات والقرار</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.strength_points.label }}</label>
+                                {{ form.strength_points }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.weakness_points.label }}</label>
+                                {{ form.weakness_points }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.general_notes.label }}</label>
+                                {{ form.general_notes }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">{{ form.status.label }}</label>
+                                {{ form.status }}
+                            </div>
+
+                            <!-- أزرار -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'archive:candidate_interview_list' %}"
+                                        class="btn btn-secondary">إلغاء</a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>حفظ المقابلة
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

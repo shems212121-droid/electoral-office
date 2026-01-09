@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة تحكم المرشح{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">أهلاً بك، {{ candidate.full_name }}</h1>
+        <span class="badge bg-primary text-white p-2">كود المرشح: {{ candidate.candidate_code }}</span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <!-- Anchors -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">المرتكزات</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ anchors_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sitemap fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introducers -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">المعرفين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ introducers_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voters -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">الناخبين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ voters_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-vote-yea fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitors -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">المراقبين</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monitors_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-eye fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Anchors List -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">قائمة المرتكزات</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الكود</th>
+                                    <th>عدد المعرفين</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anchor in anchors %}
+                                <tr>
+                                    <td>{{ anchor.full_name }}</td>
+                                    <td>{{ anchor.anchor_code }}</td>
+                                    <td>{{ anchor.get_introducers_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">لا يوجد مرتكزات مسجلة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitors List -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">قائمة المراقبين</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>المركز المخصص</th>
+                                    <th>رقم الهاتف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for monitor in monitors %}
+                                <tr>
+                                    <td>{{ monitor.full_name }}</td>
+                                    <td>{{ monitor.assigned_center_number }}</td>
+                                    <td>{{ monitor.phone }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">لا يوجد مراقبين مسجلين</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

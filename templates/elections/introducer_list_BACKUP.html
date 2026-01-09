@@ -1,0 +1,130 @@
+<html{% load static %} <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>قائمة المعرفين</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    </head>
+
+    <body>
+        {% include 'elections/partials/navbar.html' %}
+
+        <div class="container-fluid">
+            <div class="row">
+                {% include 'elections/partials/sidebar.html' %}
+
+                <div class="card mb-4">
+                    <div class="card-header">فلترة المعرفين</div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-10">
+                                <select name="anchor" class="form-select">
+                                    <option value="">جميع المرتكزات</option>
+                                    {% for anc in anchors %}
+                                    <option value="{{ anc.id }}" {% if
+                                        request.GET.anchor|stringformat:'s'==anc.id|stringformat:'s' %}selected{% endif
+                                        %}>
+                                        {{ anc.full_name }} ({{ anc.candidate.full_name }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">بحث</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>قائمة المعرفين</span>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                            data-bs-target="#addIntroducerModal">
+                            إضافة معرف جديد
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {% if introducers %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الاسم الرباعي</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>المرتكز</th>
+                                        <th>عدد الناخبين</th>
+                                        <th>تاريخ الإضافة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for introducer in introducers %}
+                                    <tr>
+                                        <td>{{ introducer.full_name }}</td>
+                                        <td>{{ introducer.phone }}</td>
+                                        <td>{{ introducer.anchor.full_name }}</td>
+                                        <td>{{ introducer.voters.count }}</td>
+                                        <td>{{ introducer.created_at|date:"Y-m-d" }}</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-info">عرض</a>
+                                            <a href="#" class="btn btn-sm btn-warning">تعديل</a>
+                                            <a href="#" class="btn btn-sm btn-danger">حذف</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">لا توجد معرفين</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Add Introducer Modal -->
+        <div class="modal fade" id="addIntroducerModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">إضافة معرف جديد</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="introducerFrom" method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">الاسم الر باعي</label>
+                                <input type="text" class="form-control" name="full_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="text" class="form-control" name="phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">المرتكز</label>
+                                <select class="form-select" name="anchor" required>
+                                    <option value="">اختر المرتكز...</option>
+                                    {% for anc in all_anchors %}
+                                    <option value="{{ anc.id }}">{{ anc.full_name }} ({{ anc.candidate.full_name }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">حفظ</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+
+    </html>

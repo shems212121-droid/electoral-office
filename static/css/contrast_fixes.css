@@ -1,0 +1,343 @@
+/* ===================================
+   تحسينات التباين والقراءة - Contrast Improvements
+   معالجة ألوان الخطوط في كلا الوضعين
+   =================================== */
+
+/* ===== إصلاحات الوضع العادي (Light Mode) ===== */
+/* التأكد من أن النصوص واضحة على الخلفيات الداكنة */
+
+/* العناوين والنصوص الرئيسية */
+.container-fluid h1, 
+.container-fluid h2, 
+.container-fluid h3, 
+.container-fluid h4, 
+.container-fluid h5, 
+.container-fluid h6,
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    color: #FFFFFF !important;
+}
+
+/* النصوص داخل البطاقات الخضراء */
+.bg-primary,
+.bg-success,
+.card-header.bg-primary,
+.card-header.bg-success {
+    color: #FFFFFF !important;
+}
+
+.bg-primary *:not(.btn):not(.badge),
+.bg-success *:not(.btn):not(.badge),
+.card-header.bg-primary *:not(.btn):not(.badge),
+.card-header.bg-success *:not(.btn):not(.badge) {
+    color: #FFFFFF !important;
+}
+
+/* تسميات النماذج */
+.form-label,
+label {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}
+
+/* النصoص على الخلفيات الملونة في الوضع الفاتح */
+[data-theme="light"] .bg-primary,
+[data-theme="light"] .bg-success,
+[data-theme="light"] .bg-info,
+[data-theme="light"] .bg-warning {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] .bg-warning {
+    color: #0D3310 !important;
+}
+
+/* ===== إصلاحات الجداول ===== */
+/* الجداول يجب أن يكون لها خلفية مناسبة لكل وضع */
+
+.table {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.table thead {
+    background: var(--gradient-primary);
+    color: #FFFFFF !important;
+}
+
+.table thead th {
+    color: #FFFFFF !important;
+}
+
+.table tbody td {
+    color: var(--text-primary) !important;
+}
+
+.table tbody tr {
+    background: var(--bg-primary);
+}
+
+.table tbody tr:nth-child(even) {
+    background: var(--bg-tertiary);
+}
+
+/* الروابط داخل الجداول */
+.table a {
+    color: var(--sadiqoon-green) !important;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .table a {
+    color: var(--sadiqoon-gold) !important;
+}
+
+.table a:hover {
+    color: var(--sadiqoon-gold) !important;
+    text-decoration: underline;
+}
+
+/* ===== إصلاحات الأزرار ===== */
+/* الأزرار الذهبية على الخلفية البيضاء */
+
+.btn-outline-warning,
+.btn-outline-secondary {
+    color: var(--sadiqoon-green) !important;
+    border-color: var(--sadiqoon-green) !important;
+}
+
+.btn-outline-warning:hover,
+.btn-outline-secondary:hover {
+    background: var(--sadiqoon-green) !important;
+    color: #FFFFFF !important;
+}
+
+/* أزرار العرض والتعديل */
+.btn-outline-primary {
+    color: var(--sadiqoon-green) !important;
+   border-color: var(--sadiqoon-green) !important;
+}
+
+[data-theme="dark"] .btn-outline-primary {
+    color: var(--sadiqoon-gold) !important;
+    border-color: var(--sadiqoon-gold) !important;
+}
+
+.btn-outline-primary:hover {
+    background: var(--sadiqoon-green) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+    background: var(--sadiqoon-gold) !important;
+    color: #0D3310 !important;
+}
+
+/* ===== إصلاحات الشارات (Badges) ===== */
+
+.badge {
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+.badge.bg-warning,
+.badge-warning {
+    color: #0D3310 !important;
+}
+
+/* ===== إصلاحات البطاقات ===== */
+
+.card {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.card-title,
+.card-header {
+    color: inherit;
+}
+
+.card-body {
+    color: var(--text-primary);
+}
+
+.card-body p,
+.card-body span,
+.card-body div {
+    color: var(--text-primary);
+}
+
+/* ===== إصلاحات النصوص المتنوعة ===== */
+
+/* النصوص البيضاء الافتراضية */
+.text-white {
+    color: #FFFFFF !important;
+}
+
+/* النصoص الداكنة مع خلفية فاتحة */
+.text-dark {
+    color: #1E293B !important;
+}
+
+[data-theme="dark"] .text-dark {
+    color: #F8FAFC !important;
+}
+
+/* النصوص المخففة */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* النصوص الأساسية */
+p, span, div, td, th, li {
+    color: var(--text-primary);
+}
+
+/* ===== إصلاحات الروابط ===== */
+
+a {
+    color: var(--sadiqoon-green);
+}
+
+[data-theme="dark"] a {
+    color: var(--sadiqoon-gold);
+}
+
+a:hover {
+    color: var(--sadiqoon-gold);
+}
+
+[data-theme="dark"] a:hover {
+    color: var(--sadiqoon-gold-light);
+}
+
+/* ===== إصلاحات العناصر على الخلفيات الداكنة ===== */
+
+/* أي عنصر على خلفية خضراء داكنة يجب أن يكون فاتحاً */
+.bg-dark,
+.bg-dark-green,
+.navbar-dark {
+    color: #FFFFFF !important;
+}
+
+.bg-dark *,
+.bg-dark-green *,
+.navbar-dark *:not(.btn) {
+   color: #FFFFFF !important;
+}
+
+/* ===== تحسينات إضافية للوضع الداكن ===== */
+
+[data-theme="dark"] {
+    /* تحسين قراءة النصوص الذهبية */
+    --sadiqoon-gold: #FFE44D;
+    --sadiqoon-gold-dark: #FFD700;
+}
+
+[data-theme="dark"] .card {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .table tbody tr {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background: var(--bg-tertiary);
+}
+
+/* ===== إصلاحات خاصة بصفحات محددة ===== */
+
+/* صفحة لوحة التحكم */
+.dashboard-header h1,
+.dashboard-header h2 {
+    color: #FFFFFF !important;
+}
+
+/* بطاقات الإحصائيات */
+.stat-card h3,
+.stat-card p,
+.stat-card span {
+    color: inherit;
+}
+
+/* الواجهة الرئيسية - التأكد من وضوح كل شيء على navbar */
+.navbar {
+    color: #FFFFFF !important;
+}
+
+.navbar * {
+    color: #FFFFFF !important;
+}
+
+.navbar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.navbar .nav-link:hover {
+    color: var(--sadiqoon-gold) !important;
+}
+
+/* ===== قوالب Django - Form Fields ===== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--sadiqoon-gold) !important;
+}
+
+/* Placeholder colors */
+::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 1;
+}
+
+[data-theme="dark"] ::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ===== تحسين التباين العام ===== */
+
+/* التأكد من أن أي نص على خلفية داكنة يكون فاتحاً */
+[class*="bg-primary"] *:not(.btn):not(.badge):not(a),
+[class*="bg-success"] *:not(.btn):not(.badge):not(a),
+[class*="bg-info"] *:not(.btn):not(.badge):not(a),
+[class*="bg-dark"] *:not(.btn):not(.badge):not(a) {
+    color: #FFFFFF !important;
+}
+
+[class*="bg-warning"] *:not(.btn):not(.badge):not(a) {
+    color: #0D3310 !important;
+}
+
+/* التأكد من أن أي نص على خلفية فاتحة يكون داكناً */
+[class*="bg-light"] *:not(.btn):not(.badge),
+[class*="bg-white"] *:not(.btn):not(.badge) {
+    color: var(--text-primary) !important;
+}

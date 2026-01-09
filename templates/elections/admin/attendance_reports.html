@@ -1,0 +1,237 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-chart-bar"></i> تقارير الحضور والانصراف</h2>
+                <div>
+                    <a href="{% url 'export_attendance_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> تصدير Excel
+                    </a>
+                    <a href="{% url 'admin_directors_monitor' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> العودة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ total_records }}</h3>
+                    <p class="mb-0">إجمالي السجلات</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ checked_in }}</h3>
+                    <p class="mb-0">سجلات حضور</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ checked_out }}</h3>
+                    <p class="mb-0">سجلات انصراف</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter"></i> تصفية النتائج</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-3 mb-2">
+                            <label class="mr-2">من تاريخ:</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+                        </div>
+                        <div class="form-group mr-3 mb-2">
+                            <label class="mr-2">إلى تاريخ:</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+                        </div>
+                        <div class="form-group mr-3 mb-2">
+                            <label class="mr-2">المدير:</label>
+                            <select name="director" class="form-control">
+                                <option value="">الكل</option>
+                                {% for dir in all_directors %}
+                                <option value="{{ dir.id }}" {% if filters.director==dir.id|stringformat:"s"
+                                    %}selected{% endif %}>
+                                    {{ dir.full_name }} - {{ dir.assigned_center_number }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3 mb-2">
+                            <label class="mr-2">النوع:</label>
+                            <select name="type" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="agent" {% if filters.type=='agent' %}selected{% endif %}>وكيل</option>
+                                <option value="monitor" {% if filters.type=='monitor' %}selected{% endif %}>مراقب
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول السجلات -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> سجلات الحضور والانصراف</h5>
+                </div>
+                <div class="card-body">
+                    {% if records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>الاسم</th>
+                                    <th>النوع</th>
+                                    <th>الحالة</th>
+                                    <th>وقت الحضور</th>
+                                    <th>وقت الانصراف</th>
+                                    <th>المدة</th>
+                                    <th>المركز</th>
+                                    <th>المدير</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ record.get_person_name }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ record.record_type|yesno:'info,warning' }}">
+                                            {{ record.get_record_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ record.status|yesno:'success,secondary' }}">
+                                            {{ record.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.check_in_time|date:"Y-m-d H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if record.check_out_time %}
+                                        {{ record.check_out_time|date:"Y-m-d H:i" }}
+                                        {% else %}
+                                        <span class="text-muted">لم ينصرف</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.get_duration }}</td>
+                                    <td>{{ record.recorded_by.assigned_center_number }}</td>
+                                    <td>{{ record.recorded_by.full_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if total_records > 100 %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        يتم عرض أول 100 سجل من إجمالي {{ total_records }} سجل.
+                        استخدم الفلاتر أو قم بتصدير Excel لعرض جميع النتائج.
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> لا توجد سجلات
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات حسب المدير -->
+    {% if records_by_director %}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> أكثر المدراء تسجيلاً</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>المدير</th>
+                                <th>المركز</th>
+                                <th>عدد السجلات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in records_by_director %}
+                            <tr>
+                                <td>{{ item.recorded_by__full_name }}</td>
+                                <td>{{ item.recorded_by__assigned_center_number }}</td>
+                                <td><span class="badge badge-primary">{{ item.count }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> إحصائيات حسب النوع</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>النوع</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in records_by_type %}
+                            <tr>
+                                <td>
+                                    {% if item.record_type == 'agent' %}
+                                    وكيل كيان سياسي
+                                    {% else %}
+                                    مراقب مرشح
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge badge-info">{{ item.count }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

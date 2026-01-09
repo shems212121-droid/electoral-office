@@ -1,0 +1,296 @@
+﻿{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}سجل الناخبين خاصتك - المكتب الانتخابي{% endblock %}
+
+{% block page_title %}سجل الناخبين خاصتك{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-voter-card {
+        background: linear-gradient(135deg, var(--sadiqoon-green) 0%, var(--sadiqoon-green-dark) 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .add-voter-card .form-control {
+        font-size: 1.2rem;
+        border-radius: 15px;
+    }
+
+    .add-voter-card .btn {
+        font-size: 1.2rem;
+        border-radius: 15px;
+    }
+
+    .voter-record-table th {
+        background: var(--sadiqoon-green);
+        color: white;
+    }
+
+    .classification-badge {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .classification-badge:hover {
+        transform: scale(1.1);
+    }
+
+    #addVoterStatus {
+        min-height: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Add Voter Card -->
+<div class="add-voter-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h4 class="mb-3"><i class="fas fa-user-plus me-2"></i>إضافة ناخب جديد إلى سجلك</h4>
+            <form id="addVoterForm" class="d-flex gap-3">
+                {% csrf_token %}
+                <div class="flex-grow-1">
+                    <input type="text" name="voter_number" id="voterNumberInput" class="form-control form-control-lg"
+                        placeholder="أدخل رقم الناخب" dir="ltr" autofocus>
+                </div>
+                <button type="submit" class="btn btn-warning btn-lg px-5" id="addVoterBtn">
+                    <i class="fas fa-plus me-2"></i>إضافة
+                </button>
+            </form>
+            <div id="addVoterStatus" class="mt-3"></div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="display-1">
+                <i class="fas fa-address-book"></i>
+            </div>
+            <h5 class="mt-2">سجلك: <span class="text-warning">{{ total_count }}</span> ناخب</h5>
+        </div>
+    </div>
+</div>
+
+<!-- Records Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list me-2"></i>السجل خاصتك</span>
+            <!-- Search -->
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="بحث..."
+                    value="{{ search }}" style="width: 200px;">
+                <button type="submit" class="btn btn-light btn-sm">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 voter-record-table" id="voterRecordsTable">
+                <thead>
+                    <tr>
+                        <th>الاسم الكامل</th>
+                        <th>رقم الهاتف</th>
+                        <th>رقم الناخب</th>
+                        <th>التصنيف</th>
+                        <th>تاريخ الإضافة</th>
+                        <th width="100">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                    {% for record in records %}
+                    <tr id="record-{{ record.id }}">
+                        <td><strong>{{ record.full_name }}</strong></td>
+                        <td dir="ltr" class="text-end">
+                            <input type="text" class="form-control form-control-sm phone-input"
+                                value="{{ record.phone_number }}" placeholder="أضف رقم الهاتف"
+                                data-record-id="{{ record.id }}" style="max-width: 150px;">
+                        </td>
+                        <td dir="ltr" class="text-end">{{ record.voter_number }}</td>
+                        <td>
+                            <select class="form-select form-select-sm classification-select"
+                                data-record-id="{{ record.id }}" style="max-width: 120px;">
+                                <option value="unknown" {% if record.classification == "unknown" %}selected{% endif %}>غير محدد</option>
+                                <option value="supporter" {% if record.classification == "supporter" %}selected{% endif %}>مؤيد</option>
+                                <option value="neutral" {% if record.classification == "neutral" %}selected{% endif %}> محايد</option>
+                                <option value="opponent" {% if record.classification == "opponent" %}selected{% endif %}> معارض</option>
+                            </select>
+                        </td>
+                        <td>{{ record.added_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-danger btn-sm delete-record-btn"
+                                data-record-id="{{ record.id }}" data-name="{{ record.full_name }}" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not records %}
+                    <tr id="emptyRow">
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-address-book fa-3x text-muted mb-3 d-block"></i>
+                            <p class="text-muted">سجلك فارغ - ابدأ بإضافة ناخبين باستخدام رقم الناخب</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        // Add voter form submission
+        $('#addVoterForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const voterNumber = $('#voterNumberInput').val().trim();
+            if (!voterNumber) {
+                $('#addVoterStatus').html('<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle me-2"></i>الرجاء إدخال رقم الناخب</div>');
+                return;
+            }
+
+            const $btn = $('#addVoterBtn');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>جاري الإضافة...');
+            $('#addVoterStatus').html('');
+
+            $.ajax({
+                url: '{% url "add_voter_to_personal_record" %}',
+                method: 'POST',
+                data: {
+                    voter_number: voterNumber,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Remove empty row if exists
+                        $('#emptyRow').remove();
+
+                        // Add new row to table
+                        const newRow = `
+                        <tr id="record-${response.record.id}" class="table-success fade-in">
+                            <td><strong>${response.record.full_name}</strong></td>
+                            <td dir="ltr" class="text-end">
+                                <input type="text" class="form-control form-control-sm phone-input" 
+                                       value="" placeholder="أضف رقم الهاتف"
+                                       data-record-id="${response.record.id}" style="max-width: 150px;">
+                            </td>
+                            <td dir="ltr" class="text-end">${response.record.voter_number}</td>
+                            <td>
+                                <select class="form-select form-select-sm classification-select" 
+                                        data-record-id="${response.record.id}" style="max-width: 120px;">
+                                    <option value="unknown" selected>غير محدد</option>
+                                    <option value="supporter">مؤيد</option>
+                                    <option value="neutral">محايد</option>
+                                    <option value="opponent">معارض</option>
+                                </select>
+                            </td>
+                            <td>${response.record.added_at}</td>
+                            <td>
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-record-btn" 
+                                        data-record-id="${response.record.id}" data-name="${response.record.full_name}"
+                                        title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                        $('#recordsTableBody').prepend(newRow);
+
+                        // Clear input and show success message
+                        $('#voterNumberInput').val('').focus();
+                        $('#addVoterStatus').html(`<div class="alert alert-success mb-0"><i class="fas fa-check-circle me-2"></i>تمت إضافة <strong>${response.record.full_name}</strong> بنجاح</div>`);
+
+                        // Update counter
+                        setTimeout(function () {
+                            $('#addVoterStatus').html('');
+                        }, 3000);
+                    } else {
+                        $('#addVoterStatus').html(`<div class="alert alert-danger mb-0"><i class="fas fa-times-circle me-2"></i>${response.error}</div>`);
+                    }
+                },
+                error: function () {
+                    $('#addVoterStatus').html('<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-triangle me-2"></i>حدث خطأ في الاتصال</div>');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html('<i class="fas fa-plus me-2"></i>إضافة');
+                }
+            });
+        });
+
+        // Delete record
+        $(document).on('click', '.delete-record-btn', function () {
+            const recordId = $(this).data('record-id');
+            const name = $(this).data('name');
+
+            if (confirm(`هل أنت متأكد من حذف "${name}" من سجلك؟`)) {
+                $.ajax({
+                    url: `{% url 'delete_personal_voter_record' 0 %}`.replace('0', recordId),
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+                    success: function (response) {
+                        if (response.success) {
+                            $(`#record-${recordId}`).fadeOut(400, function () {
+                                $(this).remove();
+                                // Check if table is empty
+                                if ($('#recordsTableBody tr').length === 0) {
+                                    location.reload();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        // Update classification
+        $(document).on('change', '.classification-select', function () {
+            const recordId = $(this).data('record-id');
+            const classification = $(this).val();
+
+            $.ajax({
+                url: `{% url 'update_voter_classification' 0 %}`.replace('0', recordId),
+                method: 'POST',
+                data: {
+                    classification: classification,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Flash effect
+                        $(`#record-${recordId}`).addClass('table-info');
+                        setTimeout(function () {
+                            $(`#record-${recordId}`).removeClass('table-info');
+                        }, 1000);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

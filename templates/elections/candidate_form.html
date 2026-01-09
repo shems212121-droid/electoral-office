@@ -1,0 +1,230 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}{{ object|yesno:"تعديل,إضافة" }} مرشح - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-tie"></i>
+                        {% if object %}تعديل مرشح{% else %}إضافة مرشح جديد{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="candidateForm">
+                        {% csrf_token %}
+
+                        <!-- رقم الناخب للبحث التلقائي -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>البحث التلقائي:</strong> أدخل رقم الناخب وسيتم ملء جميع البيانات تلقائياً
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الناخب *</label>
+                                {{ form.voter_number }}
+                                <div id="voterLookupSpinner" class="spinner-border spinner-border-sm text-primary mt-2"
+                                    style="display: none;"></div>
+                                <div id="voterLookupError" class="text-danger mt-2" style="display: none;"></div>
+                                <div id="voterLookupSuccess" class="text-success mt-2" style="display: none;">
+                                    <i class="fas fa-check-circle"></i> تم العثور على الناخب وملء البيانات
+                                </div>
+                                {% if form.voter_number.errors %}
+                                <div class="text-danger">{{ form.voter_number.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الاسم الكامل *</label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}
+                                <div class="text-danger">{{ form.full_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">اسم الأم الثلاثي</label>
+                                {{ form.mother_name_triple }}
+                                {% if form.mother_name_triple.errors %}
+                                <div class="text-danger">{{ form.mother_name_triple.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">تاريخ الميلاد</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">رقم الهاتف *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5><i class="fas fa-map-marker-alt"></i> بيانات مراكز الاقتراع والتسجيل</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم مركز الاقتراع</label>
+                                {{ form.voting_center_number }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">اسم مركز الاقتراع</label>
+                                {{ form.voting_center_name }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم مركز التسجيل</label>
+                                {{ form.registration_center_number }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">اسم مركز التسجيل</label>
+                                {{ form.registration_center_name }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">رقم العائلة</label>
+                                {{ form.family_number }}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">رقم المحطة</label>
+                                {{ form.station_number }}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">المحافظة</label>
+                                {{ form.governorate }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة</label>
+                                {{ form.status }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">عنوان السكن</label>
+                                {{ form.address }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'candidate_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> حفظ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const voterNumberInput = document.querySelector('input[name="voter_number"]');
+        const form = document.getElementById('candidateForm');
+        const spinner = document.getElementById('voterLookupSpinner');
+        const errorDiv = document.getElementById('voterLookupError');
+        const successDiv = document.getElementById('voterLookupSuccess');
+
+        let lookupTimeout = null;
+
+        voterNumberInput.addEventListener('input', function () {
+            const voterNumber = this.value.trim();
+
+            // Clear previous timeout
+            if (lookupTimeout) {
+                clearTimeout(lookupTimeout);
+            }
+
+            // Hide messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            // Only lookup if voter number has content
+            if (voterNumber.length < 3) {
+                return;
+            }
+
+            // Show spinner
+            spinner.style.display = 'inline-block';
+
+            // Debounce the lookup (wait 500ms after user stops typing)
+            lookupTimeout = setTimeout(() => {
+                fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.error || 'خطأ في البحث');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Hide spinner
+                        spinner.style.display = 'none';
+
+                        // Fill form fields
+                        document.querySelector('input[name="full_name"]').value = data.full_name || '';
+                        document.querySelector('input[name="date_of_birth"]').value = data.date_of_birth || '';
+                        document.querySelector('input[name="phone"]').value = data.phone || '';
+                        document.querySelector('input[name="voting_center_number"]').value = data.voting_center_number || '';
+                        document.querySelector('input[name="voting_center_name"]').value = data.voting_center_name || '';
+                        document.querySelector('input[name="family_number"]').value = data.family_number || '';
+                        document.querySelector('input[name="registration_center_name"]').value = data.registration_center_name || '';
+                        document.querySelector('input[name="registration_center_number"]').value = data.registration_center_number || '';
+                        document.querySelector('input[name="governorate"]').value = data.governorate || '';
+                        document.querySelector('input[name="station_number"]').value = data.station_number || '';
+                        document.querySelector('input[name="status"]').value = data.status || '';
+
+                        // Use mother_name for mother_name_triple if available
+                        if (data.mother_name) {
+                            document.querySelector('input[name="mother_name_triple"]').value = data.mother_name;
+                        }
+
+                        // Show success message
+                        successDiv.style.display = 'block';
+
+                        // Hide success message after 3 seconds
+                        setTimeout(() => {
+                            successDiv.style.display = 'none';
+                        }, 3000);
+                    })
+                    .catch(error => {
+                        // Hide spinner
+                        spinner.style.display = 'none';
+
+                        // Show error
+                        errorDiv.textContent = error.message;
+                        errorDiv.style.display = 'block';
+                    });
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+
+{% block title %}مقابلة {{ interview.candidate_name }} - تفاصيل{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:candidate_interview_list' %}">المقابلات</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ interview.candidate_name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="fas fa-user-tie me-2"></i>
+                تفاصيل مقابلة: {{ interview.candidate_name }}
+            </h4>
+            <a href="{% url 'archive:candidate_interview_edit' interview.pk %}" class="btn btn-warning btn-sm fw-bold">
+                <i class="fas fa-edit me-1"></i>تعديل
+            </a>
+        </div>
+        <div class="card-body">
+            <!-- معلومات عامة -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-2"><strong>تاريخ المقابلة:</strong> {{ interview.interview_date|date:"Y-m-d" }}
+                </div>
+                <div class="col-md-4 mb-2"><strong>القائم بالمقابلة:</strong> {{ interview.interviewer }}</div>
+                <div class="col-md-4 mb-2">
+                    <strong>القرار:</strong>
+                    {% if interview.status == 'accepted' %}
+                    <span class="badge bg-success">مقبول</span>
+                    {% elif interview.status == 'rejected' %}
+                    <span class="badge bg-danger">مرفوض</span>
+                    {% elif interview.status == 'reserve' %}
+                    <span class="badge bg-warning text-dark">احتياط</span>
+                    {% else %}
+                    <span class="badge bg-secondary">قيد الدراسة</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <!-- التقييم الشخصي -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-primary">
+                        <div class="card-header bg-primary text-white">التقييم الشخصي</div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>المظهر العام:</span>
+                                <span class="badge bg-primary rounded-pill">{{ interview.appearance_score }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>الكاريزما:</span>
+                                <span class="badge bg-primary rounded-pill">{{ interview.charisma_score }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>اللباقة:</span>
+                                <span class="badge bg-primary rounded-pill">{{ interview.speaking_score }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- التقييم الثقافي -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-info">
+                        <div class="card-header bg-info text-white">التقييم الثقافي والسياسي</div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>المستوى الثقافي:</span>
+                                <span class="badge bg-info rounded-pill">{{ interview.cultural_score }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>الوعي السياسي:</span>
+                                <span class="badge bg-info rounded-pill">{{ interview.political_awareness }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>تأثير المجتمع:</span>
+                                <span class="badge bg-info rounded-pill">{{ interview.community_influence }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- تقييمات أخرى -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-warning">
+                        <div class="card-header bg-warning text-dark">تقييمات أخرى</div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>الولاء:</span>
+                                <span class="badge bg-warning text-dark rounded-pill">{{ interview.loyalty_score
+                                    }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>القدرة المالية:</span>
+                                <span class="badge bg-warning text-dark rounded-pill">{{ interview.financial_capability
+                                    }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ملاحظات -->
+            <div class="row mt-3">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-success fw-bold">نقاط القوة:</h6>
+                    <p class="p-3 bg-light rounded border-start border-success border-4">{{
+                        interview.strength_points|default:"لا يوجد"|linebreaks }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-danger fw-bold">نقاط الضعف:</h6>
+                    <p class="p-3 bg-light rounded border-start border-danger border-4">{{
+                        interview.weakness_points|default:"لا يوجد"|linebreaks }}</p>
+                </div>
+                <div class="col-12">
+                    <h6 class="text-primary fw-bold">ملاحظات عامة:</h6>
+                    <p class="p-3 bg-light rounded">{{ interview.general_notes|default:"لا يوجد"|linebreaks }}</p>
+                </div>
+            </div>
+
+        </div>
+        <div class="card-footer bg-white text-center">
+            <a href="{% url 'archive:candidate_interview_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-2"></i>رجوع للقائمة
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-print me-2"></i>طباعة
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

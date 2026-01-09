@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}المعرفين - {{ room.room_code }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>
+                <i class="bi bi-people"></i> المعرفين - {{ room.room_code }} - {{ room.name }}
+            </h2>
+            <p class="text-muted">إجمالي: {{ total_count }} معرف</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if introducers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>كود المعرف</th>
+                                    <th>الاسم</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>المرتكز</th>
+                                    <th>المرشح</th>
+                                    <th>عدد الناخبين</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for introducer in introducers %}
+                                <tr>
+                                    <td><code>{{ introducer.introducer_code }}</code></td>
+                                    <td>{{ introducer.full_name }}</td>
+                                    <td>{{ introducer.phone|default:"-" }}</td>
+                                    <td>{{ introducer.anchor.full_name if introducer.anchor else "-" }}</td>
+                                    <td>{{ introducer.anchor.candidate.full_name if introducer.anchor and
+                                        introducer.anchor.candidate else "-" }}</td>
+                                    <td>{{ introducer.get_voters_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if introducers.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if introducers.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ introducers.previous_page_number }}">السابق</a>
+                            </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">{{ introducers.number }} من {{ introducers.paginator.num_pages
+                                    }}</span>
+                            </li>
+
+                            {% if introducers.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ introducers.next_page_number }}">التالي</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-center text-muted">لا يوجد معرفين في هذه الغرفة</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{% url 'sub_room_dashboard' room.pk %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-right"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

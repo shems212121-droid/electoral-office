@@ -1,0 +1,147 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}المالية - لوحة التحكم{% endblock %}
+
+{% block page_title %}الإدارة المالية{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Total Balance -->
+    <div class="col-md-4">
+        <div class="card bg-gradient-primary text-white h-100 shadow-lg border-0"
+            style="background: linear-gradient(135deg, #1B5E20, #2E7D32);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase mb-2" style="opacity: 0.8;">الرصيد المتبقي</h6>
+                        <h2 class="mb-0 fw-bold">{{ balance|intcomma }} د.ع</h2>
+                    </div>
+                    <div class="p-3 bg-white bg-opacity-25 rounded-circle">
+                        <i class="fas fa-wallet fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Income -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">مجموع الواردات</h6>
+                        <h3 class="mb-0 fw-bold text-success">+{{ total_income|intcomma }}</h3>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle">
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Expense -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">مجموع المصروفات</h6>
+                        <h3 class="mb-0 fw-bold text-danger">-{{ total_expense|intcomma }}</h3>
+                    </div>
+                    <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-circle">
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Category Breakdown -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow h-100">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-chart-pie me-2 text-warning"></i> ملخص الأقسام</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>القسم</th>
+                                <th class="text-center">الوارد</th>
+                                <th class="text-center">الصادر</th>
+                                <th class="text-end">المتبقي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in category_data %}
+                            <tr>
+                                <td class="fw-bold">{{ cat.name }}</td>
+                                <td class="text-center text-success">{{ cat.income|intcomma }}</td>
+                                <td class="text-center text-danger">{{ cat.expense|intcomma }}</td>
+                                <td
+                                    class="text-end fw-bold {% if cat.balance < 0 %}text-danger{% else %}text-dark{% endif %}">
+                                    {{ cat.balance|intcomma }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow h-100">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-history me-2 text-primary"></i> آخر الحركات</h5>
+                <a href="{% url 'transaction_create' %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> إضافة حركة
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for transaction in recent_transactions %}
+                    <div class="list-group-item px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <span
+                                    class="badge {% if transaction.transaction_type == 'income' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                    {% if transaction.transaction_type == 'income' %}قبض{% else %}صرف{% endif %}
+                                </span>
+                                <span class="fw-bold ms-2">{{ transaction.category.name }}</span>
+                            </div>
+                            <small class="text-muted">{{ transaction.date|date:"Y/m/d" }}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <p class="mb-0 text-muted small text-truncate" style="max-width: 250px;">{{
+                                transaction.description }}</p>
+                            <span
+                                class="fw-bold {% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}{{
+                                transaction.amount|intcomma }}
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-box-open fa-3x mb-3 opacity-50"></i>
+                        <p>لا توجد حركات مالية مسجلة</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <a href="{% url 'transaction_list' %}" class="text-decoration-none fw-bold">عرض كل الحركات</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

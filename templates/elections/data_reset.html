@@ -1,0 +1,196 @@
+{% extends 'elections/base.html' %}
+{% load humanize %}
+
+{% block title %}إعادة تعيين البيانات - المكتب الانتخابي{% endblock %}
+
+{% block extra_css %}
+<style>
+    .danger-zone {
+        border: 2px dashed #dc3545;
+        border-radius: 15px;
+        padding: 30px;
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .reset-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border-right: 5px solid transparent;
+    }
+
+    .reset-card:hover {
+        transform: translateX(-5px);
+        background-color: #f8f9fa;
+    }
+
+    .reset-card.selected {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-right-color: #dc3545;
+    }
+
+    .warning-icon {
+        font-size: 3rem;
+        color: #dc3545;
+        margin-bottom: 20px;
+    }
+
+    .form-check-input:checked {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h1 class="h3 mb-3 text-danger fw-bold">إعادة تعيين بيانات النظام</h1>
+                    <p class="text-muted mb-4">
+                        تحذير: هذه العملية ستقوم بحذف البيانات المحددة بشكل نهائي ولا يمكن التراجع عنها.
+                        هذه الصلاحية متاحة فقط للمشرفين الأعلى في النظام.
+                    </p>
+
+                    <form method="post" id="resetForm">
+                        {% csrf_token %}
+
+                        <div class="danger-zone text-start mb-4">
+                            <h5 class="mb-4 fw-bold"><i class="fas fa-list-check me-2"></i> حدد البيانات المراد حذفها:
+                            </h5>
+
+                            <div class="list-group list-group-flush rounded-3 overflow-hidden">
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="candidates">
+                                    <span class="fw-bold">المرشحين</span>
+                                    <small class="d-block text-muted">سيتم حذف كافة سجلات المرشحين وبياناتهم
+                                        الأساسية.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="anchors">
+                                    <span class="fw-bold">المرتكزات</span>
+                                    <small class="d-block text-muted">سيتم حذف المرتكزات المرتبطة بالمرشحين.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="introducers">
+                                    <span class="fw-bold">المعرفين</span>
+                                    <small class="d-block text-muted">سيتم حذف كافة المعرفين المسجلين في النظام.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="voters">
+                                    <span class="fw-bold">الناخبين</span>
+                                    <small class="d-block text-muted">سيتم حذف سجلات الناخبين المسجلين في
+                                        المكتب.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="observers">
+                                    <span class="fw-bold">المراقبين والوكلاء</span>
+                                    <small class="d-block text-muted">حذف مراقبي المحطات ووكلاء الكيانات
+                                        والمنظمات.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="results_general">
+                                    <span class="fw-bold">نتائج التصويت العام</span>
+                                    <small class="d-block text-muted">تصفير كافة نتائج جرد المحطات في التصويت
+                                        العام.</small>
+                                </label>
+
+                                <label class="list-group-item reset-card py-3">
+                                    <input class="form-check-input me-3" type="checkbox" name="reset_target"
+                                        value="results_special">
+                                    <span class="fw-bold">نتائج التصويت الخاص</span>
+                                    <small class="d-block text-muted">تصفير كافة نتائج جرد المحطات في التصويت
+                                        الخاص.</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning border-0 bg-light-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            يرجى التأكد من رغبتك في الحذف قبل الضغط على الزر.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-danger btn-lg py-3 fw-bold" onclick="confirmReset()">
+                                <i class="fas fa-trash-alt me-2"></i> حذف البيانات المحددة
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">إلغاء والعودة للرئيسية</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmation -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title fw-bold">تأكيد الحذف النهائي</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="text-danger mb-3">
+                    <i class="fas fa-exclamation-circle fa-4x"></i>
+                </div>
+                <h4 class="fw-bold mb-3">هل أنت متأكد حقاً؟</h4>
+                <p class="text-muted">
+                    سيتم حذف البيانات المحددة نهائياً من قاعدة البيانات. <br>
+                    <strong>هذا الإجراء لا يمكن الرجوع عنه!</strong>
+                </p>
+            </div>
+            <div class="modal-footer border-0 p-3 justify-content-center">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">تراجع</button>
+                <button type="button" class="btn btn-danger px-4 fw-bold" onclick="submitForm()">نعم، احذف الأن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmReset() {
+        const checkboxes = document.querySelectorAll('input[name="reset_target"]:checked');
+        if (checkboxes.length === 0) {
+            alert('يرجى تحديد عنصر واحد على الأقل للحذف.');
+            return;
+        }
+        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        modal.show();
+    }
+
+    function submitForm() {
+        document.getElementById('resetForm').submit();
+    }
+
+    // Toggle selected class on cards
+    document.querySelectorAll('.reset-card').forEach(card => {
+        card.addEventListener('click', function (e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            }
+            this.classList.toggle('selected', this.querySelector('input[type="checkbox"]').checked);
+        });
+    });
+</script>
+{% endblock %}

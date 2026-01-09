@@ -1,0 +1,209 @@
+{% extends 'elections/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - الأرشيف{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'archive:candidate_info_list' %}">استمارات المرشحين</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        {{ title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- 1. معلومات أساسية -->
+                            <div class="col-12">
+                                <h5 class="text-success border-bottom pb-2">1. معلومات المرشح الأساسية</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.ticket_order.label }}</label>
+                                {{ form.ticket_order }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.voter_id.label }}</label>
+                                {{ form.voter_id }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.full_name.label }}</label>
+                                {{ form.full_name }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.grandfather4_name.label }}</label>
+                                {{ form.grandfather4_name }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.surname.label }}</label>
+                                {{ form.surname }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.gender.label }}</label>
+                                {{ form.gender }}
+                            </div>
+
+                            <!-- 2. معلومات الأم -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">2. معلومات الأم</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.mother_name.label }}</label>
+                                {{ form.mother_name }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.mother_father_name.label }}</label>
+                                {{ form.mother_father_name }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.mother_grandfather_name.label }}</label>
+                                {{ form.mother_grandfather_name }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.mother_surname.label }}</label>
+                                {{ form.mother_surname }}
+                            </div>
+
+                            <!-- 3. التولد -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">3. محل وتاريخ التولد</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.birth_place.label }}</label>
+                                {{ form.birth_place }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.birth_date.label }}</label>
+                                {{ form.birth_date }}
+                            </div>
+
+                            <!-- 4. السكن -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">4. عنوان السكن</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.governorate.label }}</label>
+                                {{ form.governorate }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.qada.label }}</label>
+                                {{ form.qada }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.nahia.label }}</label>
+                                {{ form.nahia }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.mahalla.label }}</label>
+                                {{ form.mahalla }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.zukak.label }}</label>
+                                {{ form.zukak }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.dar.label }}</label>
+                                {{ form.dar }}
+                            </div>
+
+                            <!-- 5. الاتصال -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">5. معلومات الاتصال</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.phone_number.label }}</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.email.label }}</label>
+                                {{ form.email }}
+                            </div>
+
+                            <!-- 6. التعليم -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">6. التحصيل الدراسي</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.education_level.label }}</label>
+                                {{ form.education_level }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.cert_issuer.label }}</label>
+                                {{ form.cert_issuer }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.cert_number.label }}</label>
+                                {{ form.cert_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.cert_date.label }}</label>
+                                {{ form.cert_date }}
+                            </div>
+
+                            <!-- 7. المستمسكات والاقتراع -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success border-bottom pb-2">7. المستمسكات ومعلومات الاقتراع</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.national_id_number.label }}</label>
+                                {{ form.national_id_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.national_id_date.label }}</label>
+                                {{ form.national_id_date }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.ballot_name.label }}</label>
+                                {{ form.ballot_name }}
+                            </div>
+
+                            <!-- أزرار التحكم -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'archive:candidate_info_list' %}"
+                                        class="btn btn-secondary">إلغاء</a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save me-2"></i>حفظ الاستمارة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

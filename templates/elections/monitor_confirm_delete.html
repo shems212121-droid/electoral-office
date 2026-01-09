@@ -1,0 +1,58 @@
+{% extends 'elections/base.html' %}
+
+{% block title %}تأكيد حذف المراقب - المكتب الانتخابي{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        تأكيد حذف المراقب
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تحذير:</strong> هذا الإجراء لا يمكن التراجع عنه!
+                    </div>
+
+                    <p class="lead">هل أنت متأكد من حذف المراقب التالي؟</p>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5>{{ monitor.full_name }}</h5>
+                            <p class="mb-0">
+                                <strong>نوع الدور:</strong>
+                                {% if monitor.role_type == 'candidate_observer' %}
+                                <span class="badge bg-primary">مراقب مرشح</span>
+                                {% else %}
+                                <span class="badge bg-info text-dark">وكيل كيان</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-0"><strong>المرشح:</strong> {{ monitor.candidate.full_name|default:"-" }}</p>
+                            <p class="mb-0"><strong>الهاتف:</strong> {{ monitor.phone }}</p>
+                            <p class="mb-0"><strong>مركز الاقتراع:</strong> {{ monitor.voting_center_name|default:"-" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف المراقب
+                            </button>
+                            <a href="{% url 'monitor_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
