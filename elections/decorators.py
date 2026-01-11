@@ -158,20 +158,8 @@ def user_profile_context(request):
     Add to settings.py TEMPLATES OPTIONS context_processors:
         'elections.decorators.user_profile_context',
     """
-    try:
-        if request.user.is_authenticated and hasattr(request.user, 'profile'):
-            return {
-                'user_profile': request.user.profile,
-                'user_role': request.user.profile.role,
-                'user_role_display': request.user.profile.get_role_display(),
-                'is_admin': request.user.profile.role == UserRole.ADMIN,
-                'is_supervisor': request.user.profile.role == UserRole.SUPERVISOR,
-                'can_export': request.user.profile.has_permission('export_reports'),
-            }
-    except Exception:
-        pass
-        
-    return {
+    # Default values to return in case of any error
+    default_context = {
         'user_profile': None,
         'user_role': None,
         'user_role_display': 'غير محدد',
@@ -179,3 +167,37 @@ def user_profile_context(request):
         'is_supervisor': False,
         'can_export': False,
     }
+    
+    try:
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return default_context
+        
+        # Check if user has profile attribute
+        if not hasattr(request.user, 'profile'):
+            return default_context
+        
+        # Get the profile
+        profile = request.user.profile
+        
+        # Return context with profile data
+        return {
+            'user_profile': profile,
+            'user_role': profile.role,
+            'user_role_display': profile.get_role_display(),
+            'is_admin': profile.role == UserRole.ADMIN,
+            'is_supervisor': profile.role == UserRole.SUPERVISOR,
+            'can_export': profile.has_permission('export_reports'),
+        }
+    except AttributeError as e:
+        # Log the error in production (will appear in Railway logs)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"AttributeError in user_profile_context: {str(e)}")
+        return default_context
+    except Exception as e:
+        # Catch any other unexpected errors
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unexpected error in user_profile_context: {str(e)}")
+        return default_context
