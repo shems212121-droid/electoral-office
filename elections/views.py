@@ -47,7 +47,8 @@ class CustomLoginView(LoginView):
 # ==================== Dashboard ====================
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'elections/dashboard.html'
+    # template_name = 'elections/dashboard.html'
+    template_name = 'elections/test_dashboard.html'
     
     # Cache voter count (updated periodically) - Basra only
     CACHED_VOTER_COUNT = 1868927  # Pre-calculated from database (Basra governorate only)
