@@ -192,7 +192,9 @@ class VoterDetailView(LoginRequiredMixin, DetailView):
 
 
 def voter_lookup_ajax(request):
-    """AJAX endpoint to fetch voter data by voter_number from Legacy DB"""
+    """AJAX endpoint to fetch voter data by voter_number from Legacy DB or Local DB"""
+    from django.conf import settings
+    
     voter_number = request.GET.get('voter_number')
     introducer_id = request.GET.get('introducer_id')  # New parameter
     
@@ -202,6 +204,7 @@ def voter_lookup_ajax(request):
     # Check if voter exists in local database and is assigned to an introducer
     already_assigned = False
     same_introducer = False
+    local_voter = None
     
     try:
         local_voter = Voter.objects.get(voter_number=voter_number)
@@ -213,82 +216,91 @@ def voter_lookup_ajax(request):
     except Voter.DoesNotExist:
         local_voter = None
     
-    try:
-        # Query Legacy DB
-        person = PersonHD.objects.using('legacy_voters_db').get(per_id=voter_number)
-        
-        # Get Center Name
+    # Check if legacy database is configured
+    legacy_db_available = 'legacy_voters_db' in settings.DATABASES
+    
+    if legacy_db_available:
         try:
-            center = PCHd.objects.using('legacy_voters_db').get(pcno=person.pcno)
-            center_name = center.pc_name
-        except PCHd.DoesNotExist:
-            center_name = ''
+            # Query Legacy DB
+            person = PersonHD.objects.using('legacy_voters_db').get(per_id=voter_number)
+            
+            # Get Center Name
+            try:
+                center = PCHd.objects.using('legacy_voters_db').get(pcno=person.pcno)
+                center_name = center.pc_name
+            except PCHd.DoesNotExist:
+                center_name = ''
 
-        # Get Registration Center Name
-        try:
-            vrc = VrcHD.objects.using('legacy_voters_db').get(vrc_id=person.per_vrc_id)
-            reg_center_name = vrc.vrc_name_ar
-        except (VrcHD.DoesNotExist, AttributeError):
-            reg_center_name = ''
+            # Get Registration Center Name
+            try:
+                vrc = VrcHD.objects.using('legacy_voters_db').get(vrc_id=person.per_vrc_id)
+                reg_center_name = vrc.vrc_name_ar
+            except (VrcHD.DoesNotExist, AttributeError):
+                reg_center_name = ''
 
-        # Get Governorate Name
-        try:
-            gov = GovernorateHD.objects.using('legacy_voters_db').get(gov_no=str(person.per_gov_id))
-            gov_name = gov.gov_name
-        except (GovernorateHD.DoesNotExist, AttributeError, ValueError):
-            gov_name = ''
+            # Get Governorate Name
+            try:
+                gov = GovernorateHD.objects.using('legacy_voters_db').get(gov_no=str(person.per_gov_id))
+                gov_name = gov.gov_name
+            except (GovernorateHD.DoesNotExist, AttributeError, ValueError):
+                gov_name = ''
 
-        # Construct Full Name
-        full_name = filter(None, [person.per_first, person.per_father, person.per_grand])
-        full_name = ' '.join(full_name)
-        
-        # Format Date
-        # PER_DOB is often 'YYYY-MM-DD' or 'DD/MM/YYYY' or similar string.
-        # Just passing it through for now.
-        
+            # Construct Full Name
+            full_name = filter(None, [person.per_first, person.per_father, person.per_grand])
+            full_name = ' '.join(full_name)
+            
+            data = {
+                'full_name': full_name,
+                'date_of_birth': person.per_dob or '',
+                'mother_name': '',
+                'phone': '',
+                'voting_center_number': person.pcno,
+                'voting_center_name': center_name,
+                'family_number': person.per_famno,
+                'registration_center_name': reg_center_name,
+                'registration_center_number': person.per_vrc_id,
+                'governorate': gov_name, 
+                'station_number': person.psno,
+                'status': 'active',
+                'found': True,
+                'already_assigned': already_assigned,
+                'same_introducer': same_introducer,
+            }
+            return JsonResponse(data)
+        except PersonHD.DoesNotExist:
+            pass  # Fall through to local voter check
+        except Exception as e:
+            # Database connection error or other issue - fall through to local check
+            import logging
+            logging.warning(f"Legacy DB lookup failed: {e}")
+    
+    # Fallback to local Voter model
+    if local_voter:
         data = {
-            'full_name': full_name,
-            'date_of_birth': person.per_dob or '',
-            'mother_name': '', # Not in legacy
-            'phone': '', # Not in legacy
-            'voting_center_number': person.pcno,
-            'voting_center_name': center_name,
-            'family_number': person.per_famno,
-            'registration_center_name': reg_center_name,
-            'registration_center_number': person.per_vrc_id,
-            'governorate': gov_name, 
-            'station_number': person.psno,
-            'status': 'active',
+            'full_name': local_voter.full_name,
+            'date_of_birth': local_voter.date_of_birth.strftime('%Y-%m-%d') if local_voter.date_of_birth else '',
+            'mother_name': local_voter.mother_name or '',
+            'phone': local_voter.phone or '',
+            'voting_center_number': local_voter.voting_center_number or '',
+            'voting_center_name': local_voter.voting_center_name or '',
+            'family_number': local_voter.family_number or '',
+            'registration_center_name': local_voter.registration_center_name or '',
+            'registration_center_number': local_voter.registration_center_number or '',
+            'governorate': local_voter.governorate or '',
+            'station_number': local_voter.station_number or '',
+            'status': local_voter.status or 'active',
             'found': True,
             'already_assigned': already_assigned,
             'same_introducer': same_introducer,
         }
         return JsonResponse(data)
-    except PersonHD.DoesNotExist:
-        # Fallback to local Voter model or return error?
-        # User requested "Use prs21.db as database", so likely replace completely.
-        # But if fail, checking local is safe fallback if we imported some before.
-        if local_voter:
-             data = {
-                'full_name': local_voter.full_name,
-                'date_of_birth': local_voter.date_of_birth.strftime('%Y-%m-%d') if local_voter.date_of_birth else '',
-                'mother_name': local_voter.mother_name,
-                'phone': local_voter.phone,
-                'voting_center_number': local_voter.voting_center_number,
-                'voting_center_name': local_voter.voting_center_name,
-                'family_number': local_voter.family_number,
-                'registration_center_name': local_voter.registration_center_name,
-                'registration_center_number': local_voter.registration_center_number,
-                'governorate': local_voter.governorate,
-                'station_number': local_voter.station_number,
-                'status': local_voter.status,
-                'found': True,
-                'already_assigned': already_assigned,
-                'same_introducer': same_introducer,
-            }
-             return JsonResponse(data)
-        else:
-            return JsonResponse({'found': False, 'error': 'الناخب غير موجود'})
+    
+    # Not found in any database
+    return JsonResponse({
+        'found': False, 
+        'error': 'الناخب غير موجود في قاعدة البيانات',
+        'message': 'يرجى التأكد من صحة رقم الناخب'
+    })
 
 
 # ==================== Candidate Views ====================
