@@ -23,12 +23,17 @@ CSRF_TRUSTED_ORIGINS = []
 # Add Railway domains from environment variable
 RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if RAILWAY_PUBLIC_DOMAIN:
-    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
-    CSRF_TRUSTED_ORIGINS.append(f'http://{RAILWAY_PUBLIC_DOMAIN}')
+    # Remove any protocol prefix if present, then add proper ones
+    domain = RAILWAY_PUBLIC_DOMAIN.replace('https://', '').replace('http://', '').strip('/')
+    CSRF_TRUSTED_ORIGINS.append(f'https://{domain}')
+    CSRF_TRUSTED_ORIGINS.append(f'http://{domain}')
 
-# Add RAILWAY_STATIC_URL if provided
+# Add RAILWAY_STATIC_URL if provided (ensure it has protocol)
 if RAILWAY_STATIC_URL:
-    CSRF_TRUSTED_ORIGINS.append(RAILWAY_STATIC_URL)
+    if RAILWAY_STATIC_URL.startswith('http://') or RAILWAY_STATIC_URL.startswith('https://'):
+        CSRF_TRUSTED_ORIGINS.append(RAILWAY_STATIC_URL)
+    else:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_STATIC_URL}')
 
 # Explicitly add the actual Railway deployment URL as fallback
 # This ensures the app works even if environment variables aren't properly set
@@ -36,6 +41,7 @@ CSRF_TRUSTED_ORIGINS.extend([
     'https://web-production-42c39.up.railway.app',
     'http://web-production-42c39.up.railway.app',
 ])
+
 
 # Session and CSRF Settings
 CSRF_COOKIE_SECURE = not DEBUG
