@@ -9,8 +9,9 @@ build/
 
 # Django
 *.log
-*.sqlite3
-db.sqlite3
+# Allow main database for Railway deployment
+# *.sqlite3
+# !db.sqlite3  # Include the main database
 db.sqlite3-journal
 /media
 /staticfiles

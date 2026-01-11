@@ -38,7 +38,13 @@ from .models import (
     PartyCandidate, PoliticalParty, PollingCenter, PollingStation, VoteCount,
     CenterDirector, CandidateMonitor, PoliticalEntityAgent
 )
-from archive.models import ArchivedDocument
+
+# Archive is optional - only import if available
+try:
+    from archive.models import ArchivedDocument
+    ARCHIVE_AVAILABLE = True
+except (ImportError, RuntimeError):
+    ARCHIVE_AVAILABLE = False
 
 
 # ==================== Helper Functions ====================
