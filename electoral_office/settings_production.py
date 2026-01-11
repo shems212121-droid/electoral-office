@@ -18,16 +18,24 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # Railway provides RAILWAY_STATIC_URL
 RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL', '')
-if RAILWAY_STATIC_URL:
-    CSRF_TRUSTED_ORIGINS = [RAILWAY_STATIC_URL]
-else:
-    CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = []
 
-# Add Railway domains
+# Add Railway domains from environment variable
 RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if RAILWAY_PUBLIC_DOMAIN:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
     CSRF_TRUSTED_ORIGINS.append(f'http://{RAILWAY_PUBLIC_DOMAIN}')
+
+# Add RAILWAY_STATIC_URL if provided
+if RAILWAY_STATIC_URL:
+    CSRF_TRUSTED_ORIGINS.append(RAILWAY_STATIC_URL)
+
+# Explicitly add the actual Railway deployment URL as fallback
+# This ensures the app works even if environment variables aren't properly set
+CSRF_TRUSTED_ORIGINS.extend([
+    'https://web-production-42c39.up.railway.app',
+    'http://web-production-42c39.up.railway.app',
+])
 
 # Session and CSRF Settings
 CSRF_COOKIE_SECURE = not DEBUG
@@ -152,3 +160,31 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
 
+# Logging Configuration for Production
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
