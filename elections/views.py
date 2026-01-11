@@ -46,7 +46,8 @@ class CustomLoginView(LoginView):
 
 # ==================== Dashboard ====================
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+# class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(TemplateView):
     # template_name = 'elections/dashboard.html'
     template_name = 'elections/test_dashboard.html'
     
