@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'electoral_office.settings')
+# Force production settings
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'electoral_office.settings_production')
 
 application = get_wsgi_application()

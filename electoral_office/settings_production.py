@@ -91,7 +91,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'elections.decorators.user_profile_context',
+                # Temporarily disabled to diagnose 500 error
+                # 'elections.decorators.user_profile_context',
             ],
         },
     },
