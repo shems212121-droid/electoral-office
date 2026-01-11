@@ -68,7 +68,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -136,7 +136,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # WhiteNoise configuration for better static file serving
 # Use simple storage instead of CompressedManifest to avoid build issues
-STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
