@@ -54,137 +54,141 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     CACHED_VOTER_COUNT = 1868927  # Pre-calculated from database (Basra governorate only)
     
     def get_context_data(self, **kwargs):
-        from django.core.cache import cache
-        from django.conf import settings
+        print("DEBUG: DashboardView.get_context_data called")
+        return {'test': 'data'}
         
-        context = super().get_context_data(**kwargs)
+    # def get_context_data(self, **kwargs):
+    #     from django.core.cache import cache
+    #     from django.conf import settings
         
-        try:
-           # Try to get cached statistics
-            cache_key = 'dashboard_stats'
-            cached_stats = cache.get(cache_key)
+    #     context = super().get_context_data(**kwargs)
+        
+    #     try:
+    #        # Try to get cached statistics
+    #         cache_key = 'dashboard_stats'
+    #         cached_stats = cache.get(cache_key)
             
-            if cached_stats:
-                # Use cached data
-                context.update(cached_stats)
-            else:
-                # Calculate statistics (expensive queries)
-                stats = {}
+    #         if cached_stats:
+    #             # Use cached data
+    #             context.update(cached_stats)
+    #         else:
+    #             # Calculate statistics (expensive queries)
+    #             stats = {}
                 
-                # Basic Statistics
-                try:
-                    stats['total_candidates'] = Candidate.objects.count()
-                    stats['total_anchors'] = Anchor.objects.count()
-                    stats['total_introducers'] = Introducer.objects.count()
-                    stats['total_sub_rooms'] = SubOperationRoom.objects.count()
-                except Exception as e:
-                    stats['db_error'] = str(e)
-                    stats['total_candidates'] = 0
-                    stats['total_anchors'] = 0
-                    stats['total_introducers'] = 0
-                    stats['total_sub_rooms'] = 0
+    #             # Basic Statistics
+    #             try:
+    #                 stats['total_candidates'] = Candidate.objects.count()
+    #                 stats['total_anchors'] = Anchor.objects.count()
+    #                 stats['total_introducers'] = Introducer.objects.count()
+    #                 stats['total_sub_rooms'] = SubOperationRoom.objects.count()
+    #             except Exception as e:
+    #                 stats['db_error'] = str(e)
+    #                 stats['total_candidates'] = 0
+    #                 stats['total_anchors'] = 0
+    #                 stats['total_introducers'] = 0
+    #                 stats['total_sub_rooms'] = 0
 
-                stats['total_voters'] = self.CACHED_VOTER_COUNT
+    #             stats['total_voters'] = self.CACHED_VOTER_COUNT
                 
-                # Use raw SQL for faster counting with single query
-                from django.db import connection
-                try:
-                    with connection.cursor() as cursor:
-                        cursor.execute("""
-                            SELECT 
-                                SUM(CASE WHEN introducer_id IS NOT NULL THEN 1 ELSE 0 END) as assigned,
-                                SUM(CASE WHEN classification = 'supporter' THEN 1 ELSE 0 END) as supporters,
-                                SUM(CASE WHEN classification = 'neutral' THEN 1 ELSE 0 END) as neutrals,
-                                SUM(CASE WHEN classification = 'opponent' THEN 1 ELSE 0 END) as opponents
-                            FROM elections_voter
-                            WHERE introducer_id IS NOT NULL OR classification != 'unknown'
-                            LIMIT 100000
-                        """)
-                        row = cursor.fetchone()
-                        if row:
-                            stats['assigned_voters'] = row[0] or 0
-                            stats['supporter_count'] = row[1] or 0
-                            stats['neutral_count'] = row[2] or 0
-                            stats['opponent_count'] = row[3] or 0
-                        else:
-                            stats['assigned_voters'] = 0
-                            stats['supporter_count'] = 0
-                            stats['neutral_count'] = 0
-                            stats['opponent_count'] = 0
-                except Exception as db_e:
-                     # Fallback for empty DB or migration issues
-                    stats['assigned_voters'] = 0
-                    stats['supporter_count'] = 0
-                    stats['neutral_count'] = 0
-                    stats['opponent_count'] = 0
-                    stats['db_error_raw'] = str(db_e)
+    #             # Use raw SQL for faster counting with single query
+    #             from django.db import connection
+    #             try:
+    #                 with connection.cursor() as cursor:
+    #                     cursor.execute("""
+    #                         SELECT 
+    #                             SUM(CASE WHEN introducer_id IS NOT NULL THEN 1 ELSE 0 END) as assigned,
+    #                             SUM(CASE WHEN classification = 'supporter' THEN 1 ELSE 0 END) as supporters,
+    #                             SUM(CASE WHEN classification = 'neutral' THEN 1 ELSE 0 END) as neutrals,
+    #                             SUM(CASE WHEN classification = 'opponent' THEN 1 ELSE 0 END) as opponents
+    #                         FROM elections_voter
+    #                         WHERE introducer_id IS NOT NULL OR classification != 'unknown'
+    #                         LIMIT 100000
+    #                     """)
+    #                     row = cursor.fetchone()
+    #                     if row:
+    #                         stats['assigned_voters'] = row[0] or 0
+    #                         stats['supporter_count'] = row[1] or 0
+    #                         stats['neutral_count'] = row[2] or 0
+    #                         stats['opponent_count'] = row[3] or 0
+    #                     else:
+    #                         stats['assigned_voters'] = 0
+    #                         stats['supporter_count'] = 0
+    #                         stats['neutral_count'] = 0
+    #                         stats['opponent_count'] = 0
+    #             except Exception as db_e:
+    #                  # Fallback for empty DB or migration issues
+    #                 stats['assigned_voters'] = 0
+    #                 stats['supporter_count'] = 0
+    #                 stats['neutral_count'] = 0
+    #                 stats['opponent_count'] = 0
+    #                 stats['db_error_raw'] = str(db_e)
                 
-                stats['unknown_count'] = self.CACHED_VOTER_COUNT - (stats['supporter_count'] + stats['neutral_count'] + stats['opponent_count'])
+    #             stats['unknown_count'] = self.CACHED_VOTER_COUNT - (stats['supporter_count'] + stats['neutral_count'] + stats['opponent_count'])
                 
-                # Communication Statistics
-                try:
-                    stats['total_communications'] = CommunicationLog.objects.count()
-                    stats['today_communications'] = CommunicationLog.objects.filter(
-                        created_at__date=timezone.now().date()
-                    ).count()
+    #             # Communication Statistics
+    #             try:
+    #                 stats['total_communications'] = CommunicationLog.objects.count()
+    #                 stats['today_communications'] = CommunicationLog.objects.filter(
+    #                     created_at__date=timezone.now().date()
+    #                 ).count()
                     
-                    # Task Statistics
-                    stats['total_tasks'] = CampaignTask.objects.count()
-                    stats['pending_tasks'] = CampaignTask.objects.filter(status='pending').count()
-                    stats['in_progress_tasks'] = CampaignTask.objects.filter(status='in_progress').count()
-                    stats['completed_tasks'] = CampaignTask.objects.filter(status='completed').count()
-                except:
-                    stats['total_communications'] = 0
-                    stats['today_communications'] = 0
-                    stats['total_tasks'] = 0
+    #                 # Task Statistics
+    #                 stats['total_tasks'] = CampaignTask.objects.count()
+    #                 stats['pending_tasks'] = CampaignTask.objects.filter(status='pending').count()
+    #                 stats['in_progress_tasks'] = CampaignTask.objects.filter(status='in_progress').count()
+    #                 stats['completed_tasks'] = CampaignTask.objects.filter(status='completed').count()
+    #             except:
+    #                 stats['total_communications'] = 0
+    #                 stats['today_communications'] = 0
+    #                 stats['total_tasks'] = 0
                     
                 
-                if stats.get('total_tasks', 0) > 0:
-                    stats['task_completion_rate'] = (stats['completed_tasks'] / stats['total_tasks'] * 100)
-                else:
-                    stats['task_completion_rate'] = 0
+    #             if stats.get('total_tasks', 0) > 0:
+    #                 stats['task_completion_rate'] = (stats['completed_tasks'] / stats['total_tasks'] * 100)
+    #             else:
+    #                 stats['task_completion_rate'] = 0
                 
-                # Coverage Percentage
-                if stats['total_voters'] > 0:
-                    stats['coverage_percentage'] = (stats['assigned_voters'] / stats['total_voters'] * 100)
-                else:
-                    stats['coverage_percentage'] = 0
+    #             # Coverage Percentage
+    #             if stats['total_voters'] > 0:
+    #                 stats['coverage_percentage'] = (stats['assigned_voters'] / stats['total_voters'] * 100)
+    #             else:
+    #                 stats['coverage_percentage'] = 0
                 
-                # Cache for 5 minutes
-                cache_timeout = getattr(settings, 'DASHBOARD_CACHE_TIMEOUT', 300)
-                cache.set(cache_key, stats, cache_timeout)
+    #             # Cache for 5 minutes
+    #             cache_timeout = getattr(settings, 'DASHBOARD_CACHE_TIMEOUT', 300)
+    #             cache.set(cache_key, stats, cache_timeout)
                 
-                context.update(stats)
+    #             context.update(stats)
             
-            # Recent Activities (not cached - always fresh)
-            try:
-                context['recent_communications'] = CommunicationLog.objects.select_related('caller').order_by('-created_at')[:10]
-                context['recent_tasks'] = CampaignTask.objects.order_by('-created_at')[:5]
-            except:
-                context['recent_communications'] = []
-                context['recent_tasks'] = []
+    #         # Recent Activities (not cached - always fresh)
+    #         try:
+    #             context['recent_communications'] = CommunicationLog.objects.select_related('caller').order_by('-created_at')[:10]
+    #             context['recent_tasks'] = CampaignTask.objects.order_by('-created_at')[:5]
+    #         except:
+    #             context['recent_communications'] = []
+    #             context['recent_tasks'] = []
             
-            # Top Areas - Skip this slow query, use empty list
-            context['top_areas'] = []
+    #         # Top Areas - Skip this slow query, use empty list
+    #         context['top_areas'] = []
             
-            return context
-        except Exception as e:
-            # Emergency context if everything fails
-            return {
-                'error_message': f'حدث خطأ غير متوقع في لوحة التحكم: {str(e)}',
-                'total_voters': 0,
-                'total_candidates': 0,
-                'total_anchors': 0,
-                'total_introducers': 0,
-                'total_sub_rooms': 0,
-                'recent_communications': [],
-                'recent_tasks': [],
-                'top_areas': [],
-                'supporter_count': 0,
-                'neutral_count': 0,
-                'opponent_count': 0,
-                'unknown_count': 0,
-            }
+    #         return context
+    #     except Exception as e:
+    #         # Emergency context if everything fails
+    #         return {
+    #             'error_message': f'حدث خطأ غير متوقع في لوحة التحكم: {str(e)}',
+    #             'total_voters': 0,
+    #             'total_candidates': 0,
+    #             'total_anchors': 0,
+    #             'total_introducers': 0,
+    #             'total_sub_rooms': 0,
+    #             'recent_communications': [],
+    #             'recent_tasks': [],
+    #             'top_areas': [],
+    #             'supporter_count': 0,
+    #             'neutral_count': 0,
+    #             'opponent_count': 0,
+    #             'unknown_count': 0,
+    #         }
 
 
 # ==================== Voter Views ====================
