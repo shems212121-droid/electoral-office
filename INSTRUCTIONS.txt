@@ -1,0 +1,82 @@
+════════════════════════════════════════════════════════════════
+        خطوات رفع الكود - نسخ والصق فقط!
+        Copy & Paste Instructions - Step by Step
+════════════════════════════════════════════════════════════════
+
+الخطوة 1: افتح PowerShell كمسؤول
+Step 1: Open PowerShell as Administrator
+----------------------------------------
+- اضغط Windows + X
+- اختر "Windows PowerShell (Admin)" أو "Terminal (Admin)"
+
+
+الخطوة 2: نسخ هذه الأوامر واحد تلو الآخر
+Step 2: Copy these commands one by one
+----------------------------------------
+
+نسخ هذا الأمر والصقه في PowerShell واضغط Enter:
+Copy this command, paste in PowerShell, press Enter:
+
+cd C:\Users\2025\.gemini\antigravity\scratch\electoral_office
+
+
+ثم نسخ هذا والصقه واضغط Enter:
+Then copy this, paste, press Enter:
+
+.\push_to_github.ps1
+
+
+الخطوة 3: السكريبت سيسألك
+Step 3: Script will ask you
+----------------------------------------
+
+السؤال 1: اسم المستخدم
+Question 1: Username
+>>> اضغط Enter فقط (Just press Enter)
+
+
+السؤال 2: Personal Access Token
+Question 2: Personal Access Token  
+>>> أدخل الـ Token من GitHub (Enter token from GitHub)
+
+
+════════════════════════════════════════════════════════════════
+إذا لم يكن لديك Token:
+If you don't have a Token:
+════════════════════════════════════════════════════════════════
+
+1. افتح المتصفح (مفتوح لك الآن!)
+   Browser is open for you now!
+
+2. أدخل:
+   Enter:
+   - Name: Railway
+   - Expiration: 90 days
+   - Scope: ✓ repo (ضع علامة / Check this box)
+
+3. انقر "Generate token"
+   Click "Generate token"
+
+4. انسخ Token (يظهر مرة واحدة!)
+   Copy the token (shows only once!)
+
+5. الصقه في PowerShell
+   Paste it in PowerShell
+
+
+════════════════════════════════════════════════════════════════
+بعد نجاح الرفع:
+After successful push:
+════════════════════════════════════════════════════════════════
+
+✓ سترى "نجح رفع الكود!"
+  You'll see "Code pushed successfully!"
+
+✓ Railway سينشر تلقائياً خلال دقيقتين
+  Railway will deploy automatically in 2 minutes
+
+✓ افتح رابطك وجرّب!
+  Open your URL and test!
+
+
+════════════════════════════════════════════════════════════════
