@@ -135,7 +135,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # WhiteNoise configuration for better static file serving
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use simple storage instead of CompressedManifest to avoid build issues
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
