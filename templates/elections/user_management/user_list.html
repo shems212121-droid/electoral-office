@@ -40,19 +40,41 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-details-modern">
-                    <div class="stat-label-modern">مستخدمين نشطين</div>
+                    <div class="stat-label-modern">نشطين</div>
                     <div class="stat-value-modern">{{ stats.active_users|intcomma }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stat-card-modern bg-warning">
+        <div class="col-md-2">
+            <div class="stat-card-modern bg-info">
                 <div class="stat-icon-modern">
-                    <i class="fas fa-times-circle"></i>
+                    <i class="fas fa-user-tie"></i>
                 </div>
                 <div class="stat-details-modern">
-                    <div class="stat-label-modern">مستخدمين معطلين</div>
-                    <div class="stat-value-modern">{{ stats.inactive_users|intcomma }}</div>
+                    <div class="stat-label-modern">مرشحين</div>
+                    <div class="stat-value-modern">{{ stats.linked_to_candidates|intcomma }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card-modern bg-purple">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-details-modern">
+                    <div class="stat-label-modern">غرف عمليات</div>
+                    <div class="stat-value-modern">{{ stats.linked_to_rooms|intcomma }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card-modern bg-secondary">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+                <div class="stat-details-modern">
+                    <div class="stat-label-modern">بدون ارتباط</div>
+                    <div class="stat-value-modern">{{ stats.no_links|intcomma }}</div>
                 </div>
             </div>
         </div>
@@ -63,13 +85,14 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
-                    <input type="text" name="q" class="form-control" placeholder="بحث..." value="{{ request.GET.q }}">
+                    <input type="text" name="q" class="form-control" placeholder="بحث بالاسم، المستخدم، المرشح..."
+                        value="{{ current_filters.search }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <select name="role" class="form-select">
                         <option value="">جميع الأدوار</option>
                         {% for value, label in roles %}
-                        <option value="{{ value }}" {% if request.GET.role==value %}selected{% endif %}>{{ label }}
+                        <option value="{{ value }}" {% if current_filters.role==value %}selected{% endif %}>{{ label }}
                         </option>
                         {% endfor %}
                     </select>
@@ -77,8 +100,19 @@
                 <div class="col-md-2">
                     <select name="status" class="form-select">
                         <option value="">جميع الحالات</option>
-                        <option value="active" {% if request.GET.status=='active' %}selected{% endif %}>نشط</option>
-                        <option value="inactive" {% if request.GET.status=='inactive' %}selected{% endif %}>معطل
+                        <option value="active" {% if current_filters.status=='active' %}selected{% endif %}>نشط</option>
+                        <option value="inactive" {% if current_filters.status=='inactive' %}selected{% endif %}>معطل
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="linked" class="form-select">
+                        <option value="">جميع الارتباطات</option>
+                        <option value="candidate" {% if current_filters.linked=='candidate' %}selected{% endif %}>مرشحين
+                        </option>
+                        <option value="room" {% if current_filters.linked=='room' %}selected{% endif %}>غرف عمليات
+                        </option>
+                        <option value="none" {% if current_filters.linked=='none' %}selected{% endif %}>بدون ارتباط
                         </option>
                     </select>
                 </div>
@@ -87,9 +121,9 @@
                         <i class="fas fa-search"></i> بحث
                     </button>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <a href="{% url 'user_management_list' %}" class="btn btn-secondary w-100">
-                        <i class="fas fa-redo"></i> إعادة تعيين
+                        <i class="fas fa-redo"></i>
                     </a>
                 </div>
             </form>
@@ -108,8 +142,8 @@
                         <tr>
                             <th>اسم المستخدم</th>
                             <th>الاسم الكامل</th>
-                            <th>البريد</th>
                             <th>الدور</th>
+                            <th>مرتبط بـ</th>
                             <th>المنطقة</th>
                             <th>الحالة</th>
                             <th>تاريخ الانضمام</th>
@@ -121,11 +155,29 @@
                         <tr>
                             <td><strong>{{ user.username }}</strong></td>
                             <td>{{ user.get_full_name|default:"-" }}</td>
-                            <td>{{ user.email|default:"-" }}</td>
                             <td>
                                 <span class="badge bg-info">{{ user.profile.get_role_display }}</span>
                             </td>
-                            <td>{{ user.profile.assigned_area|default:"-" }}</td>
+                            <td>
+                                {% if user.profile.linked_candidate %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-user-tie"></i> {{ user.profile.linked_candidate.full_name }}
+                                </span>
+                                {% elif user.profile.linked_operations_room %}
+                                <span class="badge bg-purple">
+                                    <i class="fas fa-building"></i> {{ user.profile.linked_operations_room.name }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.profile.assigned_area %}
+                                <small>{{ user.profile.assigned_area }}</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if user.profile.is_active %}
                                 <span class="badge bg-success">نشط</span>
@@ -133,7 +185,7 @@
                                 <span class="badge bg-danger">معطل</span>
                                 {% endif %}
                             </td>
-                            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                            <td><small>{{ user.date_joined|date:"Y-m-d" }}</small></td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a href="{% url 'user_edit' user.id %}" class="btn btn-primary" title="تعديل">
@@ -153,8 +205,8 @@
                         {% empty %}
                         <tr>
                             <td colspan="8" class="text-center py-4">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">لا توجد مستخدمين</p>
+                                <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted">لا توجد مستخدمين مطابقين للفلاتر المحددة</p>
                             </td>
                         </tr>
                         {% endfor %}

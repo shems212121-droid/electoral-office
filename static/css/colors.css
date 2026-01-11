@@ -44,6 +44,17 @@
     --color-accent-800: #662B2B;
     --color-accent-900: #331616;
 
+    /*Gradients: Purple (for Operations Rooms) */
+    --color-purple-100: #F3E8FF;
+    --color-purple-200: #E9D5FF;
+    --color-purple-300: #D8B4FE;
+    --color-purple-400: #C084FC;
+    --color-purple-500: #A855F7; /* Base */
+    --color-purple-600: #9333EA;
+    --color-purple-700: #7E22CE;
+    --color-purple-800: #6B21A8;
+    --color-purple-900: #581C87;
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);

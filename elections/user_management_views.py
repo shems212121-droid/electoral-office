@@ -15,11 +15,17 @@ from .decorators import admin_only
 @admin_only
 def user_management_list(request):
     """قائمة جميع المستخدمين - Admin فقط"""
-    users = User.objects.select_related('profile').all()
+    users = User.objects.select_related(
+        'profile',
+        'profile__linked_candidate',
+        'profile__linked_operations_room',
+        'profile__assigned_area'
+    ).all()
     
     # Filters
     role_filter = request.GET.get('role')
     status_filter = request.GET.get('status')
+    linked_filter = request.GET.get('linked')  # New filter
     search = request.GET.get('q')
     
     if role_filter:
@@ -30,33 +36,58 @@ def user_management_list(request):
     elif status_filter == 'inactive':
         users = users.filter(profile__is_active=False)
     
+    # New: Filter by linked entity
+    if linked_filter == 'candidate':
+        users = users.filter(profile__linked_candidate__isnull=False)
+    elif linked_filter == 'room':
+        users = users.filter(profile__linked_operations_room__isnull=False)
+    elif linked_filter == 'none':
+        users = users.filter(
+            profile__linked_candidate__isnull=True,
+            profile__linked_operations_room__isnull=True
+        )
+    
     if search:
         users = users.filter(
             Q(username__icontains=search) |
             Q(first_name__icontains=search) |
             Q(last_name__icontains=search) |
             Q(email__icontains=search) |
-            Q(profile__employee_id__icontains=search)
+            Q(profile__employee_id__icontains=search) |
+            Q(profile__linked_candidate__full_name__icontains=search) |
+            Q(profile__linked_operations_room__name__icontains=search)
         )
     
     # Pagination
     paginator = Paginator(users, 30)
     page = request.GET.get('page')
-    users = paginator.get_page(page)
+    users_page = paginator.get_page(page)
     
-    # Statistics
+    # Enhanced Statistics
     stats = {
         'total_users': User.objects.count(),
         'active_users': UserProfile.objects.filter(is_active=True).count(),
         'inactive_users': UserProfile.objects.filter(is_active=False).count(),
-        'by_role': UserProfile.objects.values('role').annotate(count=Count('id'))
+        'by_role': UserProfile.objects.values('role').annotate(count=Count('id')),
+        'linked_to_candidates': UserProfile.objects.filter(linked_candidate__isnull=False).count(),
+        'linked_to_rooms': UserProfile.objects.filter(linked_operations_room__isnull=False).count(),
+        'no_links': UserProfile.objects.filter(
+            linked_candidate__isnull=True,
+            linked_operations_room__isnull=True
+        ).count(),
     }
     
     context = {
-        'users': users,
+        'users': users_page,
         'stats': stats,
         'roles': UserRole.choices,
         'areas': Area.objects.all(),
+        'current_filters': {
+            'role': role_filter,
+            'status': status_filter,
+            'linked': linked_filter,
+            'search': search,
+        }
     }
     
     return render(request, 'elections/user_management/user_list.html', context)

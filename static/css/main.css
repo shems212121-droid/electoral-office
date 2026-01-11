@@ -82,6 +82,7 @@ a:hover {
 /* Common Utilities */
 .text-gradient {
     background: linear-gradient(135deg, var(--color-primary-base), var(--color-secondary-base));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -113,6 +114,22 @@ a:hover {
     }
 }
 
+
 .animate-fade-in {
     animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Purple Background and Badge */
+.bg-purple {
+    background: linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700)) !important;
+    color: white !important;
+}
+
+.badge.bg-purple {
+    background-color: var(--color-purple-500) !important;
+    color: white !important;
+}
+
+.stat-card-modern.bg-purple {
+    background: linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700)) !important;
 }
