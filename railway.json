@@ -5,6 +5,7 @@
         "buildCommand": "python manage.py collectstatic --noinput"
     },
     "deploy": {
+        "startCommand": "python manage.py migrate --noinput && gunicorn electoral_office.wsgi --bind 0.0.0.0:$PORT --log-file -",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
     }
