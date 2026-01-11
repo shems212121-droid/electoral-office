@@ -158,15 +158,19 @@ def user_profile_context(request):
     Add to settings.py TEMPLATES OPTIONS context_processors:
         'elections.decorators.user_profile_context',
     """
-    if request.user.is_authenticated and hasattr(request.user, 'profile'):
-        return {
-            'user_profile': request.user.profile,
-            'user_role': request.user.profile.role,
-            'user_role_display': request.user.profile.get_role_display(),
-            'is_admin': request.user.profile.role == UserRole.ADMIN,
-            'is_supervisor': request.user.profile.role == UserRole.SUPERVISOR,
-            'can_export': request.user.profile.has_permission('export_reports'),
-        }
+    try:
+        if request.user.is_authenticated and hasattr(request.user, 'profile'):
+            return {
+                'user_profile': request.user.profile,
+                'user_role': request.user.profile.role,
+                'user_role_display': request.user.profile.get_role_display(),
+                'is_admin': request.user.profile.role == UserRole.ADMIN,
+                'is_supervisor': request.user.profile.role == UserRole.SUPERVISOR,
+                'can_export': request.user.profile.has_permission('export_reports'),
+            }
+    except Exception:
+        pass
+        
     return {
         'user_profile': None,
         'user_role': None,
