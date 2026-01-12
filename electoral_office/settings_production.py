@@ -103,17 +103,35 @@ WSGI_APPLICATION = 'electoral_office.wsgi.application'
 
 # Database - Use PostgreSQL from Railway
 # Database Configuration
-DATABASE_URL = os.environ.get("DATABASE_URL")
+# Database Configuration
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
-if DATABASE_URL and "://" in DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
+# Strictly sanitize: Check if URL is valid and has a real scheme (not just "://")
+if DATABASE_URL and "://" in DATABASE_URL and not DATABASE_URL.startswith("://"):
+    try:
+        DATABASES = {
+            "default": dj_database_url.parse(
+                DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+    except Exception:
+        # If parsing fails for any reason, use SQLite
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
 else:
+    # Use SQLite if no valid DATABASE_URL is found
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
     # Fallback to SQLite if no DATABASE_URL is present
     DATABASES = {
         "default": {
