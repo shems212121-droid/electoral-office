@@ -1783,26 +1783,31 @@ def api_parties_list(request):
 # ==================== Emergency Import Tool ====================
 
 def run_import_script(request):
-    import subprocess
-    import os
-    from django.conf import settings
+    import threading
+    from django.core.management import call_command
     
     # Only allow superusers
     if not request.user.is_superuser:
-        return HttpResponse('Unauthorized', status=403)
+        return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
-    try:
-        script_path = os.path.join(settings.BASE_DIR, 'import_voters_batches.py')
-        
-        # Run script in background (non-blocking if possible, but for simplicity blocking here to show output)
-        # Using specific python executable
-        result = subprocess.run(['python', script_path], capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            return HttpResponse(f'<h1>Success! Import Started/Completed.</h1><pre>{result.stdout}</pre>')
-        else:
-            return HttpResponse(f'<h1>Error!</h1><pre>{result.stderr}</pre>')
-            
-    except Exception as e:
-        return HttpResponse(f'<h1>Exception: {str(e)}</h1>')
+    def run_in_background():
+        try:
+            print("Starting background import...")
+            call_command('import_voters')
+            print("Background import finished.")
+        except Exception as e:
+            print(f"Background import failed: {e}")
+
+    # Start the thread
+    thread = threading.Thread(target=run_in_background)
+    thread.daemon = True
+    thread.start()
+
+    return HttpResponse(f'''
+        <h1>✅ Import Started Successfully!</h1>
+        <p>The voter import process is now running in the background.</p>
+        <p>You can close this page and continue using the site.</p>
+        <p>Data will appear gradually as it is processed (approx 10-20 mins).</p>
+        <p><a href="/dashboard/">Return to Dashboard</a></p>
+    ''')
 
