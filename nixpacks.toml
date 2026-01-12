@@ -1,6 +1,2 @@
-# تكوين Nixpacks لـ Railway
-[phases.build]
-cmds = ["python manage.py collectstatic --noinput"]
+# ملف فارغ - جميع الإعدادات في railway.json
 
-[start]
-cmd = "python manage.py migrate --noinput && python manage.py create_admin && gunicorn electoral_office.wsgi --bind 0.0.0.0:$PORT --log-file -"
