@@ -1,0 +1,16 @@
+[
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "Data Entry Results",
+    "permissions": [
+      [
+        "add_votecount",
+        "elections",
+        "votecount"
+      ]
+    ]
+  }
+}
+]

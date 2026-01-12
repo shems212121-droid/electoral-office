@@ -1,0 +1,402 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@electoral.com",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_superuser": true,
+    "is_active": true,
+    "groups": []
+  },
+  {
+    "username": "admin_scan",
+    "email": "admin@example.com",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_superuser": true,
+    "is_active": true,
+    "groups": []
+  },
+  {
+    "username": "director_TEST_CENTER_001",
+    "email": "",
+    "first_name": "مدير تجريبي مع حساب",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": []
+  },
+  {
+    "username": "result_entry_01",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_02",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_03",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_04",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_05",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_06",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_07",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_08",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_09",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_10",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_11",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_12",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_13",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_14",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_15",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_16",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_17",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_18",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_19",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_20",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_21",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_22",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_23",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_24",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_25",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_26",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_27",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_28",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_29",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "result_entry_30",
+    "email": "",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": [
+      "Data Entry Results"
+    ]
+  },
+  {
+    "username": "director_194408",
+    "email": "",
+    "first_name": "غفران محمد جاسم",
+    "last_name": "",
+    "is_staff": false,
+    "is_superuser": false,
+    "is_active": true,
+    "groups": []
+  }
+]

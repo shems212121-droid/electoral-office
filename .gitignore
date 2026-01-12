@@ -55,3 +55,9 @@ voters_decrypted*.sqlite
 !railway.json
 
 db.sqlite3
+*.json
+!users_data.json
+!groups_data.json
+voter_batches/
+voter_batches.zip
+
