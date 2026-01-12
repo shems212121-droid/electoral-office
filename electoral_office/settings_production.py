@@ -132,13 +132,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-    # Fallback to SQLite if no DATABASE_URL is present
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+
 
 # Cache Configuration
 CACHES = {
