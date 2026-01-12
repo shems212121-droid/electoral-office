@@ -9,6 +9,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
+print("Loading production settings...")
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-@z_(zqnz11&19e9=1c*b8fvaekk_gs=6*)($x^a$sx@pyl2o88')
 
 # SECURITY WARNING: don't run with debug turned on in production!
