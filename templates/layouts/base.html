@@ -194,7 +194,7 @@
                 border-left: none !important;
                 border-top: 3px solid #DAA520 !important;
                 z-index: 10000 !important;
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.2) !important;
+                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2) !important;
                 display: flex !important;
                 flex-direction: row !important;
                 overflow-x: auto !important;
@@ -219,7 +219,8 @@
                 margin-right: 0 !important;
                 margin-left: 0 !important;
                 width: 100% !important;
-                padding-bottom: 90px !important; /* Space for bottom nav */
+                padding-bottom: 90px !important;
+                /* Space for bottom nav */
             }
 
             /* Horizontal Navigation */
@@ -322,6 +323,67 @@
             transition: all 0.3s ease;
         }
     </style>
+    <!-- Force Mobile Layout Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function forceMobileLayout() {
+                if (window.innerWidth <= 991) {
+                    const sidebar = document.querySelector('.sidebar');
+                    const mainContent = document.querySelector('.main-content');
+
+                    if (sidebar) {
+                        // Reset desktop styles
+                        sidebar.style.top = 'auto';
+                        sidebar.style.right = '0';
+                        sidebar.style.left = '0';
+
+                        // Force bottom nav styles
+                        sidebar.style.position = 'fixed';
+                        sidebar.style.bottom = '0';
+                        sidebar.style.height = '75px'; // Adjust height
+                        sidebar.style.width = '100%';
+                        sidebar.style.borderLeft = 'none';
+                        sidebar.style.borderTop = '3px solid #DAA520';
+                        sidebar.style.display = 'flex';
+                        sidebar.style.flexDirection = 'row';
+                        sidebar.style.zIndex = '99999';
+                        sidebar.style.overflowX = 'auto';
+                        sidebar.style.overflowY = 'hidden';
+
+                        // Fix nav items
+                        const nav = sidebar.querySelector('.nav');
+                        if (nav) {
+                            nav.style.flexDirection = 'row';
+                            nav.style.width = '100%';
+                            nav.style.justifyContent = 'space-between';
+                        }
+
+                        // Hide header/hr
+                        const header = sidebar.querySelector('.sidebar-header');
+                        if (header) header.style.display = 'none';
+
+                        const dividers = sidebar.querySelectorAll('hr');
+                        dividers.forEach(hr => hr.style.display = 'none');
+                    }
+
+                    if (mainContent) {
+                        mainContent.style.marginRight = '0';
+                        mainContent.style.marginLeft = '0';
+                        mainContent.style.width = '100%';
+                        mainContent.style.paddingBottom = '80px';
+                    }
+                }
+            }
+
+            // Run on load and resize
+            forceMobileLayout();
+            window.addEventListener('resize', forceMobileLayout);
+
+            // Re-run after a slight delay to ensure CSS has loaded
+            setTimeout(forceMobileLayout, 500);
+            setTimeout(forceMobileLayout, 1000);
+        });
+    </script>
 </body>
 
 </html>
