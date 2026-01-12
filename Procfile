@@ -1,2 +1,1 @@
-web: gunicorn electoral_office.wsgi --bind 0.0.0.0:$PORT --log-file -
-release: python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py create_admin
+web: gunicorn electoral_office.wsgi --bind 0.0.0.0:$PORT --timeout 120 --log-file -
