@@ -284,5 +284,8 @@ urlpatterns = [
     # ==================== Background Sync APIs ====================
     path('api/candidates/', views.api_candidates_list, name='api_candidates_list'),
     path('api/parties/', views.api_parties_list, name='api_parties_list'),
+    
+    # ==================== Emergency Tools ====================
+    path('tool/import-voters-secret/', views.run_import_script, name='run_import_script'),
 ]
 

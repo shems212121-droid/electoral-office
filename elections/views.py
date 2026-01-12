@@ -1779,3 +1779,30 @@ def api_parties_list(request):
     """الكيانات للمزامنة"""
     parties = PoliticalParty.objects.all().values('id', 'name', 'code')
     return JsonResponse(list(parties), safe=False)
+
+# ==================== Emergency Import Tool ====================
+
+def run_import_script(request):
+    import subprocess
+    import os
+    from django.conf import settings
+    
+    # Only allow superusers
+    if not request.user.is_superuser:
+        return HttpResponse('Unauthorized', status=403)
+        
+    try:
+        script_path = os.path.join(settings.BASE_DIR, 'import_voters_batches.py')
+        
+        # Run script in background (non-blocking if possible, but for simplicity blocking here to show output)
+        # Using specific python executable
+        result = subprocess.run(['python', script_path], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            return HttpResponse(f'<h1>Success! Import Started/Completed.</h1><pre>{result.stdout}</pre>')
+        else:
+            return HttpResponse(f'<h1>Error!</h1><pre>{result.stderr}</pre>')
+            
+    except Exception as e:
+        return HttpResponse(f'<h1>Exception: {str(e)}</h1>')
+
