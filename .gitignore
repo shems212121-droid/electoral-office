@@ -53,3 +53,5 @@ voters_decrypted*.sqlite
 !Procfile
 !runtime.txt
 !railway.json
+
+db.sqlite3

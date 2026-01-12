@@ -24,9 +24,19 @@ def import_voters_from_batches():
     # تحديد مجلد الدفعات
     batch_dir = Path('voter_batches')
     
+    # التحقق من وجود ملف مضغوط وفك ضغطه
+    zip_file = Path('voter_batches.zip')
+    if zip_file.exists() and not batch_dir.exists():
+        print(f"\n📦 تم العثور على ملف مضغوط: {zip_file}")
+        print("🔄 جاري فك الضغط...")
+        import zipfile
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall('.')
+        print("✅ تم فك الضغط بنجاح")
+
     if not batch_dir.exists():
-        print(f"\n❌ خطأ: المجلد {batch_dir} غير موجود!")
-        print("تأكد من رفع ملفات الدفعات أولاً")
+        print(f"\n❌ خطأ: المجلد {batch_dir} والملف {zip_file} غير موجودين!")
+        print("تأكد من رفع ملفات البيانات أولاً")
         return False
     
     # قراءة ملف التوصيف (manifest)

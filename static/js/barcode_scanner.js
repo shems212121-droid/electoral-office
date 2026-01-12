@@ -183,24 +183,55 @@ class BarcodeScanner {
         this.html5QrCode = new Html5Qrcode("qr-reader");
 
         try {
-            await this.html5QrCode.start(
-                { facingMode: "environment" }, // Use back camera
-                config,
-                (decodedText, decodedResult) => {
-                    this.onScanSuccess(decodedText, decodedResult);
-                },
-                (errorMessage) => {
-                    // Ignore continuous scanning errors
-                    // console.log('Scan error:', errorMessage);
-                }
-            );
+            // المحاولة الأولى: الكاميرا الخلفية (environment)
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }, // مربع أصغر لتركيز أفضل
+                aspectRatio: 1.0
+            };
+
+            // استخدام معرف الكاميرا الخلفية صراحة إذا أمكن
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length) {
+                // محاولة العثور على الكاميرا الخلفية
+                const backCamera = cameras.find(camera => camera.label.toLowerCase().includes('back') || camera.label.toLowerCase().includes('environment'));
+                const cameraId = backCamera ? backCamera.id : cameras[0].id; // استخدام الخلفية أو الأولى
+
+                await this.html5QrCode.start(
+                    cameraId,
+                    config,
+                    (decodedText, decodedResult) => {
+                        this.onScanSuccess(decodedText, decodedResult);
+                    },
+                    (errorMessage) => {
+                        // تجاهل أخطاء المسح المستمرة
+                    }
+                );
+            } else {
+                // Fallback للطريقة العامة إذا لم نتمكن من جلب الكاميرات
+                await this.html5QrCode.start(
+                    { facingMode: { exact: "environment" } },
+                    config,
+                    (decodedText, decodedResult) => this.onScanSuccess(decodedText, decodedResult),
+                    (errorMessage) => { }
+                ).catch(async () => {
+                    // إذا فشل exact environment، جرب أي كاميرا خلفية
+                    await this.html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText, decodedResult) => this.onScanSuccess(decodedText, decodedResult),
+                        (errorMessage) => { }
+                    );
+                });
+            }
 
             this.isScanning = true;
             this.updateScanningUI(true);
             this.showSuccess('تم تفعيل الكاميرا - ابدأ بمسح الباركود');
 
         } catch (err) {
-            this.showError('فشل في تفعيل الكاميرا: ' + err);
+            console.error(err);
+            this.showError('فشل في تفعيل الكاميرا: يرجى التأكد من منح الصلاحية للمتصفح.');
             this.isScanning = false;
         }
     }
