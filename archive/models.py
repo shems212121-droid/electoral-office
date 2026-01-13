@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from elections.models import Candidate
+from elections.models import Candidate, PartyCandidate
 from elections.validators import validate_phone_number, validate_voter_number_required
 import os
 
@@ -122,10 +122,20 @@ class CandidateDocument(models.Model):
     """سي في ووثائق المرشحين"""
     
     candidate = models.ForeignKey(
-        Candidate,
-        on_delete=models.CASCADE,
+        PartyCandidate,
+        on_delete=models.SET_NULL,
         related_name='documents',
-        verbose_name='المرشح'
+        verbose_name='المرشح',
+        null=True,
+        blank=True
+    )
+    
+    manual_candidate_name = models.CharField(
+        max_length=200,
+        verbose_name='اسم المرشح (يدوي)',
+        blank=True,
+        null=True,
+        help_text='املأ هذا الحقل إذا لم يكن المرشح موجوداً في القائمة'
     )
     
     # السيرة الذاتية
@@ -194,10 +204,32 @@ class CandidateDocument(models.Model):
     class Meta:
         verbose_name = 'وثيقة مرشح'
         verbose_name_plural = 'وثائق المرشحين'
-        ordering = ['candidate__full_name']
+        ordering = ['-uploaded_at']
     
     def __str__(self):
-        return f"وثائق {self.candidate.full_name}"
+        name = self.candidate.full_name if self.candidate else (self.manual_candidate_name or "مرشح مجهول")
+        return f"وثائق {name}"
+
+    @property
+    def completion_percentage(self):
+        """حساب نسبة اكتمال الوثائق"""
+        fields = [
+            self.cv_file, self.personal_photo, self.campaign_photo,
+            self.id_copy, self.certificate_of_good_conduct,
+            self.educational_certificates, self.other_documents
+        ]
+        available = sum(1 for f in fields if f)
+        return int((available / 7) * 100)
+
+    @property
+    def available_count(self):
+        """عدد الوثائق المتوفرة"""
+        fields = [
+            self.cv_file, self.personal_photo, self.campaign_photo,
+            self.id_copy, self.certificate_of_good_conduct,
+            self.educational_certificates, self.other_documents
+        ]
+        return sum(1 for f in fields if f)
 
 
 class FormTemplate(models.Model):

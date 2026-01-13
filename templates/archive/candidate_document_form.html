@@ -52,7 +52,13 @@
                             <!-- اختيار المرشح -->
                             <div class="col-12">
                                 <label class="form-label">المرشح <span class="text-danger">*</span></label>
-                                {{ form.candidate }}
+                                {{ form.candidate_name_input }}
+                                <datalist id="candidates-list">
+                                    {% for candidate in candidates_list %}
+                                    <option value="{{ candidate.full_name }}">{{ candidate.candidate_code }}</option>
+                                    {% endfor %}
+                                </datalist>
+                                <small class="form-text text-muted">يمكنك كتابة اسم جديد أو اختيار مرشح موجود</small>
                             </div>
 
                             <!-- السيرة الذاتية والصور -->

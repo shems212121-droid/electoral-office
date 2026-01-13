@@ -61,18 +61,25 @@ class LetterForm(forms.ModelForm):
 class CandidateDocumentForm(forms.ModelForm):
     """نموذج رفع وثائق المرشحين"""
     
+    candidate_name_input = forms.CharField(
+        label='اسم المرشح',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'اكتب اسم المرشح هنا...',
+            'list': 'candidates-list',
+            'required': True
+        })
+    )
+
     class Meta:
         model = CandidateDocument
         fields = [
-            'candidate', 'cv_file', 'personal_photo', 'campaign_photo',
+            'candidate_name_input', 'cv_file', 'personal_photo', 'campaign_photo',
             'id_copy', 'certificate_of_good_conduct',
             'educational_certificates', 'other_documents', 'notes'
         ]
+        exclude = ['candidate', 'manual_candidate_name']
         widgets = {
-            'candidate': forms.Select(attrs={
-                'class': 'form-control',
-                'required': True
-            }),
             'cv_file': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.pdf,.doc,.docx'
@@ -107,6 +114,32 @@ class CandidateDocumentForm(forms.ModelForm):
                 'placeholder': 'ملاحظات إضافية...'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # Pre-fill name from relation or manual field
+            if self.instance.candidate:
+                self.fields['candidate_name_input'].initial = self.instance.candidate.full_name
+            elif self.instance.manual_candidate_name:
+                self.fields['candidate_name_input'].initial = self.instance.manual_candidate_name
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name_input = cleaned_data.get('candidate_name_input')
+
+        if name_input:
+            from elections.models import PartyCandidate
+            # Try to find existing candidate
+            candidate = PartyCandidate.objects.filter(full_name__iexact=name_input.strip()).first()
+            if candidate:
+                self.instance.candidate = candidate
+                self.instance.manual_candidate_name = None
+            else:
+                self.instance.candidate = None
+                self.instance.manual_candidate_name = name_input.strip()
+        
+        return cleaned_data
 
 
 class FormTemplateForm(forms.ModelForm):

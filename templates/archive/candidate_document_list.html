@@ -65,9 +65,15 @@
                         {% for doc in page_obj %}
                         <tr>
                             <td>
+                                {% if doc.candidate %}
                                 <strong>{{ doc.candidate.full_name }}</strong>
                                 <br>
                                 <small class="text-muted">{{ doc.candidate.candidate_code }}</small>
+                                {% else %}
+                                <strong>{{ doc.manual_candidate_name }}</strong>
+                                <br>
+                                <span class="badge bg-secondary">مرشح يدوي</span>
+                                {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if doc.cv_file %}

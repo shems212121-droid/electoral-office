@@ -1,7 +1,8 @@
 {% extends 'elections/base.html' %}
 {% load static %}
 
-{% block title %}وثائق {{ document.candidate.full_name }} - المرشحين{% endblock %}
+{% block title %}وثائق {% if document.candidate %}{{ document.candidate.full_name }}{% else %}{{
+document.manual_candidate_name }}{% endif %} - المرشحين{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -12,7 +13,8 @@
                     <li class="breadcrumb-item"><a href="{% url 'archive:dashboard' %}">الأرشيف</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'archive:candidate_document_list' %}">وثائق المرشحين</a>
                     </li>
-                    <li class="breadcrumb-item active">{{ document.candidate.full_name }}</li>
+                    <li class="breadcrumb-item active">{% if document.candidate %}{{ document.candidate.full_name }}{%
+                        else %}{{ document.manual_candidate_name }}{% endif %}</li>
                 </ol>
             </nav>
         </div>
@@ -24,7 +26,8 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-user-tie me-2"></i>
-                        وثائق المرشح: {{ document.candidate.full_name }}
+                        وثائق المرشح: {% if document.candidate %}{{ document.candidate.full_name }}{% else %}{{
+                        document.manual_candidate_name }}{% endif %}
                     </h4>
                 </div>
                 <div class="card-body">
@@ -33,11 +36,18 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <small class="text-muted">كود المرشح</small>
-                                <h5>{{ document.candidate.candidate_code }}</h5>
+                                <h5>{% if document.candidate %}{{ document.candidate.candidate_code }}{% else %}<span
+                                        class="badge bg-secondary">غير مسجل</span>{% endif %}</h5>
                             </div>
                             <div class="col-md-6">
-                                <small class="text-muted">رقم الهاتف</small>
-                                <h5>{{ document.candidate.phone }}</h5>
+                                <small class="text-muted">نوع القيد</small>
+                                <h5>
+                                    {% if document.candidate %}
+                                    <span class="badge bg-success">مرشح مسجل</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">إدخال يدوي</span>
+                                    {% endif %}
+                                </h5>
                             </div>
                         </div>
                     </div>
@@ -192,18 +202,7 @@
                 </div>
                 <div class="card-body">
                     <div class="progress mb-2" style="height: 25px;">
-                        {% with total=7 available=0 %}
-                        {% if document.cv_file %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.personal_photo %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.campaign_photo %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.id_copy %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.certificate_of_good_conduct %}{% with available=available|add:1 %}{% endwith %}{%
-                        endif %}
-                        {% if document.educational_certificates %}{% with available=available|add:1 %}{% endwith %}{%
-                        endif %}
-                        {% if document.other_documents %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-
-                        {% widthratio available total 100 as percentage %}
+                        {% with percentage=document.completion_percentage %}
                         <div class="progress-bar {% if percentage < 50 %}bg-danger{% elif percentage < 80 %}bg-warning{% else %}bg-success{% endif %}"
                             role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}"
                             aria-valuemin="0" aria-valuemax="100">
@@ -211,7 +210,7 @@
                         </div>
                         {% endwith %}
                     </div>
-                    <small class="text-muted">الوثائق المكتملة من إجمالي 7</small>
+                    <small class="text-muted">الوثائق المكتملة ({{ document.available_count }} من إجمالي 7)</small>
                 </div>
             </div>
 
