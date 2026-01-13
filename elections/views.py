@@ -487,11 +487,21 @@ def voter_lookup_ajax(request):
     
     # Not found in any database
     total_voters_count = Voter.objects.count()
+    
+    # Debug file existence
+    import os
+    zip_exists = os.path.exists('voter_batches.zip')
+    dir_exists = os.path.exists('voter_batches')
+    batch_files_count = len(os.listdir('voter_batches')) if dir_exists else 0
+    
     return JsonResponse({
         'found': False, 
         'error': 'الناخب غير موجود في قاعدة البيانات',
         'message': 'يرجى التأكد من صحة رقم الناخب',
-        'debug_total_voters': total_voters_count
+        'debug_total_voters': total_voters_count,
+        'debug_zip_exists': zip_exists,
+        'debug_dir_exists': dir_exists,
+        'debug_batch_files_count': batch_files_count
     })
 
 
