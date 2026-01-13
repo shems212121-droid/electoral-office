@@ -486,10 +486,12 @@ def voter_lookup_ajax(request):
         return JsonResponse(data)
     
     # Not found in any database
+    total_voters_count = Voter.objects.count()
     return JsonResponse({
         'found': False, 
         'error': 'الناخب غير موجود في قاعدة البيانات',
-        'message': 'يرجى التأكد من صحة رقم الناخب'
+        'message': 'يرجى التأكد من صحة رقم الناخب',
+        'debug_total_voters': total_voters_count
     })
 
 
