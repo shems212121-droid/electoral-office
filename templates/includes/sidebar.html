@@ -118,6 +118,7 @@
                 مركز الاتصالات
             </a>
         </li>
+        <!--
         <li>
             <a href="{% url 'finance_dashboard' %}"
                 class="nav-link {% if 'finance' in request.path or 'transaction' in request.path %}active{% endif %}">
@@ -125,6 +126,7 @@
                 الحسابات
             </a>
         </li>
+        -->
         <li>
             <a href="{% url 'sub_room_list' %}"
                 class="nav-link {% if 'sub_room' in request.path or 'sub-rooms' in request.path %}active{% endif %}">
@@ -136,6 +138,7 @@
         <li class="nav-divider my-3 border-top border-secondary"></li>
         <li class="px-2 mb-1 text-uppercase text-white-50 small fw-bold">الإدارة والأرشيف</li>
 
+        <!--
         <li>
             <a href="{% url 'archive:dashboard' %}"
                 class="nav-link {% if 'archive' in request.path %}active{% endif %}">
@@ -143,6 +146,7 @@
                 الأرشيف
             </a>
         </li>
+        -->
 
         {% if user.is_staff or user.is_superuser %}
         <li>
