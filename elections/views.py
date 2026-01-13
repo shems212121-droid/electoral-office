@@ -2021,3 +2021,42 @@ def view_import_log(request):
         
     return HttpResponse(content, content_type='text/plain; charset=utf-8')
 
+def run_link_hierarchy(request):
+    """Trigger the link_electoral_hierarchy management command via URL"""
+    # Security: check for secret key or admin access
+    secret = request.GET.get('secret')
+    if secret != 'shems_voter_import_2024_secure':
+        return HttpResponse('Unauthorized - Admin Access Only', status=403)
+        
+    import threading
+    from django.core.management import call_command
+    
+    def run_in_background():
+        try:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"\n[{datetime.datetime.now()}] Starting electoral hierarchy linking...\n")
+            
+            call_command('link_electoral_hierarchy')
+            
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] Electoral hierarchy linking finished successfully.\n")
+        except Exception as e:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] Hierarchy linking failed: {e}\n")
+
+    # Start the thread
+    thread = threading.Thread(target=run_in_background)
+    thread.daemon = True
+    thread.start()
+
+    return HttpResponse(f'''
+        <h1>✅ Hierarchy Linking Started Successfully!</h1>
+        <p>The process of linking voters, stations, and centers is now running in the background.</p>
+        <p>You can check the status in the <a href="/tool/import-log/">Import Log</a>.</p>
+        <p><a href="/dashboard/">Return to Dashboard</a></p>
+    ''')
+
+
