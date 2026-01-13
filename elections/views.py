@@ -1971,12 +1971,13 @@ def api_parties_list(request):
 # ==================== Emergency Import Tool ====================
 
 def run_import_script(request):
+    """Trigger the voter import script"""
     import threading
     from django.core.management import call_command
     
     # Only allow superusers OR secret key
-    secret_key = request.GET.get('key')
-    if not request.user.is_superuser and secret_key != 'Import123':
+    secret_key = request.GET.get('secret')
+    if secret_key != 'shems_voter_import_2024_secure':
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     def run_in_background():
@@ -2066,4 +2067,43 @@ def run_link_hierarchy(request):
         <p><a href="/dashboard/">Return to Dashboard</a></p>
     ''')
 
+def run_import_centers(request):
+    """Trigger the import of general and special polling centers via URL"""
+    secret = request.GET.get('secret')
+    if secret != 'shems_voter_import_2024_secure':
+        return HttpResponse('Unauthorized - Admin Access Only', status=403)
+        
+    import threading
+    from django.core.management import call_command
+    
+    def run_in_background():
+        try:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"\n[{datetime.datetime.now()}] Starting centers import...\n")
+            
+            # Import General Centers
+            call_command('import_general_polling_centers')
+            
+            # Import Special Centers
+            call_command('import_special_polling_centers')
+            
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] Centers import finished successfully.\n")
+        except Exception as e:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] Centers import failed: {e}\n")
 
+    # Start the thread
+    thread = threading.Thread(target=run_in_background)
+    thread.daemon = True
+    thread.start()
+
+    return HttpResponse(f'''
+        <h1>✅ Centers Import Started Successfully!</h1>
+        <p>General and Special polling centers are being imported in the background.</p>
+        <p>Check the <a href="/tool/import-log/">Import Log</a> for progress.</p>
+        <p><a href="/dashboard/">Return to Dashboard</a></p>
+    ''')
