@@ -19,12 +19,14 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>الكيان السياسي <span class="text-danger">*</span></label>
-                        {{ form.political_entity }}`r`n                        {% if form.political_entity.errors %}<div class="text-danger">{{ form.political_entity.errors }}
+                        {{ form.political_entity }}`r`n {% if form.political_entity.errors %}<div class="text-danger">{{
+                            form.political_entity.errors }}
                         </div>{% endif %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label>مدير المركز</label>
-                        {{ form.center_director }}`r`n                        {% if form.center_director.errors %}<div class="text-danger">{{ form.center_director.errors }}
+                        {{ form.center_director }}`r`n {% if form.center_director.errors %}<div class="text-danger">{{
+                            form.center_director.errors }}
                         </div>{% endif %}
                     </div>
                 </div>
@@ -32,28 +34,39 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>الاسم الكامل <span class="text-danger">*</span></label>
-                        {{ form.full_name }}`r`n                        {% if form.full_name.errors %}<div class="text-danger">{{ form.full_name.errors }}</div>{% endif
+                        {{ form.full_name }}`r`n {% if form.full_name.errors %}<div class="text-danger">{{
+                            form.full_name.errors }}</div>{% endif
                         %}
                     </div>
                     <div class="col-md-3 mb-3">
                         <label>العمر <span class="text-danger">*</span></label>
-                        {{ form.age }}`r`n                        {% if form.age.errors %}<div class="text-danger">{{ form.age.errors }}</div>{% endif %}
+                        {{ form.age }}`r`n {% if form.age.errors %}<div class="text-danger">{{ form.age.errors }}</div>
+                        {% endif %}
                     </div>
                     <div class="col-md-3 mb-3">
                         <label>رقم الهاتف <span class="text-danger">*</span></label>
-                        {{ form.phone }}`r`n                        {% if form.phone.errors %}<div class="text-danger">{{ form.phone.errors }}</div>{% endif %}
+                        {{ form.phone }}`r`n {% if form.phone.errors %}<div class="text-danger">{{ form.phone.errors }}
+                        </div>{% endif %}
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>رقم الناخب <span class="text-danger">*</span></label>
-                        {{ form.voter_number }}`r`n                        {% if form.voter_number.errors %}<div class="text-danger">{{ form.voter_number.errors }}</div>{%
+                        {{ form.voter_number }}
+                        <div id="voterLookupSpinner" class="spinner-border spinner-border-sm text-primary mt-2"
+                            style="display: none;"></div>
+                        <div id="voterLookupError" class="text-danger mt-2" style="display: none;"></div>
+                        <div id="voterLookupSuccess" class="text-success mt-2" style="display: none;">
+                            <i class="fas fa-check-circle"></i> تم العثور على الناخب وملء البيانات
+                        </div>
+                        {% if form.voter_number.errors %}<div class="text-danger">{{ form.voter_number.errors }}</div>{%
                         endif %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label>رقم البطاقة الوطنية</label>
-                        {{ form.national_id }}`r`n                        {% if form.national_id.errors %}<div class="text-danger">{{ form.national_id.errors }}</div>{%
+                        {{ form.national_id }}`r`n {% if form.national_id.errors %}<div class="text-danger">{{
+                            form.national_id.errors }}</div>{%
                         endif %}
                     </div>
                 </div>
@@ -68,17 +81,20 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label>رقم المركز <span class="text-danger">*</span></label>
-                        {{ form.assigned_center_number }}`r`n                        {% if form.assigned_center_number.errors %}<div class="text-danger">{{
+                        {{ form.assigned_center_number }}`r`n {% if form.assigned_center_number.errors %}<div
+                            class="text-danger">{{
                             form.assigned_center_number.errors }}</div>{% endif %}
                     </div>
                     <div class="col-md-5 mb-3">
                         <label>اسم المركز</label>
-                        {{ form.assigned_center_name }}`r`n                        {% if form.assigned_center_name.errors %}<div class="text-danger">{{
+                        {{ form.assigned_center_name }}`r`n {% if form.assigned_center_name.errors %}<div
+                            class="text-danger">{{
                             form.assigned_center_name.errors }}</div>{% endif %}
                     </div>
                     <div class="col-md-3 mb-3">
                         <label>رقم المحطة</label>
-                        {{ form.assigned_station_number }}`r`n                        {% if form.assigned_station_number.errors %}<div class="text-danger">{{
+                        {{ form.assigned_station_number }}`r`n {% if form.assigned_station_number.errors %}<div
+                            class="text-danger">{{
                             form.assigned_station_number.errors }}</div>{% endif %}
                     </div>
                 </div>
@@ -122,4 +138,125 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const voterNumberInput = document.querySelector('input[name="voter_number"]');
+        const spinner = document.getElementById('voterLookupSpinner');
+        const errorDiv = document.getElementById('voterLookupError');
+        const successDiv = document.getElementById('voterLookupSuccess');
+
+        // Helper to calculate age
+        function calculateAge(dobString) {
+            if (!dobString) return '';
+            const today = new Date();
+            let birthDate = new Date(dobString);
+
+            // Handle YYYYMMDD format if API returns it that way
+            if (isNaN(birthDate.getTime())) {
+                if (String(dobString).length === 8 && !isNaN(dobString)) {
+                    const s = String(dobString);
+                    const y = s.substring(0, 4);
+                    const m = s.substring(4, 6);
+                    const d = s.substring(6, 8);
+                    birthDate = new Date(`${y}-${m}-${d}`);
+                }
+            }
+            if (isNaN(birthDate.getTime())) return '';
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        let lookupTimeout = null;
+
+        if (voterNumberInput) {
+            voterNumberInput.addEventListener('input', function () {
+                let voterNumber = this.value.trim();
+
+                // Normalize Arabic numerals
+                const replacements = {
+                    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+                    '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+                    '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+                };
+
+                for (const [arabic, english] of Object.entries(replacements)) {
+                    voterNumber = voterNumber.replace(new RegExp(arabic, 'g'), english);
+                }
+
+                if (lookupTimeout) {
+                    clearTimeout(lookupTimeout);
+                }
+
+                if (errorDiv) errorDiv.style.display = 'none';
+                if (successDiv) successDiv.style.display = 'none';
+
+                if (voterNumber.length < 3) {
+                    return;
+                }
+
+                if (spinner) spinner.style.display = 'inline-block';
+
+                lookupTimeout = setTimeout(() => {
+                    fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.error || 'خطأ في البحث');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (spinner) spinner.style.display = 'none';
+
+                            // Auto-fill fields
+                            const fullNameInput = document.querySelector('input[name="full_name"]');
+                            if (fullNameInput && data.full_name) fullNameInput.value = data.full_name;
+
+                            const phoneInput = document.querySelector('input[name="phone"]');
+                            if (phoneInput && data.phone) phoneInput.value = data.phone;
+
+                            // Age calculation
+                            const ageInput = document.querySelector('input[name="age"]');
+                            if (ageInput && data.date_of_birth) {
+                                const age = calculateAge(data.date_of_birth);
+                                if (age !== '') ageInput.value = age;
+                            }
+
+                            // Assign defaults for Station Info (assuming agent works where they vote)
+                            // User can change this if needed
+                            const centerNumInput = document.querySelector('input[name="assigned_center_number"]');
+                            if (centerNumInput && data.voting_center_number) centerNumInput.value = data.voting_center_number;
+
+                            const centerNameInput = document.querySelector('input[name="assigned_center_name"]');
+                            if (centerNameInput && data.voting_center_name) centerNameInput.value = data.voting_center_name;
+
+                            const stationNumInput = document.querySelector('input[name="assigned_station_number"]');
+                            if (stationNumInput && data.station_number) stationNumInput.value = data.station_number;
+
+
+                            if (successDiv) {
+                                successDiv.style.display = 'block';
+                                setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+                            }
+                        })
+                        .catch(error => {
+                            if (spinner) spinner.style.display = 'none';
+                            if (errorDiv) {
+                                errorDiv.textContent = error.message;
+                                errorDiv.style.display = 'block';
+                            }
+                        });
+                }, 500);
+            });
+        }
+    });
+</script>
 {% endblock %}
