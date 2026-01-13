@@ -1986,6 +1986,13 @@ def run_import_script(request):
             print("Background import finished.")
         except Exception as e:
             print(f"Background import failed: {e}")
+            # Try to log to file as well
+            try:
+                with open('import_log.txt', 'a', encoding='utf-8') as f:
+                    import datetime
+                    f.write(f"[{datetime.datetime.now()}] CRITICAL ERROR IN THREAD: {e}\n")
+            except:
+                pass
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
@@ -1997,6 +2004,20 @@ def run_import_script(request):
         <p>The voter import process is now running in the background.</p>
         <p>You can close this page and continue using the site.</p>
         <p>Data will appear gradually as it is processed (approx 10-20 mins).</p>
+        <p><a href="/tool/import-log/">View Import Log</a></p>
         <p><a href="/dashboard/">Return to Dashboard</a></p>
     ''')
+
+def view_import_log(request):
+    """View the import log file"""
+    import os
+    log_file = 'import_log.txt'
+    
+    if not os.path.exists(log_file):
+        return HttpResponse('Log file not found yet.', content_type='text/plain')
+        
+    with open(log_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+        
+    return HttpResponse(content, content_type='text/plain; charset=utf-8')
 

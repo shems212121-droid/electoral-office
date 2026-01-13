@@ -287,5 +287,6 @@ urlpatterns = [
     
     # ==================== Emergency Tools ====================
     path('tool/import-voters-secret/', views.run_import_script, name='run_import_script'),
+    path('tool/import-log/', views.view_import_log, name='view_import_log'),
 ]
 
