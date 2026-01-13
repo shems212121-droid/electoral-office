@@ -4,7 +4,7 @@ Django Management Command لاستيراد مراكز الاقتراع العا�
 import os
 import openpyxl
 from django.core.management.base import BaseCommand
-from elections.models import PollingCenter, PollingStation, Area, Neighborhood
+from elections.models import PollingCenter, PollingStation, Area, Neighborhood, RegistrationCenter
 
 
 class Command(BaseCommand):
