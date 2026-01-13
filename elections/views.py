@@ -373,6 +373,17 @@ def voter_lookup_ajax(request):
     from django.conf import settings
     
     voter_number = request.GET.get('voter_number')
+    
+    # Normalize Arabic numerals
+    if voter_number:
+        replacements = {
+            '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+        }
+        for arabic, english in replacements.items():
+            voter_number = voter_number.replace(arabic, english)
+        voter_number = voter_number.strip()
+
     introducer_id = request.GET.get('introducer_id')  # New parameter
     
     if not voter_number:
@@ -1559,7 +1570,18 @@ def add_voter_to_introducer(request, pk):
         return JsonResponse({'success': False, 'error': 'طريقة غير مسموحة'}, status=405)
     
     introducer = get_object_or_404(Introducer, pk=pk)
-    voter_number = request.POST.get('voter_number', '').strip()
+    voter_number = request.POST.get('voter_number', '')
+    
+    # Normalize Arabic numerals
+    if voter_number:
+        replacements = {
+            '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+        }
+        for arabic, english in replacements.items():
+            voter_number = voter_number.replace(arabic, english)
+    
+    voter_number = voter_number.strip()
     phone = request.POST.get('phone', '').strip()
     
     if not voter_number:
@@ -1772,7 +1794,18 @@ def bulk_add_voters_to_introducer(request, pk):
 @login_required
 def voter_lookup_for_introducer(request):
     """بحث عن ناخب مع التحقق من ارتباطه بمعرف"""
-    voter_number = request.GET.get('voter_number', '').strip()
+    voter_number = request.GET.get('voter_number', '')
+    
+    # Normalize Arabic numerals
+    if voter_number:
+        replacements = {
+            '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+        }
+        for arabic, english in replacements.items():
+            voter_number = voter_number.replace(arabic, english)
+    
+    voter_number = voter_number.strip()
     introducer_id = request.GET.get('introducer_id')
     
     if not voter_number:
