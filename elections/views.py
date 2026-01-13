@@ -2113,9 +2113,16 @@ def run_import_centers(request):
                 f.write(f"[{datetime.datetime.now()}] CRITICAL Centers import failure: {e}\n")
 
     # Debug: log view call
-    with open('import_log.txt', 'a', encoding='utf-8') as f:
-        import datetime
-        f.write(f"[{datetime.datetime.now()}] run_import_centers view triggered.\n")
+    debug_msg = ""
+    try:
+        import os
+        cwd = os.getcwd()
+        with open('import_log.txt', 'a', encoding='utf-8') as f:
+            import datetime
+            f.write(f"[{datetime.datetime.now()}] run_import_centers view triggered in {cwd}.\n")
+        debug_msg = f"Successfully wrote to import_log.txt in {cwd}"
+    except Exception as e:
+        debug_msg = f"Failed to write log: {e} in {os.getcwd()}"
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
@@ -2124,6 +2131,7 @@ def run_import_centers(request):
 
     return HttpResponse(f'''
         <h1>✅ Centers Import Started Successfully!</h1>
+        <p>Debug: {debug_msg}</p>
         <p>General and Special polling centers are being imported in the background.</p>
         <p>Check the <a href="/tool/import-log/">Import Log</a> for progress.</p>
         <p><a href="/dashboard/">Return to Dashboard</a></p>
