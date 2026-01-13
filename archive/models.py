@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from elections.models import Candidate
+from elections.models import Candidate, PartyCandidate
 from elections.validators import validate_phone_number, validate_voter_number_required
 import os
 
@@ -122,7 +122,7 @@ class CandidateDocument(models.Model):
     """سي في ووثائق المرشحين"""
     
     candidate = models.ForeignKey(
-        Candidate,
+        PartyCandidate,
         on_delete=models.CASCADE,
         related_name='documents',
         verbose_name='المرشح'

@@ -189,7 +189,7 @@ def candidate_document_list(request):
     # البحث
     search = request.GET.get('search')
     if search:
-        documents = documents.filter(candidate__name__icontains=search)
+        documents = documents.filter(candidate__full_name__icontains=search)
     
     # ترقيم الصفحات
     paginator = Paginator(documents, 20)

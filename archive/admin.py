@@ -79,7 +79,7 @@ class CandidateDocumentAdmin(admin.ModelAdmin):
         'has_id_copy', 'uploaded_at'
     ]
     list_filter = ['uploaded_at']
-    search_fields = ['candidate__name', 'notes']
+    search_fields = ['candidate__full_name', 'notes']
     
     fieldsets = (
         ('المرشح', {
