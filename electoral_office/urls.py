@@ -15,8 +15,8 @@ def ping(request):
 urlpatterns = [
     path('test-ping/', ping),
     path('admin/', admin.site.urls),
-    # path('finance/', include('finance.urls')),
-    # path('archive/', include('archive.urls')),
+    path('finance/', include('finance.urls')),
+    path('archive/', include('archive.urls')),
     path('', include('elections.urls')),
 ]
 
