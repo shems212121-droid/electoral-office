@@ -63,7 +63,22 @@ def import_voters_from_batches():
         log(f"   - إجمالي الناخبين: {manifest['total_voters']:,}")
         log(f"   - عدد الدفعات: {manifest['total_batches']}")
         
-        batch_files = [batch_dir / f for f in manifest['files']]
+        # If paths in manifest are relative, we need to join them with batch_dir
+        # but if batch_dir is '.', and files in manifest have 'voter_batches/' prefix, we need to handle that.
+        
+        batch_files = []
+        for f in manifest['files']:
+            # If we are in root (batch_dir is '.'), but manifest says 'voter_batches/file.json', 
+            # we need to check if 'voter_batches/file.json' exists OR if 'file.json' exists directly.
+            
+            p = batch_dir / f
+            if not p.exists() and batch_dir == Path('.'):
+                 # Try stripping parent dir from manifest path
+                 p_alt = Path(Path(f).name)
+                 if p_alt.exists():
+                     p = p_alt
+            
+            batch_files.append(p)
     else:
         # البحث التلقائي عن ملفات الدفعات
         batch_files = sorted(batch_dir.glob('voters_batch_*.json'))
