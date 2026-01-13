@@ -123,9 +123,19 @@ class CandidateDocument(models.Model):
     
     candidate = models.ForeignKey(
         PartyCandidate,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='documents',
-        verbose_name='المرشح'
+        verbose_name='المرشح',
+        null=True,
+        blank=True
+    )
+    
+    manual_candidate_name = models.CharField(
+        max_length=200,
+        verbose_name='اسم المرشح (يدوي)',
+        blank=True,
+        null=True,
+        help_text='املأ هذا الحقل إذا لم يكن المرشح موجوداً في القائمة'
     )
     
     # السيرة الذاتية
@@ -194,10 +204,11 @@ class CandidateDocument(models.Model):
     class Meta:
         verbose_name = 'وثيقة مرشح'
         verbose_name_plural = 'وثائق المرشحين'
-        ordering = ['candidate__full_name']
+        ordering = ['-uploaded_at']
     
     def __str__(self):
-        return f"وثائق {self.candidate.full_name}"
+        name = self.candidate.full_name if self.candidate else (self.manual_candidate_name or "مرشح مجهول")
+        return f"وثائق {name}"
 
     @property
     def completion_percentage(self):

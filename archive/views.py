@@ -212,7 +212,11 @@ def candidate_document_add(request):
     else:
         form = CandidateDocumentForm()
     
-    context = {'form': form}
+    # Get all candidates for the datalist
+    from elections.models import PartyCandidate
+    candidates_list = PartyCandidate.objects.all().order_by('full_name')
+    
+    context = {'form': form, 'candidates_list': candidates_list}
     return render(request, 'archive/candidate_document_form.html', context)
 
 
@@ -230,9 +234,14 @@ def candidate_document_edit(request, pk):
     else:
         form = CandidateDocumentForm(instance=document)
     
+    # Get all candidates for the datalist
+    from elections.models import PartyCandidate
+    candidates_list = PartyCandidate.objects.all().order_by('full_name')
+    
     context = {
         'form': form,
         'document': document,
+        'candidates_list': candidates_list,
         'is_edit': True
     }
     return render(request, 'archive/candidate_document_form.html', context)
