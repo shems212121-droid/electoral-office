@@ -6,7 +6,11 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 
 def ping(request):
-    return HttpResponse("Pong - System is Active")
+    from elections.models import Voter, PollingCenter, RegistrationCenter
+    v_count = Voter.objects.count()
+    pc_count = PollingCenter.objects.count()
+    rc_count = RegistrationCenter.objects.count()
+    return HttpResponse(f"Pong - System is Active. Voters: {v_count}, Centers: {pc_count}, RegCenters: {rc_count}")
 
 urlpatterns = [
     path('test-ping/', ping),
