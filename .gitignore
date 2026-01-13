@@ -60,5 +60,5 @@ db.sqlite3
 !groups_data.json
 !railway.json
 voter_batches/
-voter_batches.zip
+# voter_batches.zip
 
