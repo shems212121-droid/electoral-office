@@ -114,7 +114,8 @@ def import_voters_from_batches():
             log(f"\n   [{i:3d}/{len(batch_files)}] {batch_file.name} ({file_size:.1f} MB)...")
             
             # استيراد الدفعة
-            call_command('loaddata', str(batch_file), verbosity=0)
+            # We use ignorenonexistent to avoid issues with some field mismatches if any
+            call_command('loaddata', str(batch_file), verbosity=0, ignorenonexistent=True)
             
             # عد السجلات الحالية
             new_count = Voter.objects.count()
