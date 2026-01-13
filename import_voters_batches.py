@@ -60,8 +60,8 @@ def import_voters_from_batches():
             manifest = json.load(f)
         
         log(f"\n📋 معلومات الدفعات:")
-        log(f"   - إجمالي الناخبين: {manifest['total_voters']:,}")
-        log(f"   - عدد الدفعات: {manifest['total_batches']}")
+        log(f"   - إجمالي الناخبين: {manifest.get('total_voters', 'N/A')}")
+        log(f"   - عدد الدفعات: {manifest.get('total_batches', len(manifest.get('files', [])))}")
         
         batch_files = []
         for f in manifest['files']:
