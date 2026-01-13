@@ -320,12 +320,14 @@
                     <a href="{% url 'task_list' %}" class="quick-action">
                         <i class="fas fa-tasks"></i> المهام
                     </a>
+                    {% comment %}
                     <a href="{% url 'finance_dashboard' %}" class="quick-action">
                         <i class="fas fa-wallet"></i> الحسابات
                     </a>
                     <a href="{% url 'archive:dashboard' %}" class="quick-action">
                         <i class="fas fa-archive"></i> الأرشيف
                     </a>
+                    {% endcomment %}
                     {% if user.is_superuser %}
                     <a href="{% url 'data_reset' %}" class="quick-action text-danger border-danger">
                         <i class="fas fa-trash-alt"></i> إعادة تعيين
