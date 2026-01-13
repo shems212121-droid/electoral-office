@@ -199,6 +199,27 @@ class CandidateDocument(models.Model):
     def __str__(self):
         return f"وثائق {self.candidate.full_name}"
 
+    @property
+    def completion_percentage(self):
+        """حساب نسبة اكتمال الوثائق"""
+        fields = [
+            self.cv_file, self.personal_photo, self.campaign_photo,
+            self.id_copy, self.certificate_of_good_conduct,
+            self.educational_certificates, self.other_documents
+        ]
+        available = sum(1 for f in fields if f)
+        return int((available / 7) * 100)
+
+    @property
+    def available_count(self):
+        """عدد الوثائق المتوفرة"""
+        fields = [
+            self.cv_file, self.personal_photo, self.campaign_photo,
+            self.id_copy, self.certificate_of_good_conduct,
+            self.educational_certificates, self.other_documents
+        ]
+        return sum(1 for f in fields if f)
+
 
 class FormTemplate(models.Model):
     """الفورمات والنماذج الجاهزة"""

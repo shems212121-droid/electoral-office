@@ -192,18 +192,7 @@
                 </div>
                 <div class="card-body">
                     <div class="progress mb-2" style="height: 25px;">
-                        {% with total=7 available=0 %}
-                        {% if document.cv_file %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.personal_photo %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.campaign_photo %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.id_copy %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-                        {% if document.certificate_of_good_conduct %}{% with available=available|add:1 %}{% endwith %}{%
-                        endif %}
-                        {% if document.educational_certificates %}{% with available=available|add:1 %}{% endwith %}{%
-                        endif %}
-                        {% if document.other_documents %}{% with available=available|add:1 %}{% endwith %}{% endif %}
-
-                        {% widthratio available total 100 as percentage %}
+                        {% with percentage=document.completion_percentage %}
                         <div class="progress-bar {% if percentage < 50 %}bg-danger{% elif percentage < 80 %}bg-warning{% else %}bg-success{% endif %}"
                             role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}"
                             aria-valuemin="0" aria-valuemax="100">
@@ -211,7 +200,7 @@
                         </div>
                         {% endwith %}
                     </div>
-                    <small class="text-muted">الوثائق المكتملة من إجمالي 7</small>
+                    <small class="text-muted">الوثائق المكتملة ({{ document.available_count }} من إجمالي 7)</small>
                 </div>
             </div>
 
