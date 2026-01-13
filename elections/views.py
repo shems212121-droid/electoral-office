@@ -2112,6 +2112,11 @@ def run_import_centers(request):
                 import datetime
                 f.write(f"[{datetime.datetime.now()}] CRITICAL Centers import failure: {e}\n")
 
+    # Debug: log view call
+    with open('import_log.txt', 'a', encoding='utf-8') as f:
+        import datetime
+        f.write(f"[{datetime.datetime.now()}] run_import_centers view triggered.\n")
+
     # Start the thread
     thread = threading.Thread(target=run_in_background)
     thread.daemon = True
