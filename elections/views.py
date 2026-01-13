@@ -2035,7 +2035,14 @@ def run_link_hierarchy(request):
         try:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"\n[{datetime.datetime.now()}] Starting electoral hierarchy linking...\n")
+                f.write(f"\n[{datetime.datetime.now()}] Running migrations...\n")
+            
+            from django.core.management import call_command
+            call_command('migrate', interactive=False)
+            
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] Starting electoral hierarchy linking...\n")
             
             call_command('link_electoral_hierarchy')
             
@@ -2045,7 +2052,7 @@ def run_link_hierarchy(request):
         except Exception as e:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"[{datetime.datetime.now()}] Hierarchy linking failed: {e}\n")
+                f.write(f"[{datetime.datetime.now()}] Process failed: {e}\n")
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
