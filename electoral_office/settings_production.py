@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-@z_(zqnz11&19e9=1c*b8
 # Temporarily enabling DEBUG to diagnose 500 error
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*']
 
 # Railway provides RAILWAY_STATIC_URL
 RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL', '')
