@@ -43,6 +43,19 @@ def import_voters_from_batches():
             zip_ref.extractall('.')
         log("✅ تم فك الضغط بنجاح")
 
+    # Fix for literal backslashes in filenames (Windows style zip extracted on Linux)
+    for f in Path('.').glob('voter_batches\\*'):
+        try:
+            log(f"🔧 إصلاح مسار الملف: {f.name}")
+            # Create the directory if it doesn't exist
+            os.makedirs('voter_batches', exist_ok=True)
+            # Move the file to the real directory
+            new_path = Path('voter_batches') / f.name.split('\\')[-1]
+            import shutil
+            shutil.move(str(f), str(new_path))
+        except Exception as e:
+            log(f"⚠️ فشل إصلاح المسار {f.name}: {e}")
+
     if not batch_dir.exists():
         # Check if files were extracted to root instead
         if Path('manifest.json').exists() or list(Path('.').glob('voters_batch_*.json')):
