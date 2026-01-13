@@ -2033,27 +2033,31 @@ def run_link_hierarchy(request):
     from django.core.management import call_command
     
     def run_in_background():
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
         try:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"\n[{datetime.datetime.now()}] Running migrations...\n")
+                f.write(f"\n[{datetime.datetime.now()}] --- Starting electoral hierarchy linking process ---\n")
             
-            from django.core.management import call_command
-            call_command('migrate', interactive=False)
+            output = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(output):
+                # Apply migrations first to be safe
+                print("Running migrations...")
+                call_command('migrate', interactive=False)
+                # Link hierarchy
+                print("Linking electoral hierarchy...")
+                call_command('link_electoral_hierarchy')
             
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"[{datetime.datetime.now()}] Starting electoral hierarchy linking...\n")
-            
-            call_command('link_electoral_hierarchy')
-            
-            with open('import_log.txt', 'a', encoding='utf-8') as f:
-                import datetime
-                f.write(f"[{datetime.datetime.now()}] Electoral hierarchy linking finished successfully.\n")
+                f.write(output.getvalue())
+                f.write(f"[{datetime.datetime.now()}] --- Electoral hierarchy linking process ended ---\n")
         except Exception as e:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"[{datetime.datetime.now()}] Process failed: {e}\n")
+                f.write(f"[{datetime.datetime.now()}] CRITICAL Hierarchy linking failure: {e}\n")
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
@@ -2077,24 +2081,36 @@ def run_import_centers(request):
     from django.core.management import call_command
     
     def run_in_background():
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
         try:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"\n[{datetime.datetime.now()}] Starting centers import...\n")
+                f.write(f"\n[{datetime.datetime.now()}] --- Starting centers import ---\n")
             
-            # Import General Centers
-            call_command('import_general_polling_centers')
-            
-            # Import Special Centers
-            call_command('import_special_polling_centers')
+            output = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(output):
+                # Import General Centers
+                try:
+                    call_command('import_general_polling_centers')
+                except Exception as ex:
+                    print(f"General import exception: {ex}")
+                
+                # Import Special Centers
+                try:
+                    call_command('import_special_polling_centers')
+                except Exception as ex:
+                    print(f"Special import exception: {ex}")
             
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"[{datetime.datetime.now()}] Centers import finished successfully.\n")
+                f.write(output.getvalue())
+                f.write(f"[{datetime.datetime.now()}] --- Centers import process ended ---\n")
         except Exception as e:
             with open('import_log.txt', 'a', encoding='utf-8') as f:
                 import datetime
-                f.write(f"[{datetime.datetime.now()}] Centers import failed: {e}\n")
+                f.write(f"[{datetime.datetime.now()}] CRITICAL Centers import failure: {e}\n")
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
