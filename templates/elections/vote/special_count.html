@@ -315,6 +315,19 @@
         const typingDelay = 500; // half second delay after typing
 
         centerNumberInput.addEventListener('input', function () {
+            // Normalize Arabic numerals to Western numerals
+            const arabicToWestern = {
+                '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            };
+            let value = this.value;
+            for (let arabic in arabicToWestern) {
+                value = value.replace(new RegExp(arabic, 'g'), arabicToWestern[arabic]);
+            }
+            if (this.value !== value) {
+                this.value = value;
+            }
+
             clearTimeout(typingTimer);
             const centerNumber = this.value.trim();
 

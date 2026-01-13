@@ -279,12 +279,15 @@ def get_polling_center_info(request, center_number):
     AJAX endpoint لجلب معلومات مركز الاقتراع بناءً على رقمه
     """
     try:
+        # Normalize input: Strip whitespace and convert Arabic numerals to Western
+        center_number = str(center_number).strip().translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+        
         # Try finding center by exact number
         center = PollingCenter.objects.filter(center_number=center_number).first()
         
         # If not found and it's an 8-digit code (common in some QR formats), try first 6 digits
-        if not center and len(str(center_number)) == 8:
-            fallback_number = str(center_number)[:6]
+        if not center and len(center_number) == 8:
+            fallback_number = center_number[:6]
             center = PollingCenter.objects.filter(center_number=fallback_number).first()
             
         if not center:
@@ -464,36 +467,28 @@ def save_bulk_votes(request):
             
         # 1. Get Center
         try:
+            # Normalize input
+            center_number = str(center_number).strip().translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+            station_number = str(station_number).strip().translate(str.maketrans('٠١٢٣٤٥٦٧٨٩', '0123456789'))
+            
             # Try finding center by exact number
             center = PollingCenter.objects.filter(center_number=center_number).first()
             
             # Fallback for 8-digit codes
-            if not center and len(str(center_number)) == 8:
-                fallback_number = str(center_number)[:6]
+            if not center and len(center_number) == 8:
+                fallback_number = center_number[:6]
                 center = PollingCenter.objects.filter(center_number=fallback_number).first()
                 
             if not center:
                 raise PollingCenter.DoesNotExist
         except PollingCenter.DoesNotExist:
             return JsonResponse({'success': False, 'error': f'مركز الاقتراع رقم {center_number} غير موجود'}, status=404)
-            
-        # 2. Get or Validate Station
-        # Note: Station might not exist yet if only defined in Center Metadata but not created as object
-        # However, usually stations are created. Let's find or create?
-        # Safe strategy: Find the station.
+
+        # 2. Get Station
         try:
             station = PollingStation.objects.get(center=center, station_number=station_number)
-        except PollingStation.DoesNotExist:
-            # Maybe the center has stations 1,2,3 defined but we scanned 4.
-            # We can create it if valid? 
-            # For strictness, let's error if not found, or maybe just create it.
-            # Let's create it if it's within plausible range? Or just create it.
-            station = PollingStation.objects.create(
-                center=center,
-                station_number=station_number,
-                full_number=f"{center_number}-{station_number}"
-            )
-            
+        except (PollingStation.DoesNotExist, ValueError):
+            return JsonResponse({'success': False, 'error': f'المحطة رقم {station_number} غير موجودة في هذا المركز'}, status=404)
         # 3. Check for existing votes for this station/type
         # If we have any votes for this station and this type, we warn/error?
         existing_count = VoteCount.objects.filter(
