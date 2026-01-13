@@ -378,7 +378,9 @@ def voter_lookup_ajax(request):
     if voter_number:
         replacements = {
             '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+            '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+            '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
         }
         for arabic, english in replacements.items():
             voter_number = voter_number.replace(arabic, english)
@@ -1576,7 +1578,9 @@ def add_voter_to_introducer(request, pk):
     if voter_number:
         replacements = {
             '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+            '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+            '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
         }
         for arabic, english in replacements.items():
             voter_number = voter_number.replace(arabic, english)
@@ -1726,6 +1730,16 @@ def bulk_add_voters_to_introducer(request, pk):
     
     if not voter_numbers_str:
         return JsonResponse({'success': False, 'error': 'أرقام الناخبين مطلوبة'})
+
+    # Normalize Arabic numerals in the bulk string first
+    replacements = {
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+    }
+    for arabic, english in replacements.items():
+        voter_numbers_str = voter_numbers_str.replace(arabic, english)
     
     voter_numbers = [n.strip() for n in voter_numbers_str.split(',') if n.strip()]
     
@@ -1800,7 +1814,9 @@ def voter_lookup_for_introducer(request):
     if voter_number:
         replacements = {
             '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+            '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+            '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+            '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
         }
         for arabic, english in replacements.items():
             voter_number = voter_number.replace(arabic, english)
