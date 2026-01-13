@@ -107,13 +107,28 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 if DATABASE_URL:
     print(f"DATABASE_URL found, length: {len(DATABASE_URL)}")
+    # Sanitize DATABASE_URL if it has a missing scheme (common issue in some environments)
+    if DATABASE_URL.startswith("://"):
+        print("WARNING: DATABASE_URL missing scheme (starts with ://). Prepending 'postgresql'.")
+        DATABASE_URL = f"postgresql{DATABASE_URL}"
+
+    # Log sanitized URL structure for debugging (without revealing credentials)
     try:
+        from urllib.parse import urlparse
+        parsed = urlparse(DATABASE_URL)
+        print(f"DATABASE_URL scheme: '{parsed.scheme}', hostname: '{parsed.hostname}'")
+    except Exception as e:
+        print(f"Could not parse DATABASE_URL for logging: {e}")
+
+    try:
+        # Use parse() directly with the sanitized URL instead of config() which reads os.environ again
+        db_config = dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
         DATABASES = {
-            "default": dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
+            "default": db_config
         }
         if DATABASES['default']:
             print(f"Database engine set to: {DATABASES['default'].get('ENGINE')}")
