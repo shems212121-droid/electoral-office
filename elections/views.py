@@ -1977,7 +1977,7 @@ def run_import_script(request):
     
     # Only allow superusers OR secret key
     secret_key = request.GET.get('secret')
-    if secret_key != 'shems_voter_import_2024_secure':
+    if secret_key != 'shems_voter_import_2024_secure' and not request.user.is_superuser:
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     def run_in_background():
@@ -2033,7 +2033,7 @@ def run_link_hierarchy(request):
     """Trigger the link_electoral_hierarchy management command via URL"""
     # Security: check for secret key or admin access
     secret = request.GET.get('secret')
-    if secret != 'shems_voter_import_2024_secure':
+    if secret != 'shems_voter_import_2024_secure' and not request.user.is_superuser:
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     import threading
@@ -2081,7 +2081,7 @@ def run_link_hierarchy(request):
 def run_import_centers(request):
     """Trigger the import of general and special polling centers via URL"""
     secret = request.GET.get('secret')
-    if secret != 'shems_voter_import_2024_secure':
+    if secret != 'shems_voter_import_2024_secure' and not request.user.is_superuser:
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     import threading
