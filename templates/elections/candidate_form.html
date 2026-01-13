@@ -189,13 +189,13 @@
             // Debounce the lookup (wait 500ms after user stops typing)
             lookupTimeout = setTimeout(() => {
                 fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.error || 'خطأ في البحث');
-                            });
+                    .then(response => response.json())
+                    .then(data => {
+                        // Check for logical error in 200 OK response
+                        if (data.error || data.found === false) {
+                            throw new Error(data.error || 'لم يتم العثور على الناخب');
                         }
-                        return response.json();
+                        return data;
                     })
                     .then(data => {
                         // Hide spinner
