@@ -44,9 +44,14 @@ def import_voters_from_batches():
         log("✅ تم فك الضغط بنجاح")
 
     if not batch_dir.exists():
-        log(f"\n❌ خطأ: المجلد {batch_dir} والملف {zip_file} غير موجودين!")
-        log("تأكد من رفع ملفات البيانات أولاً")
-        return False
+        # Check if files were extracted to root instead
+        if Path('manifest.json').exists() or list(Path('.').glob('voters_batch_*.json')):
+            log("⚠️  تم استخراج الملفات في المجلد الرئيسي بدلاً من voter_batches")
+            batch_dir = Path('.')
+        else:
+            log(f"\n❌ خطأ: المجلد {batch_dir} غير موجود، ولم يتم العثور على ملفات في المجلد الرئيسي!")
+            log(f"محتويات المجلد الحالي: {[f.name for f in Path('.').glob('*') if f.is_file()]}")
+            return False
     
     # قراءة ملف التوصيف (manifest)
     manifest_file = batch_dir / 'manifest.json'
