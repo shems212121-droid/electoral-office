@@ -4,7 +4,7 @@ Django Management Command لاستيراد مراكز الاقتراع الخا�
 import os
 import openpyxl
 from django.core.management.base import BaseCommand
-from elections.models import PollingCenter, PollingStation, Area
+from elections.models import PollingCenter, PollingStation, Area, RegistrationCenter
 
 
 class Command(BaseCommand):
@@ -52,6 +52,17 @@ class Command(BaseCommand):
                 except (ValueError, TypeError):
                     station_count = 1
                 
+                # إنشاء أو تحديث مركز التسجيل
+                registration_center = None
+                if registration_center_number:
+                    registration_center, _ = RegistrationCenter.objects.get_or_create(
+                        center_number=registration_center_number.strip(),
+                        defaults={
+                            'name': registration_center_name.strip() if registration_center_name else f"مركز تسجيل {registration_center_number}",
+                            'governorate': "البصرة"
+                        }
+                    )
+                
                 # إنشاء أو تحديث مركز الاقتراع الخاص
                 center, created = PollingCenter.objects.update_or_create(
                     center_number=center_number,
@@ -59,6 +70,7 @@ class Command(BaseCommand):
                         'name': center_name.strip() if center_name else "غير محدد",
                         'voting_type': 'special',
                         'governorate': "البصرة",
+                        'registration_center': registration_center,
                         'location': location.strip() if location else "",
                         'address': address.strip() if address else "",
                         'registration_center_number': registration_center_number.strip() if registration_center_number else "",

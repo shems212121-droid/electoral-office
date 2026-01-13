@@ -57,6 +57,17 @@ class Command(BaseCommand):
                 if area_name:
                     area, _ = Area.objects.get_or_create(name=area_name.strip())
                 
+                # إنشاء أو تحديث مركز التسجيل
+                registration_center = None
+                if registration_center_number:
+                    registration_center, _ = RegistrationCenter.objects.get_or_create(
+                        center_number=registration_center_number.strip(),
+                        defaults={
+                            'name': registration_center_name.strip() if registration_center_name else f"مركز تسجيل {registration_center_number}",
+                            'governorate': governorate.strip() if governorate else "البصرة"
+                        }
+                    )
+                
                 # إنشاء أو تحديث مركز الاقتراع
                 center, created = PollingCenter.objects.update_or_create(
                     center_number=center_number,
@@ -65,6 +76,7 @@ class Command(BaseCommand):
                         'voting_type': 'general',
                         'governorate': governorate.strip() if governorate else "البصرة",
                         'area': area,
+                        'registration_center': registration_center,
                         'location': location.strip() if location else "",
                         'address': address.strip() if address else "",
                         'registration_center_number': registration_center_number.strip() if registration_center_number else "",

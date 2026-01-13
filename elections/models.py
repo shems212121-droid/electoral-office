@@ -209,13 +209,24 @@ class Voter(models.Model):
                                      verbose_name="الحي/المنطقة")
     governorate = models.CharField(max_length=50, default="البصرة", verbose_name="المحافظة")
     
-    # Voting Centers
+    # Voting Centers (CharFields for raw import)
     voting_center_number = models.CharField(max_length=50, blank=True, verbose_name="رقم مركز الاقتراع")
     voting_center_name = models.CharField(max_length=150, blank=True, verbose_name="اسم مركز الاقتراع")
     registration_center_name = models.CharField(max_length=150, blank=True, verbose_name="اسم مركز التسجيل")
     registration_center_number = models.CharField(max_length=50, blank=True, verbose_name="رقم مركز التسجيل")
     station_number = models.CharField(max_length=50, blank=True, verbose_name="رقم المحطة")
     status = models.CharField(max_length=50, blank=True, verbose_name="الحالة")
+    
+    # Relationships (Linking to official models)
+    polling_center = models.ForeignKey('PollingCenter', on_delete=models.SET_NULL, 
+                                      null=True, blank=True, related_name='voters',
+                                      verbose_name="مركز الاقتراع (مرتبط)")
+    polling_station = models.ForeignKey('PollingStation', on_delete=models.SET_NULL, 
+                                       null=True, blank=True, related_name='voters_list',
+                                       verbose_name="المحطة (مرتبطة)")
+    registration_center_fk = models.ForeignKey('RegistrationCenter', on_delete=models.SET_NULL, 
+                                             null=True, blank=True, related_name='voters',
+                                             verbose_name="مركز التسجيل (مرتبط)")
     
     # Campaign Info
     classification = models.CharField(max_length=20, choices=CLASSIFICATION_CHOICES, default='unknown', 
@@ -1191,6 +1202,24 @@ class PartyCandidate(models.Model):
         ordering = ['-created_at']
 
 
+class RegistrationCenter(models.Model):
+    """مراكز التسجيل"""
+    name = models.CharField(max_length=200, verbose_name="اسم مركز التسجيل")
+    center_number = models.CharField(max_length=20, unique=True, verbose_name="رقم مركز التسجيل")
+    governorate = models.CharField(max_length=50, default="البصرة", verbose_name="المحافظة")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.center_number} - {self.name}"
+    
+    class Meta:
+        verbose_name = "مركز تسجيل"
+        verbose_name_plural = "مراكز التسجيل"
+        ordering = ['center_number']
+
+
 class PollingCenter(models.Model):
     """مراكز الاقتراع"""
     VOTING_TYPE_CHOICES = [
@@ -1203,6 +1232,11 @@ class PollingCenter(models.Model):
     center_number = models.CharField(max_length=20, unique=True, verbose_name="رقم المركز")
     voting_type = models.CharField(max_length=20, choices=VOTING_TYPE_CHOICES, 
                                    default='general', verbose_name="نوع الاقتراع")
+    
+    # Relationship to Registration Center
+    registration_center = models.ForeignKey(RegistrationCenter, on_delete=models.SET_NULL, 
+                                           null=True, blank=True, related_name='polling_centers',
+                                           verbose_name="مركز التسجيل")
     
     # Location & Area
     governorate = models.CharField(max_length=50, default="البصرة", verbose_name="المحافظة")
