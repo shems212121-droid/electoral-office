@@ -7,7 +7,7 @@ from .models import (
     CandidateMonitor, CommunicationLog, CampaignTask,
     Organization, CivilSocietyObserver, InternationalObserver, PoliticalEntityAgent, CenterDirector,
     PoliticalParty, PartyCandidate, PollingCenter, PollingStation, VoteCount,
-    BarcodeScanSession, BarcodeScanRecord, SubOperationRoom
+    BarcodeScanSession, BarcodeScanRecord, SubOperationRoom, RegistrationCenter
 )
 
 
@@ -128,10 +128,21 @@ class NeighborhoodAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
+@admin.register(RegistrationCenter)
+class RegistrationCenterAdmin(admin.ModelAdmin):
+    list_display = ['center_number', 'name', 'governorate', 'get_polling_centers_count']
+    search_fields = ['center_number', 'name']
+    list_filter = ['governorate']
+    
+    def get_polling_centers_count(self, obj):
+        return obj.polling_centers.count()
+    get_polling_centers_count.short_description = 'عدد مراكز الاقتراع'
+
+
 @admin.register(Voter)
 class VoterAdmin(admin.ModelAdmin):
-    list_display = ['voter_number', 'full_name', 'phone', 'classification', 'introducer', 'voter_code']
-    list_filter = ['classification', 'area', 'introducer']
+    list_display = ['voter_number', 'full_name', 'phone', 'classification', 'introducer', 'polling_center', 'polling_station']
+    list_filter = ['classification', 'area', 'introducer', 'polling_center', 'registration_center_fk']
     search_fields = ['voter_number', 'full_name', 'phone']
     readonly_fields = ['voter_code', 'created_at', 'updated_at']
     
@@ -145,9 +156,14 @@ class VoterAdmin(admin.ModelAdmin):
         ('الموقع', {
             'fields': ('governorate', 'area', 'neighborhood')
         }),
-        ('مراكز الاقتراع', {
+        ('الهيكل الانتخابي (روابط)', {
+            'fields': ('polling_center', 'polling_station', 'registration_center_fk'),
+            'description': 'الروابط المنطقية مع الهيكل الانتخابي'
+        }),
+        ('معلومات مراكز الاقتراع (نصية)', {
             'fields': ('voting_center_number', 'voting_center_name', 'registration_center_number', 
-                       'registration_center_name', 'station_number', 'status')
+                       'registration_center_name', 'station_number', 'status'),
+            'classes': ('collapse',)
         }),
         ('الحملة الانتخابية', {
             'fields': ('introducer', 'voter_code', 'classification', 'notes')
@@ -446,11 +462,11 @@ class PartyCandidateAdmin(admin.ModelAdmin):
 
 @admin.register(PollingCenter)
 class PollingCenterAdmin(admin.ModelAdmin):
-    list_display = ['center_number', 'name', 'voting_type', 'location', 
-                   'registration_center_name', 'station_count', 'get_stations_count']
-    list_filter = ['voting_type', 'governorate', 'area']
-    search_fields = ['center_number', 'name', 'location', 'registration_center_name', 
-                    'registration_center_number', 'card_name', 'actual_name']
+    list_display = ['center_number', 'name', 'voting_type', 'registration_center', 'station_count', 'get_stations_count']
+    list_filter = ['voting_type', 'governorate', 'area', 'registration_center']
+    search_fields = ['center_number', 'name', 'location', 
+                    'registration_center_number', 'registration_center_name', 
+                    'card_name', 'actual_name']
     ordering = ['center_number']
     list_per_page = 50
     
@@ -462,7 +478,7 @@ class PollingCenterAdmin(admin.ModelAdmin):
             'fields': ('governorate', 'area', 'neighborhood', 'location', 'address')
         }),
         ('مركز التسجيل', {
-            'fields': ('registration_center_number', 'registration_center_name')
+            'fields': ('registration_center', 'registration_center_number', 'registration_center_name')
         }),
         ('أسماء المركز', {
             'fields': ('card_name', 'actual_name'),
