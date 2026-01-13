@@ -1964,8 +1964,9 @@ def run_import_script(request):
     import threading
     from django.core.management import call_command
     
-    # Only allow superusers
-    if not request.user.is_superuser:
+    # Only allow superusers OR secret key
+    secret_key = request.GET.get('key')
+    if not request.user.is_superuser and secret_key != 'Import123':
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     def run_in_background():
