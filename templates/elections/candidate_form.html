@@ -189,11 +189,16 @@
             // Debounce the lookup (wait 500ms after user stops typing)
             lookupTimeout = setTimeout(() => {
                 fetch(`/api/voter-lookup/?voter_number=${encodeURIComponent(voterNumber)}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('حدث خطأ في الاتصال بالسيرفر');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         // Check for logical error in 200 OK response
                         if (data.error || data.found === false) {
-                            throw new Error(data.error || 'لم يتم العثور على الناخب');
+                            throw new Error('عذراً، لم يتم العثور على بيانات هذا الناخب في قاعدة البيانات. يرجى إدخال البيانات يدوياً.');
                         }
                         return data;
                     })
@@ -232,7 +237,7 @@
                         spinner.style.display = 'none';
 
                         // Show error
-                        errorDiv.textContent = error.message;
+                        errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${error.message}`;
                         errorDiv.style.display = 'block';
                     });
             }, 500);
