@@ -1981,19 +1981,26 @@ def run_import_script(request):
         return HttpResponse('Unauthorized - Admin Access Only', status=403)
         
     def run_in_background():
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
         try:
-            print("Starting background import...")
-            call_command('import_voters')
-            print("Background import finished.")
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"\n[{datetime.datetime.now()}] --- Starting voter import process ---\n")
+            
+            output = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(output):
+                call_command('import_voters')
+            
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                f.write(output.getvalue())
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] --- Voter import process ended ---\n")
         except Exception as e:
-            print(f"Background import failed: {e}")
-            # Try to log to file as well
-            try:
-                with open('import_log.txt', 'a', encoding='utf-8') as f:
-                    import datetime
-                    f.write(f"[{datetime.datetime.now()}] CRITICAL ERROR IN THREAD: {e}\n")
-            except:
-                pass
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] CRITICAL Voter import failure: {e}\n")
 
     # Start the thread
     thread = threading.Thread(target=run_in_background)
