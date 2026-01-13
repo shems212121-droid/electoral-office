@@ -148,7 +148,12 @@
         // Voter number lookup with debounce
         $('#id_voter_number').on('input', function () {
             clearTimeout(lookupTimeout);
-            const voterNumber = $(this).val().trim();
+            let voterNumber = $(this).val().trim();
+
+            const replacements = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
+            for (let char in replacements) {
+                voterNumber = voterNumber.replace(new RegExp(char, 'g'), replacements[char]);
+            }
 
             if (voterNumber.length >= 6) {
                 $('#voterLookupStatus').html('<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> جاري البحث...</span>');

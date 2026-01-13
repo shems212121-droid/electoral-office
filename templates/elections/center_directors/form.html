@@ -35,7 +35,8 @@
                         <div id="voterLookupSuccess" class="text-success mt-2" style="display: none;">
                             <i class="fas fa-check-circle"></i> تم العثور على الناخب وملء البيانات
                         </div>
-                        {% if form.voter_number.errors %}<div class="text-danger">{{ form.voter_number.errors }}</div>{% endif %}
+                        {% if form.voter_number.errors %}<div class="text-danger">{{ form.voter_number.errors }}</div>{%
+                        endif %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
@@ -48,7 +49,8 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
                         {{ form.full_name }}
-                        {% if form.full_name.errors %}<div class="text-danger">{{ form.full_name.errors }}</div>{% endif %}
+                        {% if form.full_name.errors %}<div class="text-danger">{{ form.full_name.errors }}</div>{% endif
+                        %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">البريد الإلكتروني</label>
@@ -61,7 +63,8 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">رقم البطاقة الوطنية</label>
                         {{ form.national_id }}
-                        {% if form.national_id.errors %}<div class="text-danger">{{ form.national_id.errors }}</div>{% endif %}
+                        {% if form.national_id.errors %}<div class="text-danger">{{ form.national_id.errors }}</div>{%
+                        endif %}
                     </div>
                 </div>
             </div>
@@ -76,7 +79,8 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">نوع الاقتراع <span class="text-danger">*</span></label>
                         {{ form.voting_type }}
-                        {% if form.voting_type.errors %}<div class="text-danger">{{ form.voting_type.errors }}</div>{% endif %}
+                        {% if form.voting_type.errors %}<div class="text-danger">{{ form.voting_type.errors }}</div>{%
+                        endif %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">رقم المركز الانتخابي <span class="text-danger">*</span></label>
@@ -96,7 +100,8 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">المحافظة <span class="text-danger">*</span></label>
                         {{ form.governorate }}
-                        {% if form.governorate.errors %}<div class="text-danger">{{ form.governorate.errors }}</div>{% endif %}
+                        {% if form.governorate.errors %}<div class="text-danger">{{ form.governorate.errors }}</div>{%
+                        endif %}
                     </div>
                 </div>
 
@@ -109,7 +114,8 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">تاريخ بداية المهمة</label>
                         {{ form.start_date }}
-                        {% if form.start_date.errors %}<div class="text-danger">{{ form.start_date.errors }}</div>{% endif %}
+                        {% if form.start_date.errors %}<div class="text-danger">{{ form.start_date.errors }}</div>{%
+                        endif %}
                     </div>
                 </div>
 
@@ -162,7 +168,12 @@
 
         if (voterNumberInput) {
             voterNumberInput.addEventListener('input', function () {
-                const voterNumber = this.value.trim();
+                let voterNumber = this.value.trim();
+
+                const replacements = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
+                for (let char in replacements) {
+                    voterNumber = voterNumber.replace(new RegExp(char, 'g'), replacements[char]);
+                }
 
                 if (lookupTimeout) {
                     clearTimeout(lookupTimeout);
