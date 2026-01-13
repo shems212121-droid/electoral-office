@@ -37,6 +37,8 @@ Thumbs.db
 
 # Large files
 *.xlsx
+!مراكز الاقتراع العام.xlsx
+!مراكز الاقتراع الخاص.xlsx
 *.xls
 *.csv
 *.pdf
