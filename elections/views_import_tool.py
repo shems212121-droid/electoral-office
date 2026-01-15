@@ -250,3 +250,32 @@ def stop_import(request):
         return JsonResponse({'success': True, 'message': 'تم طلب الإيقاف'})
     
     return JsonResponse({'success': False, 'message': 'لا توجد عملية قيد التشغيل'})
+
+@user_passes_test(is_admin_or_superuser)
+def run_final_import(request):
+    """تشغيل الاستيراد النهائي من الملفات المرفوعة"""
+    global import_status
+    
+    if import_status['running']:
+        return JsonResponse({'success': False, 'message': 'يوجد عملية جارية بالفعل'})
+        
+    import_status.update({
+        'running': True,
+        'current_round': 99, # Special code for final import
+        'log': ['🚀 بدء الاستيراد النهائي الشامل...']
+    })
+    
+    def run_cmd():
+        try:
+            call_command('import_final_data')
+            import_status['log'].append('🎉 تم الانتهاء من الاستيراد الشامل!')
+        except Exception as e:
+            import_status['log'].append(f'❌ فشل الاستيراد: {str(e)}')
+        finally:
+            import_status['running'] = False
+            
+    thread = threading.Thread(target=run_cmd)
+    thread.daemon = True
+    thread.start()
+    
+    return JsonResponse({'success': True, 'message': 'تم بدء الاستيراد النهائي'})

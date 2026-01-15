@@ -300,5 +300,6 @@ urlpatterns = [
     path('tool/import-remaining/start/', views_import_tool.start_import_round, name='import_start_round'),
     path('tool/import-remaining/status/', views_import_tool.get_import_status, name='import_get_status'),
     path('tool/import-remaining/stop/', views_import_tool.stop_import, name='import_stop'),
+    path('tool/import-remaining/final/', views_import_tool.run_final_import, name='import_final'),
 ]
 
