@@ -1,0 +1,493 @@
+{% extends "elections/base.html" %}
+{% load static %}
+
+{% block title %}استيراد الناخبين المتبقين{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-tool-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .progress-ring {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+
+    .round-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .round-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .round-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .round-badge {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .round-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .detail-item {
+        text-align: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .detail-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #495057;
+    }
+
+    .start-btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .start-btn:hover:not(:disabled) {
+        transform: scale(1.02);
+    }
+
+    .start-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .log-container {
+        background: #1e1e1e;
+        color: #00ff00;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 20px;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .log-line {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-left: 3px solid transparent;
+    }
+
+    .log-line.success {
+        border-left-color: #00ff00;
+    }
+
+    .log-line.error {
+        border-left-color: #ff0000;
+        color: #ff6b6b;
+    }
+
+    .log-line.info {
+        border-left-color: #00bfff;
+        color: #00bfff;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-left: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    .status-indicator.running {
+        background: #00ff00;
+    }
+
+    .status-indicator.stopped {
+        background: #ff0000;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-tool-container">
+    <!-- عنوان الصفحة -->
+    <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            🚀 أداة استيراد الناخبين المتبقين
+        </h1>
+        <p class="text-muted">استيراد ~1,000,000 ناخب عبر 3 جولات منظمة</p>
+    </div>
+
+    <!-- بطاقة الإحصائيات -->
+    <div class="stats-card">
+        <div class="row">
+            <div class="col-md-3 stat-item">
+                <div class="stat-value">{{ current_count|floatformat:0|default:"0" }}</div>
+                <div class="stat-label">الموجود حالياً</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-value">{{ expected_count|floatformat:0|default:"0" }}</div>
+                <div class="stat-label">المتوقع</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-value">{{ remaining|floatformat:0|default:"0" }}</div>
+                <div class="stat-label">المتبقي</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-value">{{ percentage|floatformat:1 }}%</div>
+                <div class="stat-label">النسبة المكتملة</div>
+            </div>
+        </div>
+        <div class="progress mt-3" style="height: 30px; background: rgba(255,255,255,0.2);">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                style="width: {{ percentage }}%; background: rgba(255,255,255,0.9); color: #667eea; font-weight: bold; font-size: 1.1rem;"
+                aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                {{ percentage|floatformat:1 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- حالة الاستيراد -->
+    <div class="round-card" id="status-card" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">
+                حالة الاستيراد
+                <span class="status-indicator running" id="status-indicator"></span>
+            </h4>
+            <button class="btn btn-danger btn-sm" onclick="stopImport()" id="stop-btn">
+                إيقاف
+            </button>
+        </div>
+
+        <div class="row text-center mb-3">
+            <div class="col-md-4">
+                <div class="detail-item">
+                    <div class="detail-label">الجولة الحالية</div>
+                    <div class="detail-value" id="current-round">-</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="detail-item">
+                    <div class="detail-label">الدفعة الحالية</div>
+                    <div class="detail-value" id="current-batch">-</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="detail-item">
+                    <div class="detail-label">إجمالي الناخبين</div>
+                    <div class="detail-value" id="total-voters">{{ current_count|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-container" id="log-container">
+            <div class="log-line info">جاهز للاستيراد...</div>
+        </div>
+    </div>
+
+    <!-- بطاقات الجولات -->
+    <div class="row">
+        {% for round in rounds %}
+        <div class="col-md-4 mb-3">
+            <div class="round-card">
+                <div class="round-header">
+                    <span class="round-badge text-{{ round.color }}">{{ round.number }}</span>
+                    <h5 class="mb-0">{{ round.name }}</h5>
+                </div>
+
+                <div class="round-details">
+                    <div class="detail-item">
+                        <div class="detail-label">الدفعات</div>
+                        <div class="detail-value">{{ round.batches }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">الناخبون</div>
+                        <div class="detail-value">~{{ round.expected_voters|floatformat:0 }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">المدة</div>
+                        <div class="detail-value">{{ round.duration }}</div>
+                    </div>
+                </div>
+
+                <button class="start-btn bg-{{ round.color }} text-white"
+                    onclick="startRound({{ round.number }}, {{ round.start }}, {{ round.end }})"
+                    id="start-btn-{{ round.number }}">
+                    <span id="btn-text-{{ round.number }}">🚀 بدء الجولة {{ round.number }}</span>
+                    <span id="btn-spinner-{{ round.number }}" class="spinner" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- تعليمات -->
+    <div class="round-card mt-4">
+        <h5 class="mb-3">📋 التعليمات:</h5>
+        <ol>
+            <li>اضغط على زر "بدء الجولة" للجولة المطلوبة</li>
+            <li>راقب التقدم في سجل العمليات أعلاه</li>
+            <li>انتظر حتى تكتمل الجولة قبل بدء التالية</li>
+            <li>يمكنك إيقاف العملية في أي وقت بالضغط على "إيقاف"</li>
+            <li>العملية ذكية - تتخطى الدفعات المستوردة مسبقاً</li>
+        </ol>
+
+        <div class="alert alert-warning mt-3">
+            <strong>⚠️ هام:</strong> لا تغلق هذه الصفحة أثناء عملية الاستيراد. العملية تعمل على الخادم ولكن التحديثات
+            تظهر هنا فقط.
+        </div>
+    </div>
+</div>
+
+<script>
+    let statusInterval = null;
+    let isImportRunning = false;
+
+    // بدء جولة استيراد
+    async function startRound(roundNum, startBatch, endBatch) {
+        if (isImportRunning) {
+            alert('عملية استيراد قيد التشغيل بالفعل!');
+            return;
+        }
+
+        if (!confirm(`هل تريد بدء الجولة ${roundNum}؟\nالدفعات: ${startBatch}-${endBatch - 1}\nالمدة المتوقعة: 15-40 دقيقة`)) {
+            return;
+        }
+
+        // تعطيل جميع الأزرار
+        disableAllButtons(true);
+
+        // عرض Spinner
+        document.getElementById(`btn-text-${roundNum}`).style.display = 'none';
+        document.getElementById(`btn-spinner-${roundNum}`).style.display = 'inline-block';
+
+        try {
+            const response = await fetch('{% url "import_start_round" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    round: roundNum,
+                    start: startBatch,
+                    end: endBatch
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                isImportRunning = true;
+                document.getElementById('status-card').style.display = 'block';
+                document.getElementById('status-indicator').className = 'status-indicator running';
+
+                // بدء مراقبة الحالة
+                startStatusPolling();
+            } else {
+                alert('خطأ: ' + data.message);
+                disableAllButtons(false);
+            }
+        } catch (error) {
+            alert('خطأ في الاتصال: ' + error.message);
+            disableAllButtons(false);
+        }
+
+        // إخفاء Spinner
+        document.getElementById(`btn-text-${roundNum}`).style.display = 'inline';
+        document.getElementById(`btn-spinner-${roundNum}`).style.display = 'none';
+    }
+
+    // مراقبة حالة الاستيراد
+    function startStatusPolling() {
+        if (statusInterval) {
+            clearInterval(statusInterval);
+        }
+        statusInterval = setInterval(updateStatus, 2000);  // كل ثانيتين
+        updateStatus();  // تحديث فوري
+    }
+
+    // تحديث الحالة
+    async function updateStatus() {
+        try {
+            const response = await fetch('{% url "import_get_status" %}');
+            const data = await response.json();
+
+            // تحديث المؤشرات
+            document.getElementById('current-round').textContent = data.current_round || '-';
+            document.getElementById('current-batch').textContent = data.current_batch || '-';
+            document.getElementById('total-voters').textContent = data.current_voter_count?.toLocaleString('ar-EG') || '0';
+
+            // تحديث السجل
+            const logContainer = document.getElementById('log-container');
+            logContainer.innerHTML = '';
+
+            (data.log || []).forEach(line => {
+                const div = document.createElement('div');
+                div.className = 'log-line';
+
+                if (line.includes('✅')) div.classList.add('success');
+                else if (line.includes('❌')) div.classList.add('error');
+                else div.classList.add('info');
+
+                div.textContent = line;
+                logContainer.appendChild(div);
+            });
+
+            // التمرير للأسفل
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // تحديث حالة التشغيل
+            if (!data.running && isImportRunning) {
+                isImportRunning = false;
+                document.getElementById('status-indicator').className = 'status-indicator stopped';
+                disableAllButtons(false);
+                clearInterval(statusInterval);
+
+                // تحديث الإحصائيات
+                location.reload();
+            }
+
+        } catch (error) {
+            console.error('خطأ في تحديث الحالة:', error);
+        }
+    }
+
+    // إيقاف الاستيراد
+    async function stopImport() {
+        if (!confirm('هل تريد إيقاف عملية الاستيراد؟')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{% url "import_stop" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+        } catch (error) {
+            alert('خطأ: ' + error.message);
+        }
+    }
+
+    // تعطيل/تفعيل جميع الأزرار
+    function disableAllButtons(disable) {
+        for (let i = 1; i <= 3; i++) {
+            const btn = document.getElementById(`start-btn-${i}`);
+            if (btn) {
+                btn.disabled = disable;
+            }
+        }
+
+        const stopBtn = document.getElementById('stop-btn');
+        if (stopBtn) {
+            stopBtn.disabled = !disable;
+        }
+    }
+
+    // التحقق من حالة الاستيراد عند تحميل الصفحة
+    window.addEventListener('load', () => {
+        updateStatus();
+
+        // إذا كانت هناك عملية قيد التشغيل، ابدأ المراقبة
+        setTimeout(() => {
+            if (isImportRunning) {
+                document.getElementById('status-card').style.display = 'block';
+                startStatusPolling();
+            }
+        }, 500);
+    });
+</script>
+{% endblock %}

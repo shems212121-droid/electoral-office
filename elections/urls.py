@@ -17,6 +17,8 @@ from . import result_entry_views
 from . import task_notifications
 from . import communication_views
 from . import sub_room_views
+from . import views_import_tool
+
 
 
 
@@ -292,5 +294,11 @@ urlpatterns = [
     path('tool/import-centers/', views.run_import_centers, name='run_import_centers'),
     path('tool/import-part2/', views.run_import_part2, name='run_import_part2'),
     path('tool/import-part3/', views.run_import_part3, name='run_import_part3'),
+    
+    # ==================== Web-Based Import Tool ====================
+    path('tool/import-remaining/', views_import_tool.import_remaining_voters_page, name='import_remaining_voters'),
+    path('tool/import-remaining/start/', views_import_tool.start_import_round, name='import_start_round'),
+    path('tool/import-remaining/status/', views_import_tool.get_import_status, name='import_get_status'),
+    path('tool/import-remaining/stop/', views_import_tool.stop_import, name='import_stop'),
 ]
 
