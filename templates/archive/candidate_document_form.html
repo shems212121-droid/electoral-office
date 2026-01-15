@@ -1,4 +1,4 @@
-{% extends 'elections/base.html' %}
+﻿{% extends 'elections/base.html' %}
 {% load widget_tweaks %}
 
 {% block title %}{% if is_edit %}تعديل وثائق{% else %}رفع وثائق جديدة{% endif %} - المرشحين{% endblock %}
@@ -24,8 +24,7 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-cloud-upload me-2"></i>
-                        {% if is_edit %}تعديل وثائق: {{ document.candidate.full_name }}{% else %}رفع وثائق مرشح{% endif
-                        %}
+                        {% if is_edit %}تعديل وثائق: {{ document.candidate.full_name }}{% else %}رفع وثائق مرشح{% endif %}
                     </h4>
                 </div>
                 <div class="card-body">
