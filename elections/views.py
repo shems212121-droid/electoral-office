@@ -1962,13 +1962,13 @@ class DataResetView(LoginRequiredMixin, View):
 @login_required
 def api_candidates_list(request):
     """المرشحين للمزامنة"""
-    candidates = PartyCandidate.objects.all().values('id', 'full_name', 'candidate_number', 'party_id')
+    candidates = PartyCandidate.objects.all().values('id', 'full_name', 'candidate_code', 'party_id')
     return JsonResponse(list(candidates), safe=False)
 
 @login_required
 def api_parties_list(request):
     """الكيانات للمزامنة"""
-    parties = PoliticalParty.objects.all().values('id', 'name', 'code')
+    parties = PoliticalParty.objects.all().values('id', 'name', 'serial_number')
     return JsonResponse(list(parties), safe=False)
 
 # ==================== Emergency Import Tool ====================
