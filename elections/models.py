@@ -200,7 +200,7 @@ class Voter(models.Model):
     family_number = models.CharField(max_length=50, blank=True, verbose_name="رقم العائلة")
     
     # Contact
-    phone = models.CharField(max_length=11, unique=True, verbose_name="رقم الهاتف",
+    phone = models.CharField(max_length=20, unique=True, verbose_name="رقم الهاتف",
                             validators=[validate_phone_number], null=True, blank=True)
     
     # Location
