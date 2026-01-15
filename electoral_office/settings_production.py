@@ -103,15 +103,12 @@ WSGI_APPLICATION = 'electoral_office.wsgi.application'
 
 # Database - Use PostgreSQL from Railway
 # Database Configuration
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
-if DATABASE_URL:
+# Check if DATABASE_URL is valid
+if DATABASE_URL and not DATABASE_URL.startswith("://"):
     print(f"DATABASE_URL found, length: {len(DATABASE_URL)}")
-    # Sanitize DATABASE_URL if it has a missing scheme (common issue in some environments)
-    if DATABASE_URL.startswith("://"):
-        print("WARNING: DATABASE_URL missing scheme (starts with ://). Prepending 'postgresql'.")
-        DATABASE_URL = f"postgresql{DATABASE_URL}"
-
+    
     # Log sanitized URL structure for debugging (without revealing credentials)
     try:
         from urllib.parse import urlparse
@@ -121,7 +118,7 @@ if DATABASE_URL:
         print(f"Could not parse DATABASE_URL for logging: {e}")
 
     try:
-        # Use parse() directly with the sanitized URL instead of config() which reads os.environ again
+        # Use parse() directly with the sanitized URL
         db_config = dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
@@ -133,7 +130,7 @@ if DATABASE_URL:
         if DATABASES['default']:
             print(f"Database engine set to: {DATABASES['default'].get('ENGINE')}")
         else:
-            print("dj_database_url.config returned empty, falling back to SQLite")
+            print("dj_database_url.parse returned empty, falling back to SQLite")
             DATABASES = {
                 "default": {
                     "ENGINE": "django.db.backends.sqlite3",
@@ -149,13 +146,17 @@ if DATABASE_URL:
             }
         }
 else:
-    print("No DATABASE_URL found, using SQLite")
+    if DATABASE_URL:
+        print(f"DATABASE_URL is invalid (value: '{DATABASE_URL[:20]}...'), using SQLite")
+    else:
+        print("No DATABASE_URL found, using SQLite")
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 
 
 # Cache Configuration
