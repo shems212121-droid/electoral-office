@@ -308,6 +308,22 @@
         {% endfor %}
     </div>
 
+    <!-- زر الطوارئ (الاستيراد الشامل) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-dark shadow-sm bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-dark fw-bold">🚀 الاستيراد الشامل (الحل النهائي)</h5>
+                    <p class="text-muted">استيراد جميع البيانات (1.8 مليون ناخب) من النسخة الاحتياطية المرفوعة مع الكود.
+                        استخدم هذا الخيار إذا فشلت الجولات السابقة.</p>
+                    <button id="btn-final" class="btn btn-dark btn-lg px-5" onclick="startFinalImport()">
+                        <i class="fas fa-database me-2"></i> بدء الاستيراد الشامل
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- تعليمات -->
     <div class="round-card mt-4">
         <h5 class="mb-3">📋 التعليمات:</h5>
@@ -395,6 +411,44 @@
     }
 
     // تحديث الحالة
+    async function startFinalImport() {
+        if (!confirm('هل أنت متأكد من بدء الاستيراد الشامل؟ هذه العملية مضمونة ولكن قد تستغرق بعض الوقت.')) {
+            return;
+        }
+
+        const btn = document.getElementById('btn-final');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جارٍ البدء...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/tool/import-remaining/final/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({})
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // نترك الازرار معطلة ونعتمد على التحديث التلقائي
+                alert('تم بدء الاستيراد الشامل بنجاح! راقب السجل أدناه.');
+            } else {
+                alert('خطأ: ' + data.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء الاتصال بالخادم');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
     async function updateStatus() {
         try {
             const response = await fetch('{% url "import_get_status" %}');
