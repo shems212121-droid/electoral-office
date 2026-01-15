@@ -76,14 +76,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     stats['total_anchors'] = Anchor.objects.count()
                     stats['total_introducers'] = Introducer.objects.count()
                     stats['total_sub_rooms'] = SubOperationRoom.objects.count()
+                    # Use real database count for voters to show import progress
+                    stats['total_voters'] = Voter.objects.count()
                 except Exception as e:
                     stats['db_error'] = str(e)
                     stats['total_candidates'] = 0
                     stats['total_anchors'] = 0
                     stats['total_introducers'] = 0
                     stats['total_sub_rooms'] = 0
+                    stats['total_voters'] = 0
 
-                stats['total_voters'] = self.CACHED_VOTER_COUNT
+                # stats['total_voters'] = self.CACHED_VOTER_COUNT
                 
                 # Use raw SQL for faster counting with single query
                 from django.db import connection
