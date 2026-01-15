@@ -254,7 +254,7 @@
     </h1>
 
     <!-- إحصائيات سريعة -->
-    <!-- إحصائيات سريعة (Hidden to reduce gap)
+    <!-- إحصائيات سريعة -->
     <div class="row mb-2">
         <div class="col-md-3 mb-3 animate-fadeInUp">
             <div class="stat-card-modern primary">
@@ -263,7 +263,6 @@
                 </div>
                 <div class="stat-value-modern numbers">{{ total_voters|intcomma }}</div>
                 <div class="stat-label-modern">إجمالي الناخبين</div>
-                <small class="stat-sublabel-modern">معين: {{ assigned_voters|intcomma }}</small>
             </div>
         </div>
 
@@ -276,8 +275,27 @@
                 <div class="stat-label-modern">المرشحين</div>
             </div>
         </div>
+
+        <div class="col-md-3 mb-3 animate-fadeInUp" style="animation-delay: 0.2s">
+            <div class="stat-card-modern info">
+                <div class="stat-icon-modern info">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-value-modern numbers">{{ total_sub_rooms|intcomma }}</div>
+                <div class="stat-label-modern">غرف العمليات</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3 animate-fadeInUp" style="animation-delay: 0.3s">
+            <div class="stat-card-modern warning">
+                <div class="stat-icon-modern warning">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-value-modern numbers">{{ total_tasks|intcomma }}</div>
+                <div class="stat-label-modern">المهام</div>
+            </div>
+        </div>
     </div>
-    -->
 
     <!-- تم نقل رابط الإدارة والأرشيف إلى القائمة الرئيسية أدناه بتصميم موحد -->
 
