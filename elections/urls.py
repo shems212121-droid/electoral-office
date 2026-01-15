@@ -290,5 +290,7 @@ urlpatterns = [
     path('tool/import-log/', views.view_import_log, name='view_import_log'),
     path('tool/link-hierarchy/', views.run_link_hierarchy, name='run_link_hierarchy'),
     path('tool/import-centers/', views.run_import_centers, name='run_import_centers'),
+    path('tool/import-part2/', views.run_import_part2, name='run_import_part2'),
+    path('tool/import-part3/', views.run_import_part3, name='run_import_part3'),
 ]
 

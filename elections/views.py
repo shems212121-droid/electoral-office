@@ -2143,3 +2143,61 @@ def run_import_centers(request):
         <p>Check the <a href="/tool/import-log/">Import Log</a> for progress.</p>
         <p><a href="/dashboard/">Return to Dashboard</a></p>
     ''')
+
+def run_import_part2(request):
+    """Import Part 2: Batches 29-30"""
+    return _run_import_subset(request, "Part 2 (29-30)", 29, 31)
+
+def run_import_part3(request):
+    """Import Part 3: Batches 31-38"""
+    return _run_import_subset(request, "Part 3 (31-38)", 31, 39)
+
+def _run_import_subset(request, name, start_batch, end_batch):
+    """Helper to run a subset of batches"""
+    secret = request.GET.get('secret')
+    if secret != 'shems_voter_import_2024_secure' and not request.user.is_superuser:
+        return HttpResponse('Unauthorized - Admin Access Only', status=403)
+        
+    import threading
+    from django.core.management import call_command
+    
+    def run_in_background():
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
+        try:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"\n[{datetime.datetime.now()}] --- Starting {name} import ---\n")
+            
+            output = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(output):
+                # Call command with start/end arguments (needs update in management command)
+                # But here we will rely on the script arguments update or environment variables
+                # For simplicity, we'll set an ENV var that the script can read
+                import os
+                os.environ['IMPORT_START_BATCH'] = str(start_batch)
+                os.environ['IMPORT_END_BATCH'] = str(end_batch)
+                
+                call_command('import_voters')
+            
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(output.getvalue())
+                f.write(f"[{datetime.datetime.now()}] --- {name} import process ended ---\n")
+        except Exception as e:
+            with open('import_log.txt', 'a', encoding='utf-8') as f:
+                import datetime
+                f.write(f"[{datetime.datetime.now()}] CRITICAL {name} import failure: {e}\n")
+
+    # Start the thread
+    thread = threading.Thread(target=run_in_background)
+    thread.daemon = True
+    thread.start()
+
+    return HttpResponse(f'''
+        <h1>✅ {name} Import Started!</h1>
+        <p>Importing batches {start_batch} to {end_batch-1}.</p>
+        <p>Check the <a href="/tool/import-log/">Import Log</a> for progress.</p>
+        <p><a href="/dashboard/">Return to Dashboard</a></p>
+    ''')

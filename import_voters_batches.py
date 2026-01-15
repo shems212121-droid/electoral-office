@@ -108,6 +108,38 @@ def import_voters_from_batches():
     # عرض الحجم الإجمالي
     total_size = sum(os.path.getsize(f) for f in batch_files) / 1024 / 1024
     log(f"   - الحجم الإجمالي: {total_size:.1f} MB")
+
+    # Filter batches based on ENV if set (Partial Import Support)
+    start_batch_env = os.environ.get('IMPORT_START_BATCH')
+    end_batch_env = os.environ.get('IMPORT_END_BATCH')
+    
+    if start_batch_env and end_batch_env:
+        try:
+            start_b = int(start_batch_env)
+            end_b = int(end_batch_env)
+            log(f"\n🔍 تصفية الدفعات: من {start_b} إلى {end_b-1} فقط")
+            
+            filtered_files = []
+            for f in batch_files:
+                # Extract number from filename "voters_batch_029.json"
+                try:
+                    num_part = f.name.replace('voters_batch_', '').replace('.json', '')
+                    num = int(num_part)
+                    if start_b <= num < end_b:
+                        filtered_files.append(f)
+                except ValueError:
+                    pass # Skip if filename doesn't match pattern
+            
+            batch_files = filtered_files
+            log(f"   - تم تحديد {len(batch_files)} دفعة للمعالجة في هذه الجولة")
+            
+        except ValueError:
+            log("⚠️ خطأ في قراءة متغيرات نطاق الدفعات")
+
+    if not batch_files:
+        log("\n❌ لا توجد دفعات للمعالجة في النطاق المحدد!")
+        return True # Exit gracefully
+
     
     # التحقق من قاعدة البيانات الحالية
     current_count = Voter.objects.count()
