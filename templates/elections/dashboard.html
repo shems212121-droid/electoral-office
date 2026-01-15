@@ -296,6 +296,9 @@
 
                 <div class="quick-actions-grid">
                     <!-- الجمهور والمرشحين -->
+                    <a href="{% url 'voter_search' %}" class="quick-action">
+                        <i class="fas fa-search"></i> بحث عن ناخب
+                    </a>
                     <a href="{% url 'candidate_list' %}" class="quick-action">
                         <i class="fas fa-user-tie"></i> المرشحين
                         <span class="badge bg-light text-primary ms-auto">{{ total_candidates }}</span>
