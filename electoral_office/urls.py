@@ -20,12 +20,6 @@ urlpatterns = [
     path('', include('elections.urls')),
 ]
 
-# Emergency fix tools
-from elections.fix_phone_view import run_fix_phone_field
-urlpatterns += [
-    path('tool/fix-phone-field/', run_fix_phone_field, name='fix_phone_field'),
-]
-
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
