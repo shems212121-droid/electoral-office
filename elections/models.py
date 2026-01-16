@@ -329,7 +329,11 @@ class Anchor(models.Model):
     
     # Relationship
     candidate = models.ForeignKey('Candidate', on_delete=models.CASCADE, related_name='anchors', 
-                                 verbose_name="المرشح")
+                                 verbose_name="المرشح", null=True, blank=True)
+    # Support for new PartyCandidate model
+    party_candidate = models.ForeignKey('PartyCandidate', on_delete=models.CASCADE, 
+                                       related_name='anchors', verbose_name="المرشح (جديد)",
+                                       null=True, blank=True)
     
     # From Voter DB (Auto-filled)
     voter_number = models.CharField(max_length=50, verbose_name="رقم الناخب",
@@ -360,9 +364,14 @@ class Anchor(models.Model):
 
     def save(self, *args, **kwargs):
         # Generate anchor code with room code if assigned
-        if not self.anchor_code and self.candidate:
-            count = Anchor.objects.filter(candidate=self.candidate).count() + 1
-            base_code = f"{self.candidate.candidate_code}-{count:03d}"
+        # Support both old Candidate and new PartyCandidate
+        current_candidate = self.party_candidate or self.candidate
+        
+        if not self.anchor_code and current_candidate:
+            count = Anchor.objects.filter(
+                models.Q(candidate=current_candidate) | models.Q(party_candidate=current_candidate)
+            ).count() + 1
+            base_code = f"{current_candidate.candidate_code}-{count:03d}"
             
             # Add room code if sub_room is set
             if self.sub_room:

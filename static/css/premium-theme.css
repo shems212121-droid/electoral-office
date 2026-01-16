@@ -139,12 +139,12 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Premium Logo Wrapper - Override */
+/* Premium Logo Wrapper - Override - تخفيف التوهج */
 .golden-logo-wrapper {
     background: linear-gradient(135deg, #f59e0b, #fcd34d, #f59e0b, #fbbf24, #f59e0b) !important;
     background-size: 200% 200% !important;
     animation: goldShimmer 3s ease-in-out infinite !important;
-    box-shadow: 0 0 30px rgba(245, 158, 11, 0.5), 0 0 60px rgba(251, 191, 36, 0.3) !important;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4), 0 0 40px rgba(251, 191, 36, 0.25) !important;
 }
 
 @keyframes goldShimmer {
@@ -152,12 +152,12 @@ body {
     0%,
     100% {
         background-position: 0% 50%;
-        box-shadow: 0 0 30px rgba(245, 158, 11, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4), 0 0 40px rgba(251, 191, 36, 0.25);
     }
 
     50% {
         background-position: 100% 50%;
-        box-shadow: 0 0 50px rgba(245, 158, 11, 0.7), 0 0 80px rgba(251, 191, 36, 0.5);
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.5), 0 0 50px rgba(251, 191, 36, 0.35);
     }
 }
 
@@ -860,6 +860,103 @@ body {
     color: white !important;
 }
 
+/* ===== تحسينات إضافية للاحترافية ===== */
+
+/* تحسين التباين في الوضع الفاتح للنصوص الثانوية */
+.text-muted,
+.text-secondary,
+small.text-muted {
+    color: #475569 !important; /* بدلاً من الرمادي الفاتح جداً */
+}
+
+/* الأرقام الإحصائية - تكبير الحجم */
+.stat-value,
+.stats-number,
+.count-number,
+.total-count,
+.dashboard-stat-number,
+.metric-value {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--premium-slate-700) !important;
+    font-family: var(--font-premium-numbers) !important;
+}
+
+[data-theme="dark"] .stat-value,
+[data-theme="dark"] .stats-number,
+[data-theme="dark"] .count-number,
+[data-theme="dark"] .total-count,
+[data-theme="dark"] .dashboard-stat-number,
+[data-theme="dark"] .metric-value {
+    color: var(--premium-slate-100) !important;
+}
+
+/* تحسين منطقة المستخدم في الشريط العلوي */
+.user-info,
+.admin-profile,
+.navbar .navbar-text {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px 16px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: var(--radius-premium-lg) !important;
+    transition: var(--transition-premium-base) !important;
+}
+
+.user-info:hover,
+.admin-profile:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium-md);
+}
+
+/* Avatar للمستخدم */
+.user-avatar,
+.admin-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: var(--gradient-premium-gold) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--premium-green-900) !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* تحسين المحاذاة العمودية في الشريط العلوي */
+.main-header .d-flex,
+.header .d-flex,
+.navbar .container-fluid {
+    align-items: center !important;
+}
+
+.main-header .ms-auto,
+.header .ms-auto {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+}
+
+/* تحسين عناوين الأقسام الإحصائية */
+.stat-label,
+.stats-label,
+.metric-label {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    margin-bottom: 8px !important;
+}
+
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .stats-label,
+[data-theme="dark"] .metric-label {
+    color: #94a3b8 !important;
+}
+
 /* ===== Responsive Premium Adjustments ===== */
 @media (max-width: 768px) {
     .main-content {
@@ -883,5 +980,10 @@ body {
 
     .main-content h1 {
         font-size: 1.5rem !important;
+    }
+    
+    .stat-value,
+    .stats-number {
+        font-size: 1.25rem !important;
     }
 }

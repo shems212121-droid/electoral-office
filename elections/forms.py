@@ -11,11 +11,64 @@ from .models import (
 
 
 class AnchorForm(forms.ModelForm):
+    # حقل اختيار مخصص يدمج المرشحين من كلا النموذجين
+    candidate_choice = forms.ChoiceField(
+        label='المرشح',
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     
     def __init__(self, *args, **kwargs):
+        # Extract candidate_id from kwargs if passed from view
+        candidate_id = kwargs.pop('candidate_id', None)
         super(AnchorForm, self).__init__(*args, **kwargs)
         self.fields['voter_number'].required = True
         self.fields['phone'].required = True
+        
+        # بناء قائمة المرشحين من كلا النموذجين
+        from .models import Candidate, PartyCandidate
+        
+        choices = [('', '---------')]
+        
+        # إضافة المرشحين من نموذج PartyCandidate الجديد
+        party_candidates = PartyCandidate.objects.all().order_by('full_name')
+        for pc in party_candidates:
+            choices.append((f'pc_{pc.pk}', f'{pc.full_name} ({pc.candidate_code or "جديد"})'))
+        
+        # إضافة المرشحين من نموذج Candidate القديم (الذين ليس لديهم نظير في PartyCandidate)
+        old_candidates = Candidate.objects.all().order_by('full_name')
+        for c in old_candidates:
+            choices.append((f'c_{c.pk}', f'{c.full_name} ({c.candidate_code or "قديم"})'))
+        
+        self.fields['candidate_choice'].choices = choices
+        
+        # إخفاء الحقول الأصلية
+        if 'party_candidate' in self.fields:
+            self.fields['party_candidate'].required = False
+            self.fields['party_candidate'].widget = forms.HiddenInput()
+        if 'candidate' in self.fields:
+            self.fields['candidate'].required = False
+            self.fields['candidate'].widget = forms.HiddenInput()
+        
+        # تحديد القيمة المبدئية من البيانات الموجودة
+        if self.instance and self.instance.pk:
+            if self.instance.party_candidate:
+                self.fields['candidate_choice'].initial = f'pc_{self.instance.party_candidate.pk}'
+            elif self.instance.candidate:
+                self.fields['candidate_choice'].initial = f'c_{self.instance.candidate.pk}'
+        
+        # Pre-select candidate if candidate_id is provided
+        if candidate_id:
+            try:
+                candidate = PartyCandidate.objects.get(pk=candidate_id)
+                self.fields['candidate_choice'].initial = f'pc_{candidate.pk}'
+            except PartyCandidate.DoesNotExist:
+                try:
+                    candidate = Candidate.objects.get(pk=candidate_id)
+                    self.fields['candidate_choice'].initial = f'c_{candidate.pk}'
+                except Candidate.DoesNotExist:
+                    pass
+    
     
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -31,27 +84,73 @@ class AnchorForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         voter_number = cleaned_data.get('voter_number')
+        candidate_choice = cleaned_data.get('candidate_choice')
+        
+        # معالجة الحقل المخصص candidate_choice
+        from .models import Candidate, PartyCandidate
+        
+        if candidate_choice:
+            if candidate_choice.startswith('pc_'):
+                # مرشح من نموذج PartyCandidate
+                try:
+                    pk = int(candidate_choice[3:])
+                    party_candidate = PartyCandidate.objects.get(pk=pk)
+                    cleaned_data['party_candidate'] = party_candidate
+                    cleaned_data['candidate'] = None
+                except (ValueError, PartyCandidate.DoesNotExist):
+                    self.add_error('candidate_choice', 'المرشح المختار غير موجود')
+            elif candidate_choice.startswith('c_'):
+                # مرشح من نموذج Candidate القديم
+                try:
+                    pk = int(candidate_choice[2:])
+                    candidate = Candidate.objects.get(pk=pk)
+                    cleaned_data['candidate'] = candidate
+                    cleaned_data['party_candidate'] = None
+                except (ValueError, Candidate.DoesNotExist):
+                    self.add_error('candidate_choice', 'المرشح المختار غير موجود')
+        else:
+            self.add_error('candidate_choice', 'يجب اختيار المرشح')
+        
+        # التحقق من عدم تسجيل نفس الناخب كمرتكز لنفس المرشح
+        party_candidate = cleaned_data.get('party_candidate')
         candidate = cleaned_data.get('candidate')
         
-        if voter_number and candidate:
-            # التحقق من عدم تسجيل نفس الناخب كمرتكز لنفس المرشح
-            qs = Anchor.objects.filter(voter_number=voter_number, candidate=candidate)
-            if self.instance.pk:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                self.add_error('voter_number', 'هذا الناخب مسجل مسبقاً كمرتكز لنفس المرشح.')
+        if voter_number:
+            if party_candidate:
+                qs = Anchor.objects.filter(voter_number=voter_number, party_candidate=party_candidate)
+                if self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
+                if qs.exists():
+                    self.add_error('voter_number', 'هذا الناخب مسجل مسبقاً كمرتكز لنفس المرشح.')
+            elif candidate:
+                qs = Anchor.objects.filter(voter_number=voter_number, candidate=candidate)
+                if self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
+                if qs.exists():
+                    self.add_error('voter_number', 'هذا الناخب مسجل مسبقاً كمرتكز لنفس المرشح.')
         
         return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # تعيين المرشح من البيانات المنظفة
+        if hasattr(self, 'cleaned_data'):
+            instance.party_candidate = self.cleaned_data.get('party_candidate')
+            instance.candidate = self.cleaned_data.get('candidate')
+        if commit:
+            instance.save()
+        return instance
     
     class Meta:
         model = Anchor
         # رقم الناخب ورقم الهاتف أول حقلين
-        fields = ['voter_number', 'phone', 'full_name', 'candidate',
+        fields = ['voter_number', 'phone', 'full_name', 'candidate', 'party_candidate',
                  'date_of_birth', 'voting_center_number', 'voting_center_name', 'family_number',
                  'registration_center_name', 'registration_center_number',
                  'governorate', 'station_number', 'status']
         widgets = {
-            'candidate': forms.Select(attrs={'class': 'form-select'}),
+            'party_candidate': forms.HiddenInput(),
+            'candidate': forms.HiddenInput(),
             'voter_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم الناخب'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
@@ -62,9 +161,20 @@ class AnchorForm(forms.ModelForm):
 class IntroducerForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        # Extract anchor_id from kwargs if passed from view
+        anchor_id = kwargs.pop('anchor_id', None)
         super(IntroducerForm, self).__init__(*args, **kwargs)
         self.fields['voter_number'].required = True
         self.fields['phone'].required = True
+        
+        # Pre-select anchor if anchor_id is provided
+        if anchor_id:
+            try:
+                from .models import Anchor
+                anchor = Anchor.objects.get(pk=anchor_id)
+                self.fields['anchor'].initial = anchor
+            except Anchor.DoesNotExist:
+                pass
     
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -146,9 +256,20 @@ class CampaignTaskForm(forms.ModelForm):
 class CandidateMonitorForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        # Extract candidate_id from kwargs if passed from view
+        candidate_id = kwargs.pop('candidate_id', None)
         super(CandidateMonitorForm, self).__init__(*args, **kwargs)
         self.fields['voter_number'].required = True
         self.fields['phone'].required = True
+        
+        # Pre-select candidate if candidate_id is provided
+        if candidate_id:
+            try:
+                from .models import Candidate
+                candidate = Candidate.objects.get(pk=candidate_id)
+                self.fields['candidate'].initial = candidate
+            except Candidate.DoesNotExist:
+                pass
     
     class Meta:
         model = CandidateMonitor

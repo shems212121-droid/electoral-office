@@ -571,6 +571,15 @@ class AnchorCreateView(LoginRequiredMixin, CreateView):
     template_name = 'elections/anchor_form.html'
     success_url = reverse_lazy('anchor_list')
     
+    def get_form_kwargs(self):
+        """Pass candidate_id from querystring to form"""
+        kwargs = super().get_form_kwargs()
+        candidate_id = self.request.GET.get('candidate')
+        if candidate_id:
+            kwargs['candidate_id'] = candidate_id
+        return kwargs
+    
+    
     def form_valid(self, form):
         try:
             response = super().form_valid(form)
@@ -714,6 +723,15 @@ class IntroducerCreateView(LoginRequiredMixin, CreateView):
     form_class = IntroducerForm
     template_name = 'elections/introducer_form.html'
     success_url = reverse_lazy('introducer_list')
+    
+    def get_form_kwargs(self):
+        """Pass anchor_id from querystring to form"""
+        kwargs = super().get_form_kwargs()
+        anchor_id = self.request.GET.get('anchor')
+        if anchor_id:
+            kwargs['anchor_id'] = anchor_id
+        return kwargs
+    
     
     def form_valid(self, form):
         try:
@@ -954,6 +972,15 @@ class MonitorCreateView(LoginRequiredMixin, CreateView):
     form_class = CandidateMonitorForm
     template_name = 'elections/monitor_form.html'
     success_url = reverse_lazy('monitor_list')
+    
+    def get_form_kwargs(self):
+        """Pass candidate_id from querystring to form"""
+        kwargs = super().get_form_kwargs()
+        candidate_id = self.request.GET.get('candidate')
+        if candidate_id:
+            kwargs['candidate_id'] = candidate_id
+        return kwargs
+    
     
     def form_valid(self, form):
         form.instance.added_by = self.request.user
