@@ -53,13 +53,19 @@
                         %}
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">البريد الإلكتروني</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                        <label class="form-label">الغرفة الفرعية <span class="text-danger">*</span></label>
+                        {{ form.sub_room }}
+                        {% if form.sub_room.errors %}<div class="text-danger">{{ form.sub_room.errors }}</div>{% endif
+                        %}
                     </div>
                 </div>
 
                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                    </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">رقم البطاقة الوطنية</label>
                         {{ form.national_id }}

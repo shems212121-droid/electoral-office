@@ -38,6 +38,14 @@
                             form.full_name.errors }}</div>{% endif
                         %}
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label>الغرفة الفرعية <span class="text-danger">*</span></label>
+                        {{ form.sub_room }}`r`n {% if form.sub_room.errors %}<div class="text-danger">{{
+                            form.sub_room.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-md-3 mb-3">
                         <label>العمر <span class="text-danger">*</span></label>
                         {{ form.age }}`r`n {% if form.age.errors %}<div class="text-danger">{{ form.age.errors }}</div>

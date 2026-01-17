@@ -1,5 +1,5 @@
 from django import forms
-from .models import CenterDirector, PoliticalEntityAgent
+from .models import CenterDirector, PoliticalEntityAgent, SubOperationRoom
 
 # ==================== Center Directors and Political Entity Agents Forms ====================
 
@@ -13,6 +13,8 @@ class CenterDirectorForm(forms.ModelForm):
         self.fields['voter_number'].required = False  # اختياري لأن المدير قد لا يكون ناخباً
         if not self.instance.pk:
             self.fields['governorate'].initial = 'البصرة'
+        # الترتيب: جعل القائمة المنسدلة للغرف واضحة
+        self.fields['sub_room'].queryset = SubOperationRoom.objects.filter(is_active=True)
     
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -38,8 +40,8 @@ class CenterDirectorForm(forms.ModelForm):
     
     class Meta:
         model = CenterDirector
-        # رقم الناخب ورقم الهاتف أول حقلين
-        fields = ['voter_number', 'phone', 'full_name', 
+        # رقم الناخب ورقم الهاتف أول حقلين، ثم الغرفة
+        fields = ['voter_number', 'phone', 'full_name', 'sub_room',
                  'voting_type', 'assigned_center_number', 'assigned_center_name', 
                  'governorate', 'email', 'national_id', 'status', 'start_date', 'notes']
         widgets = {
@@ -48,6 +50,7 @@ class CenterDirectorForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com', 'dir': 'ltr'}),
             'voter_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم الناخب (اختياري)', 'dir': 'ltr'}),
             'national_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم البطاقة الوطنية (اختياري)', 'dir': 'ltr'}),
+            'sub_room': forms.Select(attrs={'class': 'form-select'}),
             'voting_type': forms.Select(attrs={'class': 'form-select'}),
             'assigned_center_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم المركز الانتخابي'}),
             'assigned_center_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المركز الانتخابي'}),
@@ -62,10 +65,16 @@ class CenterDirectorForm(forms.ModelForm):
 
 class PoliticalEntityAgentForm(forms.ModelForm):
     """نموذج وكلاء الكيانات السياسية"""
+    
+    def __init__(self, *args, **kwargs):
+        super(PoliticalEntityAgentForm, self).__init__(*args, **kwargs)
+        if 'sub_room' in self.fields:
+            self.fields['sub_room'].queryset = SubOperationRoom.objects.filter(is_active=True)
+
     class Meta:
         model = PoliticalEntityAgent
-        # رقم الناخب ورقم الهاتف أول حقلين
-        fields = ['voter_number', 'phone', 'full_name', 'age', 'governorate',
+        # رقم الناخب ورقم الهاتف أول حقلين، ثم الغرفة
+        fields = ['voter_number', 'phone', 'full_name', 'sub_room', 'age', 'governorate',
                  'assigned_center_number', 'assigned_center_name', 'assigned_station_number',
                  'political_entity', 'center_director', 'national_id', 'email', 'address',
                  'photo_submitted', 'voter_card_submitted', 'national_id_submitted', 'has_biometric_card',
@@ -73,6 +82,7 @@ class PoliticalEntityAgentForm(forms.ModelForm):
                  'status', 'verification_date', 'approval_date',
                  'interview_scheduled', 'interview_date', 'interview_completed', 'notes']
         widgets = {
+            'sub_room': forms.Select(attrs={'class': 'form-select'}),
             'political_entity': forms.Select(attrs={'class': 'form-select'}),
             'center_director': forms.Select(attrs={'class': 'form-select'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'الاسم الكامل'}),
@@ -101,3 +111,4 @@ class PoliticalEntityAgentForm(forms.ModelForm):
             'interview_completed': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'ملاحظات..'}),
         }
+

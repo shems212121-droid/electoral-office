@@ -449,44 +449,90 @@
         }
     }
 
+    // Helper to get CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     async function updateStatus() {
         try {
             const response = await fetch('{% url "import_get_status" %}');
             const data = await response.json();
 
+            // تحديث مؤشر النسبة في الأعلى إذا تغير
+            if (data.current_voter_count) {
+                const progressBar = document.querySelector('.stats-card .progress-bar');
+                if (progressBar) {
+                    const totalExpected = 1868933;
+                    const newPercentage = (data.current_voter_count / totalExpected * 100).toFixed(1);
+                    progressBar.style.width = newPercentage + '%';
+                    progressBar.textContent = newPercentage + '%';
+                    progressBar.setAttribute('aria-valuenow', newPercentage);
+
+                    // تحديث القيم النصية
+                    const statValues = document.querySelectorAll('.stats-card .stat-value');
+                    if (statValues.length >= 4) {
+                        statValues[0].textContent = data.current_voter_count.toLocaleString();
+                        statValues[2].textContent = (totalExpected - data.current_voter_count).toLocaleString();
+                        statValues[3].textContent = newPercentage + '%';
+                    }
+                }
+            }
+
             // تحديث المؤشرات
             document.getElementById('current-round').textContent = data.current_round || '-';
             document.getElementById('current-batch').textContent = data.current_batch || '-';
-            document.getElementById('total-voters').textContent = data.current_voter_count?.toLocaleString('ar-EG') || '0';
+            document.getElementById('total-voters').textContent = data.current_voter_count?.toLocaleString() || '0';
 
             // تحديث السجل
             const logContainer = document.getElementById('log-container');
-            logContainer.innerHTML = '';
+            if (data.log && data.log.length > 0) {
+                logContainer.innerHTML = '';
+                data.log.forEach(line => {
+                    const div = document.createElement('div');
+                    div.className = 'log-line';
 
-            (data.log || []).forEach(line => {
-                const div = document.createElement('div');
-                div.className = 'log-line';
+                    if (line.includes('✅')) div.classList.add('success');
+                    else if (line.includes('❌')) div.classList.add('error');
+                    else div.classList.add('info');
 
-                if (line.includes('✅')) div.classList.add('success');
-                else if (line.includes('❌')) div.classList.add('error');
-                else div.classList.add('info');
-
-                div.textContent = line;
-                logContainer.appendChild(div);
-            });
-
-            // التمرير للأسفل
-            logContainer.scrollTop = logContainer.scrollHeight;
+                    div.textContent = line;
+                    logContainer.appendChild(div);
+                });
+                // التمرير للأسفل
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
 
             // تحديث حالة التشغيل
-            if (!data.running && isImportRunning) {
+            if (data.running) {
+                if (!isImportRunning) {
+                    isImportRunning = true;
+                    document.getElementById('status-card').style.display = 'block';
+                    document.getElementById('status-indicator').className = 'status-indicator running';
+                    disableAllButtons(true);
+                    startStatusPolling();
+                }
+            } else if (isImportRunning) {
                 isImportRunning = false;
                 document.getElementById('status-indicator').className = 'status-indicator stopped';
                 disableAllButtons(false);
                 clearInterval(statusInterval);
 
-                // تحديث الإحصائيات
-                location.reload();
+                // إذا اكتمل بنجاح، ريفريش الصفحة
+                if (data.current_voter_count >= 1868933) {
+                    setTimeout(() => location.reload(), 2000);
+                }
             }
 
         } catch (error) {

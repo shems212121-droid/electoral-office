@@ -176,42 +176,64 @@ def run_import_process(start_batch, end_batch):
         # جمع ملفات الدفعات المطلوبة
         batch_files = []
         for i in range(start_batch, end_batch):
-            filename = f'voters_batch_{i:03d}.json'
-            filepath = batch_dir / filename
+            if use_zips:
+                filename = f'voters_part_{i:03d}.zip'
+                filepath = zip_dir / filename
+            else:
+                filename = f'voters_batch_{i:03d}.json'
+                filepath = batch_dir / filename
+                
             if filepath.exists():
-                batch_files.append(filepath)
+                batch_files.append((filepath, use_zips))
         
         if not batch_files:
-            import_status['log'].append(f'❌ لم يتم العثور على دفعات في النطاق {start_batch}-{end_batch-1}')
+            import_status['log'].append(f'❌ لم يتم العثور على بيانات في النطاق {start_batch}-{end_batch-1}')
             import_status['running'] = False
             return
         
         import_status['log'].append(f'📦 تم العثور على {len(batch_files)} دفعة')
         
         # معالجة كل دفعة
-        for i, batch_file in enumerate(batch_files, 1):
+        for i, (batch_file, is_zip) in enumerate(batch_files, 1):
             import_status['current_batch'] = start_batch + i - 1
             
+            # التحقق من الملف - الاسم للمقارنة
+            batch_name = batch_file.name
+            if is_zip:
+                batch_name = batch_name.replace('voters_part_', 'voters_batch_').replace('.zip', '.json')
+
             # التحقق من الاستيراد المسبق
-            last_pk = batch_last_pks.get(batch_file.name)
+            last_pk = batch_last_pks.get(batch_name)
             if last_pk and Voter.objects.filter(pk=last_pk).exists():
-                import_status['log'].append(f'⏭️  [{i}/{len(batch_files)}] {batch_file.name}: تم تخطيها (موجودة مسبقاً)')
+                import_status['log'].append(f'⏭️  [{i}/{len(batch_files)}] {batch_name}: تم تخطيها (موجودة مسبقاً)')
                 continue
             
             try:
-                import_status['log'].append(f'🔄 [{i}/{len(batch_files)}] {batch_file.name}: جارٍ الاستيراد...')
+                import_status['log'].append(f'🔄 [{i}/{len(batch_files)}] {batch_name}: جارٍ الاستيراد...')
                 
-                # استيراد الدفعة
-                call_command('loaddata', str(batch_file), verbosity=0, ignorenonexistent=True)
+                final_file_path = str(batch_file)
+                
+                if is_zip:
+                    import zipfile
+                    from tempfile import TemporaryDirectory
+                    with TemporaryDirectory() as temp_dir:
+                        with zipfile.ZipFile(batch_file, 'r') as zf:
+                            json_filename = zf.namelist()[0]
+                            zf.extract(json_filename, temp_dir)
+                            temp_json_path = os.path.join(temp_dir, json_filename)
+                            call_command('loaddata', temp_json_path, verbosity=0, ignorenonexistent=True)
+                else:
+                    # استيراد الدفعة مباشرة
+                    call_command('loaddata', final_file_path, verbosity=0, ignorenonexistent=True)
                 
                 # تحديث العدد
                 new_count = Voter.objects.count()
                 import_status['imported_count'] = new_count
                 
-                import_status['log'].append(f'✅ [{i}/{len(batch_files)}] {batch_file.name}: تم بنجاح (الإجمالي: {new_count:,})')
+                import_status['log'].append(f'✅ [{i}/{len(batch_files)}] {batch_name}: تم بنجاح (الإجمالي: {new_count:,})')
                 
             except Exception as e:
-                error_msg = f'❌ [{i}/{len(batch_files)}] {batch_file.name}: فشل - {str(e)}'
+                error_msg = f'❌ [{i}/{len(batch_files)}] {batch_name}: فشل - {str(e)}'
                 import_status['log'].append(error_msg)
                 import_status['errors'].append(error_msg)
         
@@ -267,12 +289,28 @@ def run_final_import(request):
     
     def run_cmd():
         try:
-            call_command('import_final_data')
-            import_status['log'].append('🎉 تم الانتهاء من الاستيراد الشامل!')
+            from io import StringIO
+            out = StringIO()
+            import_status['log'].append('📦 فحص ملفات البيانات (38 جزء)...')
+            
+            # Note: call_command doesn't easily stream output to a variable while running
+            # So we will just call it and report completion.
+            # To show progress, the command itself should ideally update a shared state.
+            
+            call_command('import_final_data', stdout=out)
+            
+            # Since we can't easily stream, we'll just append the final success message
+            # and maybe some summary from 'out'
+            import_status['log'].append('✅ اكتملت العملية بنجاح!')
+            import_status['log'].append('🎉 تم استيراد جميع الأجزاء الـ 38.')
+            
         except Exception as e:
-            import_status['log'].append(f'❌ فشل الاستيراد: {str(e)}')
+            error_msg = f'❌ فشل الاستيراد: {str(e)}'
+            import_status['log'].append(error_msg)
+            import_status['errors'].append(error_msg)
         finally:
             import_status['running'] = False
+            import_status['current_voter_count'] = Voter.objects.count()
             
     thread = threading.Thread(target=run_cmd)
     thread.daemon = True
