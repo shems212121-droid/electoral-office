@@ -42,14 +42,6 @@ class AnchorForm(forms.ModelForm):
         
         self.fields['candidate_choice'].choices = choices
         
-        # إخفاء الحقول الأصلية
-        if 'party_candidate' in self.fields:
-            self.fields['party_candidate'].required = False
-            self.fields['party_candidate'].widget = forms.HiddenInput()
-        if 'candidate' in self.fields:
-            self.fields['candidate'].required = False
-            self.fields['candidate'].widget = forms.HiddenInput()
-        
         # تحديد القيمة المبدئية من البيانات الموجودة
         if self.instance and self.instance.pk:
             if self.instance.party_candidate:
@@ -144,13 +136,12 @@ class AnchorForm(forms.ModelForm):
     class Meta:
         model = Anchor
         # رقم الناخب ورقم الهاتف أول حقلين
-        fields = ['voter_number', 'phone', 'full_name', 'candidate', 'party_candidate',
+        # ملاحظة: candidate و party_candidate يتم التعامل معهم في save() method
+        fields = ['voter_number', 'phone', 'full_name',
                  'date_of_birth', 'voting_center_number', 'voting_center_name', 'family_number',
                  'registration_center_name', 'registration_center_number',
                  'governorate', 'station_number', 'status']
         widgets = {
-            'party_candidate': forms.HiddenInput(),
-            'candidate': forms.HiddenInput(),
             'voter_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم الناخب'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
