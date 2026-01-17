@@ -74,11 +74,19 @@ class Command(BaseCommand):
             batch_num = zip_file.name.replace('voters_part_', '').replace('.zip', '')
             batch_json_name = f'voters_batch_{batch_num}.json'
             
-            # Check if we can skip
-            last_pk = batch_last_pks.get(batch_json_name)
-            if last_pk and Voter.objects.filter(pk=last_pk).exists():
-                log(f'⏭️  [{i}/{total_files}] Part {batch_num}: Skipped (Already in DB)')
-                continue
+            # FORCE IMPORT for parts 29-38 to recover missing 50K voters
+            # Parts 29-38 failed previously, so we skip the smart check for them
+            batch_num_int = int(batch_num)
+            force_import = (29 <= batch_num_int <= 38)
+            
+            if not force_import:
+                # Check if we can skip (only for parts 1-28)
+                last_pk = batch_last_pks.get(batch_json_name)
+                if last_pk and Voter.objects.filter(pk=last_pk).exists():
+                    log(f'⏭️  [{i}/{total_files}] Part {batch_num}: Skipped (Already in DB)')
+                    continue
+            else:
+                log(f'🔥 [{i}/{total_files}] Part {batch_num}: FORCED IMPORT (Recovering missing data)')
 
             log(f'🔄 [{i}/{total_files}] Part {batch_num}: Importing...')
             
