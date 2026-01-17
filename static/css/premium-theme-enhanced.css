@@ -1,0 +1,493 @@
+/* ===================================
+   Premium Electoral Office Theme 2026 - ENHANCED VERSION
+   Modern, Clean & Professional (التصميم المحسّن)
+   =================================== */
+
+/* ===== Google Fonts ===== */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Almarai:wght@300;400;700;800&display=swap');
+
+/* ===== نظام الألوان المحسّن - Enhanced Color System ===== */
+:root {
+    /* Core Colors - Emerald Green (محسّن) */
+    --premium-green-50: #ecfdf5;
+    --premium-green-100: #d1fae5;
+    --premium-green-200: #a7f3d0;
+    --premium-green-300: #6ee7b7;
+    --premium-green-400: #34d399;
+    --premium-green-500: #10b981;
+    --premium-green-600: #059669;
+    --premium-green-700: #047857;
+    --premium-green-800: #065f46;
+    --premium-green-900: #064e3b;
+
+    /* Gold Accent - Luxurious (محسّن) */
+    --premium-gold-50: #fffbeb;
+    --premium-gold-100: #fef3c7;
+    --premium-gold-200: #fde68a;
+    --premium-gold-300: #fcd34d;
+    --premium-gold-400: #fbbf24;
+    --premium-gold-500: #f59e0b;
+    --premium-gold-600: #d97706;
+    --premium-gold-700: #b45309;
+
+    /* Neutral Colors (محسّن للتباين) */
+    --premium-slate-50: #f8fafc;
+    --premium-slate-100: #f1f5f9;
+    --premium-slate-200: #e2e8f0;
+    --premium-slate-300: #cbd5e1;
+    --premium-slate-400: #94a3b8;
+    --premium-slate-500: #64748b;
+    --premium-slate-600: #475569;
+    --premium-slate-700: #334155;
+    --premium-slate-800: #1e293b;
+    --premium-slate-900: #0f172a;
+
+    /* Premium Gradients (مخففة للاحترافية) */
+    --gradient-premium-green: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
+    --gradient-premium-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+    --gradient-glass-dark: linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.95) 100%);
+
+    /* Shadows (مخففة - NO GLOW) */
+    --shadow-premium-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-premium-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-premium-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
+    --shadow-premium-xl: 0 20px 30px rgba(0, 0, 0, 0.15);
+
+    /* Typography */
+    --font-premium-heading: 'Almarai', 'Tajawal', sans-serif;
+    --font-premium-body: 'Tajawal', sans-serif;
+
+    /* Transitions */
+    --transition-premium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+}
+
+/* ===== Dark Mode Colors (محسّن للتباين) ===== */
+[data-theme="dark"] {
+    --premium-slate-50: #0f172a;
+    --premium-slate-100: #1e293b;
+    --premium-slate-200: #334155;
+    --premium-slate-300: #475569;
+    --premium-text-primary: #f1f5f9;
+    --premium-text-secondary: #cbd5e1;
+}
+
+/* ===== Body Styling ===== */
+body {
+    font-family: var(--font-premium-body) !important;
+    background: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme="dark"] body {
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
+/* ===== Sidebar (محسّن بدون توهج) ===== */
+.sidebar {
+    background: var(--gradient-premium-green) !important;
+    border-left: 3px solid var(--premium-gold-400) !important;
+    box-shadow: var(--shadow-premium-xl) !important;
+    position: relative;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* إزالة النمط المنقط القديم */
+.sidebar::before {
+    display: none !important;
+}
+
+.sidebar-header {
+    position: relative;
+    padding: 25px 20px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.sidebar-header h5 {
+    color: var(--premium-gold-300) !important;
+    font-family: var(--font-premium-heading) !important;
+    font-weight: 800 !important;
+    font-size: 1.3rem !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.3px;
+}
+
+/* Logo Wrapper (تخفيف التوهج المبالغ فيه) */
+.golden-logo-wrapper {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 15px !important;
+    transition: var(--transition-premium) !important;
+}
+
+.golden-logo-wrapper:hover {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35) !important;
+}
+
+/* Navigation Links (محسّن) */
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 4px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: var(--transition-premium) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar .nav-link i {
+    font-size: 16px;
+    width: 22px;
+    text-align: center;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transform: translateX(-3px);
+}
+
+.sidebar .nav-link.active {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: var(--premium-gold-200) !important;
+    border-right: 4px solid var(--premium-gold-400) !important;
+    font-weight: 700 !important;
+}
+
+/* Section Titles في Sidebar */
+.sidebar .text-uppercase {
+    color: var(--premium-gold-200) !important;
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    letter-spacing: 1.5px !important;
+    margin-top: 20px !important;
+    margin-bottom: 10px !important;
+    padding: 6px 12px !important;
+    opacity: 0.85;
+    text-shadow: none !important;
+    background: rgba(0, 0, 0, 0.15);
+    border-right: 2px solid var(--premium-gold-400);
+    border-radius: 4px;
+}
+
+/* ===== Main Content Area ===== */
+.main-content {
+    background: #f8fafc;
+    padding: 25px 30px !important;
+}
+
+[data-theme="dark"] .main-content {
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
+/* ===== Header (محسّن) ===== */
+.main-header,
+.header,
+.top-navbar {
+    background: white !important;
+    border-bottom: 1px solid var(--premium-slate-200) !important;
+    box-shadow: var(--shadow-premium-sm) !important;
+    padding: 18px 25px !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+    margin-bottom: 20px;
+}
+
+[data-theme="dark"] .main-header,
+[data-theme="dark"] .header,
+[data-theme="dark"] .top-navbar {
+    background: var(--premium-slate-800) !important;
+    border-bottom: 1px solid var(--premium-slate-700) !important;
+}
+
+/* ===== Page Titles (محسّن) ===== */
+.main-content h1,
+.dashboard-title,
+.container-fluid>h1 {
+    font-family: var(--font-premium-heading) !important;
+    font-weight: 800 !important;
+    font-size: 1.8rem !important;
+    color: var(--premium-green-800) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 25px !important;
+}
+
+.main-content h1 i,
+.container-fluid>h1 i {
+    background: var(--gradient-premium-green);
+    color: white !important;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    font-size: 1.3rem !important;
+    box-shadow: var(--shadow-premium-md);
+}
+
+[data-theme="dark"] .main-content h1,
+[data-theme="dark"] .container-fluid>h1 {
+    color: var(--premium-slate-50) !important;
+}
+
+/* ===== Cards (محسّن بدون توهج) ===== */
+.chart-container,
+.modern-card,
+.card {
+    background: white !important;
+    border: 1px solid var(--premium-slate-200) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-premium-md) !important;
+    transition: var(--transition-premium) !important;
+    overflow: hidden;
+}
+
+.chart-container:hover,
+.modern-card:hover,
+.card:hover {
+    box-shadow: var(--shadow-premium-lg) !important;
+    transform: translateY(-3px);
+}
+
+[data-theme="dark"] .chart-container,
+[data-theme="dark"] .modern-card,
+[data-theme="dark"] .card {
+    background: var(--premium-slate-800) !important;
+    border: 1px solid var(--premium-slate-700) !important;
+}
+
+/* ===== الجداول (محسّن للتباين) ===== */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background: var(--premium-green-700) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    padding: 14px 12px !important;
+    border: none !important;
+    text-align: center !important;
+    font-size: 14px !important;
+}
+
+.table tbody tr {
+    background: white !important;
+    transition: var(--transition-premium);
+}
+
+.table tbody tr:hover {
+    background: var(--premium-green-50) !important;
+}
+
+.table tbody td {
+    padding: 12px !important;
+    border-bottom: 1px solid var(--premium-slate-200) !important;
+    color: var(--premium-slate-700) !important;
+    vertical-align: middle !important;
+}
+
+/* Dark Mode للجداول */
+[data-theme="dark"] .table thead th {
+    background: var(--premium-green-800) !important;
+}
+
+[data-theme="dark"] .table tbody tr {
+    background: var(--premium-slate-800) !important;
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background: var(--premium-slate-700) !important;
+}
+
+[data-theme="dark"] .table tbody td {
+    border-bottom: 1px solid var(--premium-slate-700) !important;
+    color: var(--premium-slate-200) !important;
+}
+
+/* ===== Buttons (محسّن) ===== */
+.btn-primary {
+    background: var(--gradient-premium-green) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-premium-sm) !important;
+    transition: var(--transition-premium) !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium-md) !important;
+}
+
+.btn-warning {
+    background: var(--gradient-premium-gold) !important;
+    border: none !important;
+    color: var(--premium-green-900) !important;
+    font-weight: 600 !important;
+}
+
+.btn-success {
+    background: var(--premium-green-600) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-danger {
+    background: #dc2626 !important;
+    border: none !important;
+    color: white !important;
+}
+
+/* ===== Stat Cards (محسّن) ===== */
+.stat-card-modern {
+    background: var(--gradient-premium-green) !important;
+    border-radius: var(--radius-xl) !important;
+    padding: 22px !important;
+    border: none !important;
+    border-bottom: 3px solid var(--premium-gold-400) !important;
+    color: white !important;
+}
+
+.stat-value-modern.stats-number {
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    color: var(--premium-gold-300) !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.stat-label-modern {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* ===== Dark Mode Toggle (محسّن) ===== */
+#darkModeToggle {
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50% !important;
+    background: white !important;
+    border: 2px solid var(--premium-slate-300) !important;
+    box-shadow: var(--shadow-premium-lg) !important;
+    cursor: pointer;
+    transition: var(--transition-premium) !important;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+#darkModeToggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-premium-xl) !important;
+}
+
+[data-theme="dark"] #darkModeToggle {
+    background: var(--premium-slate-800) !important;
+    border-color: var(--premium-slate-600) !important;
+}
+
+/* ===== User Info (محسّن) ===== */
+.user-info {
+    background: var(--premium-green-50) !important;
+    border: 1px solid var(--premium-green-200) !important;
+    border-radius: 50px !important;
+    padding: 8px 18px 8px 10px !important;
+    gap: 10px !important;
+    transition: var(--transition-premium) !important;
+}
+
+.user-info:hover {
+    background: var(--premium-green-100) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium-md) !important;
+}
+
+.user-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: var(--gradient-premium-gold) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--premium-green-900) !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    box-shadow: var(--shadow-premium-sm) !important;
+}
+
+[data-theme="dark"] .user-info {
+    background: var(--premium-slate-700) !important;
+    border-color: var(--premium-slate-600) !important;
+}
+
+/* ===== Badge Styles (محسّن) ===== */
+.badge {
+    padding: 6px 12px !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+}
+
+.badge.bg-success {
+    background: var(--premium-green-600) !important;
+}
+
+.badge.bg-warning {
+    background: var(--premium-gold-500) !important;
+    color: white !important;
+}
+
+.badge.bg-danger {
+    background: #dc2626 !important;
+}
+
+/* ===== Empty States (محسّن) ===== */
+.empty-state-box {
+    background: white !important;
+    border: 2px dashed var(--premium-slate-300) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 40px !important;
+    text-align: center !important;
+    color: var(--premium-slate-500) !important;
+}
+
+[data-theme="dark"] .empty-state-box {
+    background: var(--premium-slate-800) !important;
+    border-color: var(--premium-slate-600) !important;
+    color: var(--premium-slate-400) !important;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100% !important;
+    }
+    
+    .main-content {
+        padding: 15px !important;
+    }
+    
+    .main-content h1 {
+        font-size: 1.4rem !important;
+    }
+}
